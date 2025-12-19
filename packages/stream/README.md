@@ -1,6 +1,6 @@
 # @gesturejs/stream
 
-A module for handling data flows as streams, designed to work seamlessly with the gesturejs library.
+Lightweight, zero-dependency reactive stream library with RxJS-like pipe operators for gesturejs
 
 ## Installation
 

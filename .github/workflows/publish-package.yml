@@ -1,0 +1,44 @@
+name: Publish Package
+run-name: "[@gesturejs/${{ github.event.inputs.package }}] publish @${{ github.sha }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      package:
+        description: 'Target package name'
+        required: true
+        type: string
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run tests
+        run: pnpm --filter @gesturejs/${{ inputs.package }} test
+
+      - name: Build package
+        run: npx nx build @gesturejs/${{ inputs.package }}
+
+      - name: Publish to npm
+        run: pnpm --filter @gesturejs/${{ inputs.package }} publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

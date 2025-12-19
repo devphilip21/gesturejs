@@ -7,7 +7,7 @@
     "builder": "./dist/cmd.js"
   },
   "scripts": {
-    "compile": "tsc"
+    "build": "tsc"
   },
   "dependencies": {
     "commander": "^12.1.0"

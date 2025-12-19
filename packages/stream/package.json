@@ -1,9 +1,35 @@
 {
   "name": "@gesturejs/stream",
-  "description": "A module for handling large data flows as streams within the gesturejs library.",
+  "description": "Lightweight, zero-dependency reactive stream library with RxJS-like pipe operators for gesturejs",
   "version": "0.1.0",
-  "private": true,
+  "license": "MIT",
+  "author": "devphilip21 <philip21.dev@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/devphilip21/gesturejs.git",
+    "directory": "packages/stream"
+  },
+  "homepage": "https://github.com/devphilip21/gesturejs/tree/main/packages/stream",
+  "bugs": {
+    "url": "https://github.com/devphilip21/gesturejs/issues"
+  },
+  "keywords": [
+    "stream",
+    "reactive",
+    "observable",
+    "rxjs",
+    "pipe",
+    "functional-reactive",
+    "event-stream",
+    "operators",
+    "gesturejs"
+  ],
   "type": "module",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -25,10 +51,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
   },
-  "dependencies": {
-    "@gesturejs/builder": "workspace:*"
-  },
   "devDependencies": {
+    "@gesturejs/builder": "workspace:*",
     "vite": "*",
     "vitest": "^2.0.0",
     "jsdom": "^25.0.0",
