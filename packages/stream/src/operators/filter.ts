@@ -8,8 +8,12 @@ export function filter<T>(
     createObservable((observer) => {
       return source.subscribe({
         next(value) {
-          if (predicate(value)) {
-            observer.next(value);
+          try {
+            if (predicate(value)) {
+              observer.next(value);
+            }
+          } catch (err) {
+            observer.error?.(err);
           }
         },
         error: observer.error?.bind(observer),

@@ -23,7 +23,7 @@ export { createSubject, createBehaviorSubject } from "./subject.js";
 // Pipe
 export { pipe, compose } from "./pipe.js";
 
-// Creators
+// Factory
 export {
   fromEvent,
   fromPromise,
@@ -35,7 +35,7 @@ export {
   timer,
   throwError,
   defer,
-} from "./creators.js";
+} from "./factory.js";
 
 // Operators
 export * from "./operators/index.js";

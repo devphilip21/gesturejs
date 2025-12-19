@@ -10,6 +10,19 @@ npm install @gesturejs/stream
 
 ## Quick Start
 
+### Create from Events
+
+```typescript
+import { fromEvent, pipe, map } from "@gesturejs/stream";
+
+const clicks = fromEvent<MouseEvent>(document, "click");
+
+pipe(
+  clicks,
+  map((e) => ({ x: e.clientX, y: e.clientY }))
+).subscribe(console.log);
+```
+
 ### Create and Subscribe
 
 ```typescript
@@ -42,19 +55,6 @@ const result = pipe(
 );
 
 result.subscribe(console.log);
-```
-
-### Create from Events
-
-```typescript
-import { fromEvent, pipe, map } from "@gesturejs/stream";
-
-const clicks = fromEvent<MouseEvent>(document, "click");
-
-pipe(
-  clicks,
-  map((e) => ({ x: e.clientX, y: e.clientY }))
-).subscribe(console.log);
 ```
 
 ## Tree-Shaking

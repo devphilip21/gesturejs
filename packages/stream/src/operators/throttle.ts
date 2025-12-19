@@ -4,12 +4,12 @@ import { createObservable } from "../observable.js";
 export function throttle<T>(ms: number): Operator<T, T> {
   return (source) =>
     createObservable((observer) => {
-      let lastTime = 0;
+      let lastTime: number | null = null;
 
       return source.subscribe({
         next(value) {
           const now = performance.now();
-          if (now - lastTime >= ms) {
+          if (lastTime === null || now - lastTime >= ms) {
             lastTime = now;
             observer.next(value);
           }

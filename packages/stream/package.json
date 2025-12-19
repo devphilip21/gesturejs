@@ -17,12 +17,18 @@
     }
   },
   "scripts": {
-    "build": "builder build"
+    "build": "builder build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@gesturejs/builder": "workspace:*"
   },
   "devDependencies": {
-    "vite": "*"
+    "vite": "*",
+    "vitest": "^2.0.0",
+    "jsdom": "^25.0.0",
+    "@vitest/coverage-v8": "^2.0.0"
   }
 }

@@ -41,9 +41,11 @@ export function createSubject<T>(): Subject<T> {
 
     error(err) {
       if (closed) return;
+      closed = true;
       for (const observer of observers) {
         observer.error?.(err);
       }
+      observers.clear();
     },
 
     complete() {
@@ -102,9 +104,11 @@ export function createBehaviorSubject<T>(initialValue: T): BehaviorSubject<T> {
 
     error(err) {
       if (closed) return;
+      closed = true;
       for (const observer of observers) {
         observer.error?.(err);
       }
+      observers.clear();
     },
 
     complete() {

@@ -91,6 +91,7 @@ export function shareReplay<T>(bufferSize = 1): Operator<T, T> {
                 obs.error?.(err);
               }
               observers.clear();
+              sourceUnsub = null;
             },
             complete() {
               completed = true;
@@ -98,12 +99,17 @@ export function shareReplay<T>(bufferSize = 1): Operator<T, T> {
                 obs.complete?.();
               }
               observers.clear();
+              sourceUnsub = null;
             },
           });
         }
 
         return () => {
           observers.delete(observer);
+          if (observers.size === 0 && sourceUnsub && !completed && !hasError) {
+            sourceUnsub();
+            sourceUnsub = null;
+          }
         };
       },
     };
