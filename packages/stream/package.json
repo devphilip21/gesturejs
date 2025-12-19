@@ -6,12 +6,15 @@
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
     "./operators": {
+      "types": "./dist/operators.d.ts",
       "import": "./dist/operators.js",
       "require": "./dist/operators.cjs"
     }
