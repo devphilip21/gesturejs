@@ -15,25 +15,8 @@
     "projects": ["packages/*"],
     "projectsRelationship": "independent",
     "releaseTagPattern": "{projectName}@{version}",
-    "changelog": {
-      "automaticFromRef": true,
-      "workspaceChangelog": false,
-      "projectChangelogs": {
-        "file": "{projectRoot}/CHANGELOG.md",
-        "createRelease": "github"
-      }
-    },
-    "version": {
-      "conventionalCommits": true,
-      "generatorOptions": {
-        "currentVersionResolver": "registry",
-        "fallbackCurrentVersionResolver": "disk"
-      }
-    },
-    "git": {
-      "commit": true,
-      "commitMessage": "chore(release): publish {version}",
-      "tag": true
-    }
+    "changelog": false,
+    "version": false,
+    "git": false
   }
 }

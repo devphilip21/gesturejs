@@ -47,26 +47,32 @@ jobs:
       - name: Build packages
         run: npx nx run-many -t build --projects=packages/*
 
-      - name: Check if first release
-        id: check
+      - name: Publish packages (dependency order, skip published)
         run: |
-          if git tag | grep -q "@gesturejs/"; then
-            echo "first_release=false" >> $GITHUB_OUTPUT
-          else
-            echo "first_release=true" >> $GITHUB_OUTPUT
-          fi
+          # Get packages in dependency order using pnpm
+          PACKAGES=$(pnpm -r --sort exec pwd 2>/dev/null | grep packages)
 
-      - name: Release
-        run: |
-          if [ "${{ steps.check.outputs.first_release }}" == "true" ]; then
-            npx nx release --first-release
-          else
-            npx nx release
-          fi
+          for PKG_DIR in $PACKAGES; do
+            PKG_NAME=$(node -p "require('$PKG_DIR/package.json').name")
+            LOCAL_VERSION=$(node -p "require('$PKG_DIR/package.json').version")
+            IS_PRIVATE=$(node -p "require('$PKG_DIR/package.json').private || false")
+
+            # Skip private packages
+            if [ "$IS_PRIVATE" = "true" ]; then
+              echo "Skipping $PKG_NAME (private)"
+              continue
+            fi
+
+            # Check if version already exists on npm
+            PUBLISHED=$(npm view "$PKG_NAME@$LOCAL_VERSION" version 2>/dev/null || echo "")
+
+            if [ -z "$PUBLISHED" ]; then
+              echo "Publishing $PKG_NAME@$LOCAL_VERSION..."
+              pnpm --filter "$PKG_NAME" publish --access public --no-git-checks
+            else
+              echo "Skipping $PKG_NAME@$LOCAL_VERSION (already published)"
+            fi
+          done
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
-
-      - name: Push changes and tags
-        run: git push --follow-tags
