@@ -37,6 +37,16 @@ importers:
         specifier: ^4.5.4
         version: 4.5.4(@types/node@24.10.4)(rollup@4.53.3)(typescript@5.9.3)(vite@7.3.0(@types/node@24.10.4)(yaml@2.8.2))
 
+  packages/signal:
+    dependencies:
+      '@gesturejs/stream':
+        specifier: ^0.1.0
+        version: 0.1.0
+    devDependencies:
+      '@gesturejs/builder':
+        specifier: workspace:*
+        version: link:../../internal/builder
+
   packages/stream:
     devDependencies:
       '@gesturejs/builder':
@@ -414,6 +424,9 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
+
+  '@gesturejs/stream@0.1.0':
+    resolution: {integrity: sha512-tLgrR3IeatXl+P79SNZ8Ibud960o+vz7nu+oqOJqqrgdRrIVzqhKxmPjGFLaz+UhD0qBxOIiSx1qHUna7ZNm7w==}
 
   '@isaacs/balanced-match@4.0.1':
     resolution: {integrity: sha512-yzMTt9lEb8Gv7zRioUilSglI0c0smZ9k5D65677DLWLtWJaXIS3CqcGyUFByYKlnUj6TkjLVs54fBl6+TiGQDQ==}
@@ -2085,6 +2098,8 @@ snapshots:
 
   '@esbuild/win32-x64@0.27.1':
     optional: true
+
+  '@gesturejs/stream@0.1.0': {}
 
   '@isaacs/balanced-match@4.0.1': {}
 

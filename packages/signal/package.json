@@ -1,0 +1,43 @@
+{
+  "name": "@gesturejs/signal",
+  "description": "Unified pointer signal abstraction with object pooling for high-frequency gesture input",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./core": {
+      "types": "./dist/core/index.d.ts",
+      "import": "./dist/core/index.js",
+      "require": "./dist/core/index.cjs"
+    },
+    "./pointer-signal": {
+      "types": "./dist/pointer-signal/index.d.ts",
+      "import": "./dist/pointer-signal/index.js",
+      "require": "./dist/pointer-signal/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "builder build",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@gesturejs/stream": "^0.1.0"
+  },
+  "devDependencies": {
+    "@gesturejs/builder": "workspace:*"
+  }
+}

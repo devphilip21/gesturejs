@@ -38,6 +38,9 @@ jobs:
       - name: Build package
         run: npx nx build @gesturejs/${{ inputs.package }}
 
+      - name: Remove npm protocol from dependencies
+        run: sed -i 's/"npm:@[^@]*@/""/g' packages/${{ inputs.package }}/package.json
+
       - name: Publish to npm
         run: pnpm --filter @gesturejs/${{ inputs.package }} publish --access public --no-git-checks
         env:
