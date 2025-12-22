@@ -32,6 +32,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./extensions": {
+      "types": "./dist/extensions/index.d.ts",
+      "import": "./dist/extensions/index.js",
+      "require": "./dist/extensions/index.cjs"
     }
   },
   "files": [

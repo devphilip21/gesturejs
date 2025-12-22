@@ -1,48 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateDistance, calculateVelocity, getDirection } from "./velocity.js";
-
-describe("calculateVelocity", () => {
-  it("should calculate positive X velocity for rightward movement", () => {
-    const result = calculateVelocity(200, 100, 100, 100, 100, 0);
-
-    expect(result.velocityX).toBe(1);
-    expect(result.velocityY).toBe(0);
-  });
-
-  it("should calculate negative X velocity for leftward movement", () => {
-    const result = calculateVelocity(0, 100, 100, 100, 100, 0);
-
-    expect(result.velocityX).toBe(-1);
-    expect(result.velocityY).toBe(0);
-  });
-
-  it("should calculate positive Y velocity for downward movement", () => {
-    const result = calculateVelocity(100, 200, 100, 100, 100, 0);
-
-    expect(result.velocityX).toBe(0);
-    expect(result.velocityY).toBe(1);
-  });
-
-  it("should calculate velocity in pixels per millisecond", () => {
-    const result = calculateVelocity(150, 100, 50, 100, 100, 0);
-
-    expect(result.velocityX).toBe(1);
-  });
-
-  it("should return zero velocity when time delta is zero", () => {
-    const result = calculateVelocity(200, 200, 100, 100, 100, 100);
-
-    expect(result.velocityX).toBe(0);
-    expect(result.velocityY).toBe(0);
-  });
-
-  it("should return zero velocity when time delta is negative", () => {
-    const result = calculateVelocity(200, 200, 50, 100, 100, 100);
-
-    expect(result.velocityX).toBe(0);
-    expect(result.velocityY).toBe(0);
-  });
-});
+import { calculateDistance, getDirection } from "./geometry.js";
 
 describe("getDirection", () => {
   it("should return 'right' for positive horizontal movement", () => {

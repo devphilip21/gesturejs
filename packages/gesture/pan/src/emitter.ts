@@ -2,10 +2,10 @@ import type { GesturePhase } from "@gesturejs/gesture";
 import type { SinglePointer } from "@gesturejs/single-pointer";
 import type { PanEvent } from "./event.js";
 import { createDefaultPanEvent } from "./event.js";
+import { calculateDistance, getDirection } from "./geometry.js";
 import { panEventPool } from "./pool.js";
 import { createInitialPanState, type PanState, resetPanState } from "./state.js";
 import type { PanDirectionMode } from "./types.js";
-import { calculateDistance, getDirection } from "./velocity.js";
 
 const DEFAULT_THRESHOLD = 10;
 

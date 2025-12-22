@@ -16,8 +16,7 @@ npm install @gesturejs/pan
 ## Quick Start
 
 ```typescript
-import { pipe } from "@gesturejs/stream";
-import { panGesture, withVelocity } from "@gesturejs/pan";
+import { panGesture } from "@gesturejs/pan";
 
 const stream = panGesture(element, { threshold: 10 });
 const unsub = stream.subscribe((event) => {
@@ -26,12 +25,12 @@ const unsub = stream.subscribe((event) => {
 });
 ```
 
-### Extend Event
+### With Extensions
 
 ```typescript
-import { singlePointer } from "@gesturejs/single-pointer";
+import { panGesture } from "@gesturejs/pan";
+import { withVelocity } from "@gesturejs/pan/extensions";
 import { pipe } from "@gesturejs/stream";
-import { singlePointerToPanGesture, withVelocity } from "@gesturejs/pan";
 
 const stream = pipe(
   panGesture(element, { threshold: 10 }),
@@ -51,8 +50,9 @@ For more control, use `singlePointerToPanGesture` operator with your own pointer
 
 ```typescript
 import { singlePointer } from "@gesturejs/single-pointer";
+import { singlePointerToPanGesture } from "@gesturejs/pan";
+import { withVelocity } from "@gesturejs/pan/extensions";
 import { pipe } from "@gesturejs/stream";
-import { singlePointerToPanGesture, withVelocity } from "@gesturejs/pan";
 
 const stream = pipe(
   singlePointer(element),
@@ -81,8 +81,9 @@ const stream = panGesture(element, {
 ### Axis Lock
 
 ```typescript
+import { panGesture } from "@gesturejs/pan";
+import { axisLock } from "@gesturejs/pan/extensions";
 import { pipe } from "@gesturejs/stream";
-import { panGesture, axisLock } from "@gesturejs/pan";
 
 /**
  * Lock gesture to the initially detected axis.

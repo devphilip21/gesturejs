@@ -1,8 +1,7 @@
 import { createObservable, type Observable, type Observer } from "@gesturejs/stream";
 import { describe, expect, it, vi } from "vitest";
 import type { PanEvent } from "../event.js";
-import type { VelocityExtension } from "../extensions.js";
-import { withVelocity } from "./with-velocity.js";
+import { type VelocityExtension, withVelocity } from "./with-velocity.js";
 
 function createPanEvent(
   phase: "start" | "change" | "end" | "cancel",

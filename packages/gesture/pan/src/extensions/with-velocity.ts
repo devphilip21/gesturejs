@@ -1,8 +1,40 @@
 import type { Operator } from "@gesturejs/stream";
 import { createObservable } from "@gesturejs/stream";
 import type { PanEvent } from "../event.js";
-import type { VelocityExtension } from "../extensions.js";
-import { calculateVelocity } from "../velocity.js";
+
+/**
+ * Extension interface for velocity data.
+ * Added to PanEvent when using withVelocity() operator.
+ */
+export interface VelocityExtension {
+  /** X velocity in pixels per millisecond */
+  velocityX: number;
+  /** Y velocity in pixels per millisecond */
+  velocityY: number;
+}
+
+function calculateVelocity(
+  currentX: number,
+  currentY: number,
+  currentTimestamp: number,
+  prevX: number,
+  prevY: number,
+  prevTimestamp: number,
+): { velocityX: number; velocityY: number } {
+  const timeDelta = currentTimestamp - prevTimestamp;
+
+  if (timeDelta <= 0) {
+    return { velocityX: 0, velocityY: 0 };
+  }
+
+  const dx = currentX - prevX;
+  const dy = currentY - prevY;
+
+  return {
+    velocityX: dx / timeDelta,
+    velocityY: dy / timeDelta,
+  };
+}
 
 /**
  * Augmentation operator that adds velocity calculation to pan events.
