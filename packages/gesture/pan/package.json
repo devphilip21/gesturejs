@@ -1,17 +1,17 @@
 {
   "name": "@gesturejs/pan",
   "description": "Pan gesture recognition - Observable-based, Extensible, Zero GC Jank",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "author": "devphilip21 <philip21.dev@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/devphilip21/gesturejs.git",
+    "url": "https://github.com/devphilip21/cereb.git",
     "directory": "packages/gesture/pan"
   },
-  "homepage": "https://github.com/devphilip21/gesturejs/tree/main/packages/gesture/pan",
+  "homepage": "https://github.com/devphilip21/cereb/tree/main/packages/gesture/pan",
   "bugs": {
-    "url": "https://github.com/devphilip21/gesturejs/issues"
+    "url": "https://github.com/devphilip21/cereb/issues"
   },
   "keywords": [
     "pan",
