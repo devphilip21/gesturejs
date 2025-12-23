@@ -3,7 +3,7 @@
 ## Factory
 
 ```typescript
-import { singlePointer } from "@gesturejs/single-pointer";
+import { singlePointer } from "@cereb/single-pointer";
 
 const stream = singlePointer(element, options?);
 ```
@@ -21,8 +21,8 @@ interface SinglePointerOptions {
 ## Use another events instead of pointer
 
 ```typescript
-import { touchEventsToSinglePointer } from "@gesturejs/single-pointer";
-import { fromTouchEvents, pipe } from "@gesturejs/stream";
+import { touchEventsToSinglePointer } from "@cereb/single-pointer";
+import { fromTouchEvents, pipe } from "@cereb/stream";
 
 const stream = pipe(
   fromTouchEvents(el),
@@ -31,8 +31,8 @@ const stream = pipe(
 ```
 
 ```typescript
-import { mouseEventsToSinglePointer } from "@gesturejs/single-pointer";
-import { fromMouseEvents, pipe } from "@gesturejs/stream";
+import { mouseEventsToSinglePointer } from "@cereb/single-pointer";
+import { fromMouseEvents, pipe } from "@cereb/stream";
 
 const stream = pipe(
   fromMouseEvents(el),
@@ -47,13 +47,13 @@ const stream = pipe(
 For manual event handling.
 
 ```typescript
-import { createPointerEmitter } from "@gesturejs/single-pointer";
-import { createTouchEmitter } from "@gesturejs/single-pointer";
-import { createMouseEmitter } from "@gesturejs/single-pointer";
+import { createPointerEmitter } from "@cereb/single-pointer";
+import { createTouchEmitter } from "@cereb/single-pointer";
+import { createMouseEmitter } from "@cereb/single-pointer";
 ```
 
 ```typescript
-import { createPointerEmitter } from "@gesturejs/single-pointer";
+import { createPointerEmitter } from "@cereb/single-pointer";
 
 const emitter = createPointerEmitter({ pooling: true });
 

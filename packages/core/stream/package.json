@@ -1,17 +1,17 @@
 {
-  "name": "@gesturejs/stream",
-  "description": "Lightweight, zero-dependency reactive stream library with RxJS-like pipe operators for gesturejs",
+  "name": "@cereb/stream",
+  "description": "Lightweight, zero-dependency reactive stream library with RxJS-like pipe operators for cereb",
   "version": "0.2.0",
   "license": "MIT",
   "author": "devphilip21 <philip21.dev@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/devphilip21/gesturejs.git",
+    "url": "https://github.com/devphilip21/cereb.git",
     "directory": "packages/core/stream"
   },
-  "homepage": "https://github.com/devphilip21/gesturejs/tree/main/packages/core/stream",
+  "homepage": "https://github.com/devphilip21/cereb/tree/main/packages/core/stream",
   "bugs": {
-    "url": "https://github.com/devphilip21/gesturejs/issues"
+    "url": "https://github.com/devphilip21/cereb/issues"
   },
   "keywords": [
     "stream",
@@ -22,7 +22,7 @@
     "functional-reactive",
     "event-stream",
     "operators",
-    "gesturejs"
+    "cereb"
   ],
   "type": "module",
   "files": [
@@ -52,7 +52,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "devDependencies": {
-    "@gesturejs/builder": "workspace:^",
+    "@cereb/builder": "workspace:^",
     "@vitest/coverage-v8": "*",
     "jsdom": "*",
     "vite": "*",

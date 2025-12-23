@@ -1,23 +1,23 @@
-# @gesturejs/single-pointer
+# @cereb/single-pointer
 
 Single-pointer signal stream for unified pointer, touch, and mouse input handling.
 
-## Why @gesturejs/single-pointer?
+## Why @cereb/single-pointer?
 
 - **Unified Interface** - Subscribe to diverse event sources through one consistent API by normalizing them into a unified signal stream.
 - **GC Optimized** - Built-in object pooling prevents garbage collection pauses during high-frequency input (60+ events/sec)
-- **Observable-Based** - Works seamlessly with reactive patterns via `@gesturejs/stream`.
+- **Observable-Based** - Works seamlessly with reactive patterns via `@cereb/stream`.
 
 ## Installation
 
 ```bash
-npm install @gesturejs/single-pointer
+npm install @cereb/single-pointer
 ```
 
 ## Quick Start
 
 ```typescript
-import { singlePointer } from "@gesturejs/single-pointer";
+import { singlePointer } from "@cereb/single-pointer";
 
 const stream = singlePointer(canvasElement);
 const unsub = stream.subscribe((pointer) => {
@@ -31,8 +31,8 @@ const unsub = stream.subscribe((pointer) => {
 ### Use Other Events
 
 ```typescript
-import { touchEventsToSinglePointer } from "@gesturejs/single-pointer";
-import { fromEvent, merge, pipe, filter } from "@gesturejs/stream";
+import { touchEventsToSinglePointer } from "@cereb/single-pointer";
+import { fromEvent, merge, pipe, filter } from "@cereb/stream";
 
 /**
  * The `singlePointer()` factory is primarily designed for PointerEvents.

@@ -60,14 +60,14 @@ importers:
 
   packages/core/gesture:
     dependencies:
-      '@gesturejs/signal':
+      '@cereb/signal':
         specifier: workspace:^
         version: link:../signal
-      '@gesturejs/stream':
+      '@cereb/stream':
         specifier: workspace:^
         version: link:../stream
     devDependencies:
-      '@gesturejs/builder':
+      '@cereb/builder':
         specifier: workspace:^
         version: link:../../../internal/builder
       '@vitest/coverage-v8':
@@ -85,11 +85,11 @@ importers:
 
   packages/core/signal:
     dependencies:
-      '@gesturejs/stream':
+      '@cereb/stream':
         specifier: workspace:^
         version: link:../stream
     devDependencies:
-      '@gesturejs/builder':
+      '@cereb/builder':
         specifier: workspace:^
         version: link:../../../internal/builder
       '@vitest/coverage-v8':
@@ -107,7 +107,7 @@ importers:
 
   packages/core/stream:
     devDependencies:
-      '@gesturejs/builder':
+      '@cereb/builder':
         specifier: workspace:^
         version: link:../../../internal/builder
       '@vitest/coverage-v8':
@@ -125,20 +125,20 @@ importers:
 
   packages/gesture/pan:
     dependencies:
-      '@gesturejs/gesture':
+      '@cereb/gesture':
         specifier: workspace:^
         version: link:../../core/gesture
-      '@gesturejs/signal':
+      '@cereb/signal':
         specifier: workspace:^
         version: link:../../core/signal
-      '@gesturejs/single-pointer':
+      '@cereb/single-pointer':
         specifier: workspace:^
         version: link:../../signal/single-pointer
-      '@gesturejs/stream':
+      '@cereb/stream':
         specifier: workspace:^
         version: link:../../core/stream
     devDependencies:
-      '@gesturejs/builder':
+      '@cereb/builder':
         specifier: workspace:^
         version: link:../../../internal/builder
       '@vitest/coverage-v8':
@@ -156,14 +156,14 @@ importers:
 
   packages/signal/single-pointer:
     dependencies:
-      '@gesturejs/signal':
+      '@cereb/signal':
         specifier: workspace:^
         version: link:../../core/signal
-      '@gesturejs/stream':
+      '@cereb/stream':
         specifier: workspace:^
         version: link:../../core/stream
     devDependencies:
-      '@gesturejs/builder':
+      '@cereb/builder':
         specifier: workspace:^
         version: link:../../../internal/builder
       '@vitest/coverage-v8':

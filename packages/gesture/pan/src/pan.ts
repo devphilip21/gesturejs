@@ -1,7 +1,7 @@
-import type { SinglePointer, SinglePointerOptions } from "@gesturejs/single-pointer";
-import { singlePointer } from "@gesturejs/single-pointer";
-import type { Observable, Operator } from "@gesturejs/stream";
-import { createObservable, pipe } from "@gesturejs/stream";
+import type { SinglePointer, SinglePointerOptions } from "@cereb/single-pointer";
+import { singlePointer } from "@cereb/single-pointer";
+import type { Observable, Operator } from "@cereb/stream";
+import { createObservable, pipe } from "@cereb/stream";
 import { createPanEmitter } from "./emitter.js";
 import type { PanEvent } from "./event.js";
 import type { PanOptions } from "./types.js";
@@ -15,14 +15,12 @@ import type { PanOptions } from "./types.js";
  * ```typescript
  * pipe(
  *   singlePointer(element),
- *   singlePointerToPanGesture({ threshold: 10 }),
+ *   singlePointerToPan({ threshold: 10 }),
  *   withVelocity()
  * ).subscribe(pan => console.log(pan.deltaX, pan.velocityX));
  * ```
  */
-export function singlePointerToPanGesture(
-  options: PanOptions = {},
-): Operator<SinglePointer, PanEvent> {
+export function singlePointerToPan(options: PanOptions = {}): Operator<SinglePointer, PanEvent> {
   return (source) =>
     createObservable((observer) => {
       const emitter = createPanEmitter(options);
@@ -59,16 +57,13 @@ export interface PanGestureOptions extends PanOptions {
  * @example
  * ```typescript
  * pipe(
- *   panGesture(element, { threshold: 10 }),
+ *   pan(element, { threshold: 10 }),
  *   withVelocity()
- * ).subscribe(pan => console.log(pan.deltaX, pan.velocityX));
+ * ).subscribe(event => console.log(event.deltaX, event.velocityX));
  * ```
  */
-export function panGesture(
-  target: EventTarget,
-  options: PanGestureOptions = {},
-): Observable<PanEvent> {
+export function pan(target: EventTarget, options: PanGestureOptions = {}): Observable<PanEvent> {
   const { pointer: pointerOptions, ...panOptions } = options;
 
-  return pipe(singlePointer(target, pointerOptions), singlePointerToPanGesture(panOptions));
+  return pipe(singlePointer(target, pointerOptions), singlePointerToPan(panOptions));
 }

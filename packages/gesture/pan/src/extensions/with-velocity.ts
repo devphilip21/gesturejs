@@ -1,5 +1,5 @@
-import type { Operator } from "@gesturejs/stream";
-import { createObservable } from "@gesturejs/stream";
+import type { Operator } from "@cereb/stream";
+import { createObservable } from "@cereb/stream";
 import type { PanEvent } from "../event.js";
 
 /**
@@ -46,7 +46,7 @@ function calculateVelocity(
  * ```typescript
  * pipe(
  *   singlePointer(element),
- *   panGesture({ threshold: 10 }),
+ *   singlePointerToPan({ threshold: 10 }),
  *   withVelocity()
  * ).subscribe(event => {
  *   console.log(event.deltaX, event.velocityX);

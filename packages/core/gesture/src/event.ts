@@ -1,4 +1,4 @@
-import type { Signal } from "@gesturejs/signal";
+import type { Signal } from "@cereb/signal";
 
 export type GesturePhase = "start" | "change" | "end" | "cancel";
 

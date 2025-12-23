@@ -19,7 +19,7 @@ interface Observable<T> {
 Compose operators using `pipe()`:
 
 ```typescript
-import { pipe, filter, map, throttle } from "@gesturejs/signal";
+import { pipe, filter, map, throttle } from "@cereb/stream";
 
 const result = pipe(
   source,
@@ -38,7 +38,7 @@ const result = pipe(
 A Subject can be subscribed to and pushed to:
 
 ```typescript
-import { createSubject } from "@gesturejs/signal";
+import { createSubject } from "@cereb/stream";
 
 const subject = createSubject<number>();
 
@@ -54,7 +54,7 @@ subject.complete();
 Replays the last value to new subscribers:
 
 ```typescript
-import { createBehaviorSubject } from "@gesturejs/signal";
+import { createBehaviorSubject } from "@cereb/stream";
 
 const subject = createBehaviorSubject(0);  // initial value
 
@@ -67,7 +67,7 @@ subject.getValue();  // returns 1
 ### fromEvent
 
 ```typescript
-import { fromEvent } from "@gesturejs/signal";
+import { fromEvent } from "@cereb/stream";
 
 const clicks = fromEvent<MouseEvent>(document, "click");
 const keydowns = fromEvent<KeyboardEvent>(window, "keydown");
@@ -76,7 +76,7 @@ const keydowns = fromEvent<KeyboardEvent>(window, "keydown");
 ### fromPromise
 
 ```typescript
-import { fromPromise } from "@gesturejs/signal";
+import { fromPromise } from "@cereb/stream";
 
 const data = fromPromise(fetch("/api").then(r => r.json()));
 ```
@@ -84,7 +84,7 @@ const data = fromPromise(fetch("/api").then(r => r.json()));
 ### of / from
 
 ```typescript
-import { of, from } from "@gesturejs/signal";
+import { of, from } from "@cereb/stream";
 
 of(42).subscribe(v => console.log(v));  // 42
 
@@ -94,7 +94,7 @@ from([1, 2, 3]).subscribe(v => console.log(v));  // 1, 2, 3
 ### interval / timer
 
 ```typescript
-import { interval, timer } from "@gesturejs/signal";
+import { interval, timer } from "@cereb/stream";
 
 interval(1000).subscribe(n => console.log(n));  // 0, 1, 2, ...
 
@@ -112,7 +112,7 @@ All operators are standalone functions that return an `Operator<T, R>`.
 #### filter
 
 ```typescript
-import { pipe, filter } from "@gesturejs/signal";
+import { pipe, filter } from "@cereb/stream";
 
 pipe(
   source,
@@ -123,7 +123,7 @@ pipe(
 #### map
 
 ```typescript
-import { pipe, map } from "@gesturejs/signal";
+import { pipe, map } from "@cereb/stream";
 
 pipe(
   source,
@@ -136,7 +136,7 @@ pipe(
 Execute side effects without modifying values:
 
 ```typescript
-import { pipe, tap, map } from "@gesturejs/signal";
+import { pipe, tap, map } from "@cereb/stream";
 
 pipe(
   source,
@@ -153,7 +153,7 @@ pipe(
 Emit at most once per interval (first value):
 
 ```typescript
-import { pipe, throttle } from "@gesturejs/signal";
+import { pipe, throttle } from "@cereb/stream";
 
 pipe(
   mouseMoves,
@@ -166,7 +166,7 @@ pipe(
 Emit after silence:
 
 ```typescript
-import { pipe, debounce } from "@gesturejs/signal";
+import { pipe, debounce } from "@cereb/stream";
 
 pipe(
   searchInput,
@@ -179,7 +179,7 @@ pipe(
 #### take / takeWhile / takeUntil
 
 ```typescript
-import { pipe, take, takeUntil } from "@gesturejs/signal";
+import { pipe, take, takeUntil } from "@cereb/stream";
 
 pipe(source, take(3)).subscribe(console.log);  // first 3
 
@@ -190,7 +190,7 @@ pipe(source, takeUntil(stop$)).subscribe(console.log);
 #### skip / skipWhile / skipUntil
 
 ```typescript
-import { pipe, skip, skipUntil } from "@gesturejs/signal";
+import { pipe, skip, skipUntil } from "@cereb/stream";
 
 pipe(source, skip(2)).subscribe(console.log);  // skip first 2
 ```
@@ -198,7 +198,7 @@ pipe(source, skip(2)).subscribe(console.log);  // skip first 2
 #### distinctUntilChanged
 
 ```typescript
-import { pipe, distinctUntilChanged } from "@gesturejs/signal";
+import { pipe, distinctUntilChanged } from "@cereb/stream";
 
 pipe(
   source,
@@ -217,7 +217,7 @@ pipe(
 #### buffer / bufferTime
 
 ```typescript
-import { pipe, buffer, bufferTime } from "@gesturejs/signal";
+import { pipe, buffer, bufferTime } from "@cereb/stream";
 
 pipe(source, buffer(5)).subscribe(arr => console.log(arr));
 
@@ -229,7 +229,7 @@ pipe(source, bufferTime(1000)).subscribe(arr => console.log(arr));
 #### merge
 
 ```typescript
-import { merge } from "@gesturejs/signal";
+import { merge } from "@cereb/stream";
 
 merge(stream1, stream2, stream3).subscribe(console.log);
 ```
@@ -237,7 +237,7 @@ merge(stream1, stream2, stream3).subscribe(console.log);
 #### combineLatest
 
 ```typescript
-import { combineLatest } from "@gesturejs/signal";
+import { combineLatest } from "@cereb/stream";
 
 combineLatest(stream1, stream2).subscribe(([v1, v2]) => {
   console.log(v1, v2);
@@ -251,7 +251,7 @@ combineLatest(stream1, stream2).subscribe(([v1, v2]) => {
 Share source among subscribers:
 
 ```typescript
-import { pipe, share } from "@gesturejs/signal";
+import { pipe, share } from "@cereb/stream";
 
 const shared = pipe(expensiveStream, share());
 
@@ -264,7 +264,7 @@ shared.subscribe(v => console.log("B:", v));
 Replay last n values to new subscribers:
 
 ```typescript
-import { pipe, shareReplay } from "@gesturejs/signal";
+import { pipe, shareReplay } from "@cereb/stream";
 
 const replayed = pipe(source, shareReplay(1));
 ```
@@ -276,7 +276,7 @@ const replayed = pipe(source, shareReplay(1));
 Use `compose()` to create reusable operator chains:
 
 ```typescript
-import { compose, filter, map, throttle } from "@gesturejs/signal";
+import { compose, filter, map, throttle } from "@cereb/stream";
 
 const processNumbers = compose(
   filter((n: number) => n > 0),

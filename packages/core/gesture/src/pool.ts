@@ -1,9 +1,9 @@
-import { createSignalPool, type SignalPool } from "@gesturejs/signal";
+import { createSignalPool, type SignalPool } from "@cereb/signal";
 import type { GestureEvent } from "./event.js";
 
 /**
  * Create a pool for gesture events.
- * Wraps createSignalPool from @gesturejs/signal.
+ * Wraps createSignalPool from @cereb/signal.
  */
 export function createGestureEventPool<T extends GestureEvent>(
   factory: () => T,

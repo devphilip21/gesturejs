@@ -1,11 +1,11 @@
-# @gesturejs/gesture
+# @cereb/gesture
 
-Core gesture event abstractions for gesturejs. Provides the base `GestureEvent` type and utilities that all gesture implementations build upon.
+Core gesture event abstractions for cereb. Provides the base `GestureEvent` type and utilities that all gesture implementations build upon.
 
 ## Installation
 
 ```bash
-npm install @gesturejs/gesture
+npm install @cereb/gesture
 ```
 
 ## Core Concepts
@@ -15,7 +15,7 @@ npm install @gesturejs/gesture
 The base type for all gesture events, combining `Signal` with gesture-specific properties and optional extensions:
 
 ```typescript
-import type { GestureEvent, GesturePhase } from "@gesturejs/gesture";
+import type { GestureEvent, GesturePhase } from "@cereb/gesture";
 
 // GestureEvent<TType, TExtension>
 type GestureEvent<
@@ -50,7 +50,7 @@ type PanEvent = GestureEvent<"pan", PanEventData>;
 Built-in object pooling for gesture events to prevent garbage collection pauses during high-frequency input:
 
 ```typescript
-import { createGestureEventPool, type GestureEvent } from "@gesturejs/gesture";
+import { createGestureEventPool, type GestureEvent } from "@cereb/gesture";
 
 interface PanEventData {
   deltaX: number;
@@ -96,8 +96,8 @@ The pool provides:
 Gesture events can be prevented from propagating to downstream operators:
 
 ```typescript
-import { isPrevented, excludePrevented } from "@gesturejs/gesture";
-import { pipe, tap } from "@gesturejs/stream";
+import { isPrevented, excludePrevented } from "@cereb/gesture";
+import { pipe, tap } from "@cereb/stream";
 
 pipe(
   gestureStream,

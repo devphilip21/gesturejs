@@ -1,4 +1,4 @@
-import type { Signal } from "@gesturejs/signal";
+import type { Signal } from "@cereb/signal";
 import { describe, expect, it } from "vitest";
 import { createDefaultPanEvent, isPanEvent, resetPanEvent } from "./event.js";
 

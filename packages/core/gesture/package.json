@@ -1,24 +1,24 @@
 {
-  "name": "@gesturejs/gesture",
-  "description": "Core gesture event abstractions for gesturejs",
+  "name": "@cereb/gesture",
+  "description": "Core gesture event abstractions for cereb",
   "version": "0.1.0",
   "license": "MIT",
   "author": "devphilip21 <philip21.dev@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/devphilip21/gesturejs.git",
+    "url": "https://github.com/devphilip21/cereb.git",
     "directory": "packages/core/gesture"
   },
-  "homepage": "https://github.com/devphilip21/gesturejs/tree/main/packages/core/gesture",
+  "homepage": "https://github.com/devphilip21/cereb/tree/main/packages/core/gesture",
   "bugs": {
-    "url": "https://github.com/devphilip21/gesturejs/issues"
+    "url": "https://github.com/devphilip21/cereb/issues"
   },
   "keywords": [
     "gesture",
     "event",
     "touch",
     "pointer",
-    "gesturejs"
+    "cereb"
   ],
   "type": "module",
   "sideEffects": false,
@@ -44,11 +44,11 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@gesturejs/signal": "workspace:^",
-    "@gesturejs/stream": "workspace:^"
+    "@cereb/signal": "workspace:^",
+    "@cereb/stream": "workspace:^"
   },
   "devDependencies": {
-    "@gesturejs/builder": "workspace:^",
+    "@cereb/builder": "workspace:^",
     "@vitest/coverage-v8": "*",
     "jsdom": "*",
     "vite": "*",

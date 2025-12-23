@@ -1,5 +1,5 @@
-import type { Operator } from "@gesturejs/stream";
-import { createObservable } from "@gesturejs/stream";
+import type { Operator } from "@cereb/stream";
+import { createObservable } from "@cereb/stream";
 import type { PanEvent } from "../event.js";
 
 export type LockedAxis = "horizontal" | "vertical" | null;
@@ -14,7 +14,7 @@ export interface AxisLockOptions {
 
 /**
  * Axis lock operator - locks pan gesture to the initially detected axis.
- * Should be piped after panGesture().
+ * Should be piped after pan().
  *
  * After the axis is determined based on initial movement direction,
  * values for the opposite axis are zeroed out.
@@ -25,11 +25,11 @@ export interface AxisLockOptions {
  * ```typescript
  * pipe(
  *   singlePointer(element),
- *   panGesture({ threshold: 10 }),
+ *   singlePointerToPan({ threshold: 10 }),
  *   axisLock()
- * ).subscribe(pan => {
+ * ).subscribe(event => {
  *   // After axis is determined, one of deltaX/deltaY will always be 0
- *   element.style.transform = `translate(${pan.deltaX}px, ${pan.deltaY}px)`;
+ *   element.style.transform = `translate(${event.deltaX}px, ${event.deltaY}px)`;
  * });
  * ```
  */

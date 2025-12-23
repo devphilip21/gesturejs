@@ -1,17 +1,17 @@
 {
-  "name": "@gesturejs/single-pointer",
+  "name": "@cereb/single-pointer",
   "description": "Single-pointer signal stream for unified pointer, touch, and mouse input handling",
   "version": "0.2.0",
   "license": "MIT",
   "author": "devphilip21 <philip21.dev@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/devphilip21/gesturejs.git",
+    "url": "https://github.com/devphilip21/cereb.git",
     "directory": "packages/signal/single-pointer"
   },
-  "homepage": "https://github.com/devphilip21/gesturejs/tree/main/packages/signal/single-pointer",
+  "homepage": "https://github.com/devphilip21/cereb/tree/main/packages/signal/single-pointer",
   "bugs": {
-    "url": "https://github.com/devphilip21/gesturejs/issues"
+    "url": "https://github.com/devphilip21/cereb/issues"
   },
   "keywords": [
     "pointer",
@@ -23,7 +23,7 @@
     "event",
     "object-pool",
     "high-performance",
-    "gesturejs"
+    "cereb"
   ],
   "type": "module",
   "sideEffects": false,
@@ -49,11 +49,11 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@gesturejs/signal": "workspace:^",
-    "@gesturejs/stream": "workspace:^"
+    "@cereb/signal": "workspace:^",
+    "@cereb/stream": "workspace:^"
   },
   "devDependencies": {
-    "@gesturejs/builder": "workspace:^",
+    "@cereb/builder": "workspace:^",
     "@vitest/coverage-v8": "*",
     "jsdom": "*",
     "vite": "*",

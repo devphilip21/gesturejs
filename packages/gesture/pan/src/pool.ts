@@ -1,4 +1,4 @@
-import { createGestureEventPool } from "@gesturejs/gesture";
+import { createGestureEventPool } from "@cereb/gesture";
 import { createDefaultPanEvent, type PanEvent, resetPanEvent } from "./event.js";
 
 export const panEventPool = createGestureEventPool<PanEvent>(

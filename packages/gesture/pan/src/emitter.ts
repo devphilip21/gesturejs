@@ -1,5 +1,5 @@
-import type { GesturePhase } from "@gesturejs/gesture";
-import type { SinglePointer } from "@gesturejs/single-pointer";
+import type { GesturePhase } from "@cereb/gesture";
+import type { SinglePointer } from "@cereb/single-pointer";
 import type { PanEvent } from "./event.js";
 import { createDefaultPanEvent } from "./event.js";
 import { calculateDistance, getDirection } from "./geometry.js";

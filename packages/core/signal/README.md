@@ -1,11 +1,11 @@
-# @gesturejs/signal
+# @cereb/signal
 
 **Signal** is a higher-level abstraction over events that merges and refines disparate inputs into a single, composable stream.
 
 ## Installation
 
 ```bash
-npm install --save @gesturejs/signal
+npm install --save @cereb/signal
 ```
 
 ## Core Concepts
@@ -27,7 +27,7 @@ interface Signal<T extends string = string> {
 Built-in object pooling for Signal types to prevent garbage collection pauses during high-frequency input (60+ events/sec):
 
 ```typescript
-import { createSignalPool, type Signal } from "@gesturejs/signal";
+import { createSignalPool, type Signal } from "@cereb/signal";
 
 interface MySignal extends Signal<"custom"> {
   type: "custom";

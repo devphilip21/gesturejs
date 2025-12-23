@@ -1,6 +1,6 @@
 /**
  * Internal state for pan gesture tracking.
- * Managed via closure within the panGesture operator.
+ * Managed via closure within the pan operator.
  */
 export interface PanState {
   /** Whether gesture is currently active */

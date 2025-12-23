@@ -1,4 +1,4 @@
-import type { SinglePointer } from "@gesturejs/single-pointer";
+import type { SinglePointer } from "@cereb/single-pointer";
 import { describe, expect, it } from "vitest";
 import { createPanEmitter } from "./emitter.js";
 

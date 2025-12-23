@@ -1,5 +1,5 @@
-import type { Operator } from "@gesturejs/stream";
-import { createObservable } from "@gesturejs/stream";
+import type { Operator } from "@cereb/stream";
+import { createObservable } from "@cereb/stream";
 import { singlePointerPool } from "./pool.js";
 import type { SinglePointer } from "./signal.js";
 import { eventTypeToPhase, getDeviceId } from "./utils.js";

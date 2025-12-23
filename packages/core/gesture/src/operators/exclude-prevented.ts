@@ -1,5 +1,5 @@
-import type { Operator } from "@gesturejs/stream";
-import { createObservable } from "@gesturejs/stream";
+import type { Operator } from "@cereb/stream";
+import { createObservable } from "@cereb/stream";
 import { type GestureEvent, isPrevented } from "../event.js";
 
 /**
@@ -11,7 +11,7 @@ import { type GestureEvent, isPrevented } from "../event.js";
  * @example
  * ```typescript
  * pipe(
- *   panGesture({ threshold: 10 }),
+ *   pan(element, { threshold: 10 }),
  *   tap(event => {
  *     if (shouldPrevent(event)) {
  *       event.prevent();

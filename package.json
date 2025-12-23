@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "postinstall": "[ -n \"$SKIP_POSTINSTALL\" ] || (npx nx build @gesturejs/builder && SKIP_POSTINSTALL=1 pnpm rebuild)",
+    "postinstall": "[ -n \"$SKIP_POSTINSTALL\" ] || (npx nx build @cereb/builder && SKIP_POSTINSTALL=1 pnpm rebuild)",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",

@@ -1,5 +1,5 @@
 /**
- * @gesturejs/stream
+ * @cereb/stream
  *
  * A lightweight, tree-shakeable Observable implementation.
  *

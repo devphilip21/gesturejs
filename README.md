@@ -1,11 +1,11 @@
-# gesturejs
+# Cereb
 
 Composable, high-performance gesture recognition for JavaScript runtimes.
 
 ```typescript
-import { panGesture } from "@gesturejs/pan";
+import { pan } from "@cereb/pan";
 
-panGesture(element, { threshold: 10 }).subscribe((event) => {
+pan(element, { threshold: 10 }).subscribe((event) => {
   element.style.transform = `translate(${event.deltaX}px, ${event.deltaY}px)`;
   element.innerText = `velocity: ${event.velocityX}, ${event.velocityY}`;
 });
@@ -14,12 +14,12 @@ panGesture(element, { threshold: 10 }).subscribe((event) => {
 Alternatively, it can be extended using pipelines.
 
 ```typescript
-import { panGesture } from "@gesturejs/pan";
-import { withVelocity } from "@gesturejs/pan/extensions";
+import { pan } from "@cereb/pan";
+import { withVelocity } from "@cereb/pan/extensions";
 
 const gestureStream = pipe(
-  panGesture(element, { threshold: 10 }),
-  withVelocity(),  
+  pan(element, { threshold: 10 }),
+  withVelocity(),
 )
 
 gestureStream.subscribe((event) => {
@@ -28,7 +28,7 @@ gestureStream.subscribe((event) => {
 });
 ```
 
-## Why gesturejs?
+## Why cereb?
 
 - **Observable-Based** - Compose with `pipe`, `filter`, `merge` and other stream operators
 - **Extensible** - Add velocity tracking, axis locking, and custom behaviors via operators
@@ -37,7 +37,7 @@ gestureStream.subscribe((event) => {
 ## Architecture
 
 <p align="center">
-  <img src="docs/assets/gesturejs-base-structure-diagram.webp" alt="gesturejs architecture" width="600" />
+  <img src="docs/assets/cereb-base-structure-diagram.webp" alt="cereb architecture" width="600" />
 </p>
 
 | Layer | Role |
@@ -50,11 +50,11 @@ gestureStream.subscribe((event) => {
 
 | Package | Description |
 |---------|-------------|
-| [@gesturejs/pan](./packages/gesture/pan) | Pan gesture recognition |
-| [@gesturejs/single-pointer](./packages/signal/single-pointer) | Unified pointer/touch/mouse input |
-| [@gesturejs/gesture](./packages/core/gesture) | Gesture event framework |
-| [@gesturejs/signal](./packages/core/signal) | Base signal abstraction |
-| [@gesturejs/stream](./packages/core/stream) | Lightweight reactive streams (zero dependencies) |
+| [@cereb/pan](./packages/gesture/pan) | Pan gesture recognition |
+| [@cereb/single-pointer](./packages/signal/single-pointer) | Unified pointer/touch/mouse input |
+| [@cereb/gesture](./packages/core/gesture) | Gesture event framework |
+| [@cereb/signal](./packages/core/signal) | Base signal abstraction |
+| [@cereb/stream](./packages/core/stream) | Lightweight reactive streams (zero dependencies) |
 
 ## License
 

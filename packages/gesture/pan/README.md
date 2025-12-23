@@ -1,8 +1,8 @@
-# @gesturejs/pan
+# @cereb/pan
 
 Observable-based pan gesture recognition with composable operators.
 
-### Why @gesturejs/pan?
+### Why @cereb/pan?
 - **Observable-Based** - Compose with pipe, filter, merge and other stream operators
 - **Extensible** - Add velocity tracking, axis locking, and custom behaviors via operators (type-inference support)
 - **Zero GC Jank** - Object pooling keeps animations smooth at 60+ events/sec
@@ -10,15 +10,15 @@ Observable-based pan gesture recognition with composable operators.
 ## Installation
 
 ```bash
-npm install @gesturejs/pan
+npm install @cereb/pan
 ```
 
 ## Quick Start
 
 ```typescript
-import { panGesture } from "@gesturejs/pan";
+import { pan } from "@cereb/pan";
 
-const stream = panGesture(element, { threshold: 10 });
+const stream = pan(element, { threshold: 10 });
 const unsub = stream.subscribe((event) => {
   console.log(event.deltaX, event.deltaY); // displacement from start
   console.log(event.phase); // start, change, end, cancel
@@ -28,12 +28,12 @@ const unsub = stream.subscribe((event) => {
 ### With Extensions
 
 ```typescript
-import { panGesture } from "@gesturejs/pan";
-import { withVelocity } from "@gesturejs/pan/extensions";
-import { pipe } from "@gesturejs/stream";
+import { pan } from "@cereb/pan";
+import { withVelocity } from "@cereb/pan/extensions";
+import { pipe } from "@cereb/stream";
 
 const stream = pipe(
-  panGesture(element, { threshold: 10 }),
+  pan(element, { threshold: 10 }),
   withVelocity()
 );
 
@@ -46,17 +46,17 @@ const unsub = stream.subscribe((event) => {
 
 ### Composable Usage
 
-For more control, use `singlePointerToPanGesture` operator with your own pointer source:
+For more control, use `singlePointerToPan` operator with your own pointer source:
 
 ```typescript
-import { singlePointer } from "@gesturejs/single-pointer";
-import { singlePointerToPanGesture } from "@gesturejs/pan";
-import { withVelocity } from "@gesturejs/pan/extensions";
-import { pipe } from "@gesturejs/stream";
+import { singlePointer } from "@cereb/single-pointer";
+import { singlePointerToPan } from "@cereb/pan";
+import { withVelocity } from "@cereb/pan/extensions";
+import { pipe } from "@cereb/stream";
 
 const stream = pipe(
   singlePointer(element),
-  singlePointerToPanGesture({ threshold: 10 }),
+  singlePointerToPan({ threshold: 10 }),
   withVelocity()
 );
 ```
@@ -66,13 +66,13 @@ const stream = pipe(
 ### Direction-Specific Threshold
 
 ```typescript
-import { panGesture } from "@gesturejs/pan";
+import { pan } from "@cereb/pan";
 
 /**
  * Only trigger when horizontal movement exceeds threshold.
  * Vertical movement is ignored for threshold calculation.
  */
-const stream = panGesture(element, {
+const stream = pan(element, {
   threshold: 10,
   direction: "horizontal", // "horizontal" | "vertical" | "all"
 });
@@ -81,16 +81,16 @@ const stream = panGesture(element, {
 ### Axis Lock
 
 ```typescript
-import { panGesture } from "@gesturejs/pan";
-import { axisLock } from "@gesturejs/pan/extensions";
-import { pipe } from "@gesturejs/stream";
+import { pan } from "@cereb/pan";
+import { axisLock } from "@cereb/pan/extensions";
+import { pipe } from "@cereb/stream";
 
 /**
  * Lock gesture to the initially detected axis.
  * After lock, movement on the opposite axis is zeroed out.
  */
 const stream = pipe(
-  panGesture(element, { threshold: 10 }),
+  pan(element, { threshold: 10 }),
   axisLock()
 );
 
@@ -103,14 +103,14 @@ stream.subscribe((event) => {
 ### Object Pooling
 
 ```typescript
-import { panGesture } from "@gesturejs/pan";
+import { pan } from "@cereb/pan";
 
 /**
  * Pooling reduces allocations/GC pressure for high-frequency input
  * - but emitted objects are reused (mutated/reset). Don't keep references.
  * - If you need to persist data, copy the fields you need.
  */
-const stream = panGesture(element, {
+const stream = pan(element, {
   threshold: 10,
   pooling: true,
   pointer: { pooling: true }, // also pool SinglePointer events

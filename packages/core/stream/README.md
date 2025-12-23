@@ -1,11 +1,11 @@
-# @gesturejs/stream
+# @cereb/stream
 
-Lightweight, zero-dependency reactive stream library with RxJS-like pipe operators for gesturejs
+Lightweight, zero-dependency reactive stream library with RxJS-like pipe operators for cereb
 
 ## Installation
 
 ```bash
-npm install @gesturejs/stream
+npm install @cereb/stream
 ```
 
 ## Quick Start
@@ -13,7 +13,7 @@ npm install @gesturejs/stream
 ### Create from Events
 
 ```typescript
-import { fromEvent, pipe, map } from "@gesturejs/stream";
+import { fromEvent, pipe, map } from "@cereb/stream";
 
 const clicks = fromEvent<MouseEvent>(document, "click");
 
@@ -26,7 +26,7 @@ pipe(
 ### Create and Subscribe
 
 ```typescript
-import { createSubject } from "@gesturejs/stream";
+import { createSubject } from "@cereb/stream";
 
 const stream = createSubject<number>();
 
@@ -43,7 +43,7 @@ unsubscribe();
 ### Use Operators with pipe()
 
 ```typescript
-import { createSubject, pipe, filter, map, throttle } from "@gesturejs/stream";
+import { createSubject, pipe, filter, map, throttle } from "@cereb/stream";
 
 const stream = createSubject<number>();
 
@@ -62,7 +62,7 @@ result.subscribe(console.log);
 All operators are standalone functions. Import only what you need:
 
 ```typescript
-import { pipe, filter, map } from "@gesturejs/stream";
+import { pipe, filter, map } from "@cereb/stream";
 ```
 
 ## Available Operators

@@ -1,4 +1,4 @@
-import type { Signal } from "@gesturejs/signal";
+import type { Signal } from "@cereb/signal";
 import { describe, expect, it } from "vitest";
 import { createDefaultSinglePointer, isSinglePointer, resetSinglePointer } from "./signal.js";
 

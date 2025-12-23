@@ -1,4 +1,4 @@
-import { createSignalPool } from "@gesturejs/signal";
+import { createSignalPool } from "@cereb/signal";
 import { createDefaultSinglePointer, resetSinglePointer, type SinglePointer } from "./signal.js";
 
 export const singlePointerPool = createSignalPool<SinglePointer>(

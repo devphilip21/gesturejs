@@ -1,17 +1,17 @@
 {
-  "name": "@gesturejs/pan",
+  "name": "@cereb/pan",
   "description": "Pan gesture recognition - Observable-based, Extensible, Zero GC Jank",
   "version": "0.1.0",
   "license": "MIT",
   "author": "devphilip21 <philip21.dev@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/devphilip21/gesturejs.git",
+    "url": "https://github.com/devphilip21/cereb.git",
     "directory": "packages/gesture/pan"
   },
-  "homepage": "https://github.com/devphilip21/gesturejs/tree/main/packages/gesture/pan",
+  "homepage": "https://github.com/devphilip21/cereb/tree/main/packages/gesture/pan",
   "bugs": {
-    "url": "https://github.com/devphilip21/gesturejs/issues"
+    "url": "https://github.com/devphilip21/cereb/issues"
   },
   "keywords": [
     "pan",
@@ -20,7 +20,7 @@
     "pointer",
     "drag",
     "swipe",
-    "gesturejs"
+    "cereb"
   ],
   "type": "module",
   "sideEffects": false,
@@ -51,13 +51,13 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@gesturejs/gesture": "workspace:^",
-    "@gesturejs/signal": "workspace:^",
-    "@gesturejs/stream": "workspace:^",
-    "@gesturejs/single-pointer": "workspace:^"
+    "@cereb/gesture": "workspace:^",
+    "@cereb/signal": "workspace:^",
+    "@cereb/stream": "workspace:^",
+    "@cereb/single-pointer": "workspace:^"
   },
   "devDependencies": {
-    "@gesturejs/builder": "workspace:^",
+    "@cereb/builder": "workspace:^",
     "@vitest/coverage-v8": "*",
     "jsdom": "*",
     "vite": "*",

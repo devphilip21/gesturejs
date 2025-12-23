@@ -1,5 +1,5 @@
-import { type GestureEvent, PREVENTED } from "@gesturejs/gesture";
-import type { Signal } from "@gesturejs/signal";
+import { type GestureEvent, PREVENTED } from "@cereb/gesture";
+import type { Signal } from "@cereb/signal";
 import type { PanDirection } from "./types.js";
 
 /**
@@ -39,7 +39,7 @@ export type BasePanEvent = GestureEvent<"pan", PanEventData>;
  * Use withVelocity() operator to add velocity data:
  * @example
  * ```typescript
- * pipe(source, panGesture(), withVelocity()).subscribe(event => {
+ * pipe(source, singlePointerToPan(), withVelocity()).subscribe(event => {
  *   console.log(event.velocityX); // available after withVelocity()
  * });
  * ```

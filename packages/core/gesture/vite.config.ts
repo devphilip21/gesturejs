@@ -14,7 +14,7 @@ export default ({ dirname }: { dirname: string }): UserConfig => ({
       },
     },
     rollupOptions: {
-      external: ["@gesturejs/signal", "@gesturejs/stream"],
+      external: ["@cereb/signal", "@cereb/stream"],
     },
   },
 });

@@ -1,17 +1,17 @@
 {
-  "name": "@gesturejs/signal",
+  "name": "@cereb/signal",
   "description": "A higher-level abstraction over events that merges and refines disparate inputs into a single, composable stream",
   "version": "0.2.0",
   "license": "MIT",
   "author": "devphilip21 <philip21.dev@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/devphilip21/gesturejs.git",
+    "url": "https://github.com/devphilip21/cereb.git",
     "directory": "packages/core/signal"
   },
-  "homepage": "https://github.com/devphilip21/gesturejs/tree/main/packages/core/signal",
+  "homepage": "https://github.com/devphilip21/cereb/tree/main/packages/core/signal",
   "bugs": {
-    "url": "https://github.com/devphilip21/gesturejs/issues"
+    "url": "https://github.com/devphilip21/cereb/issues"
   },
   "keywords": [
     "pointer",
@@ -23,7 +23,7 @@
     "event",
     "object-pool",
     "high-performance",
-    "gesturejs"
+    "cereb"
   ],
   "type": "module",
   "sideEffects": false,
@@ -49,10 +49,10 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@gesturejs/stream": "workspace:^"
+    "@cereb/stream": "workspace:^"
   },
   "devDependencies": {
-    "@gesturejs/builder": "workspace:^",
+    "@cereb/builder": "workspace:^",
     "@vitest/coverage-v8": "*",
     "jsdom": "*",
     "vite": "*",
