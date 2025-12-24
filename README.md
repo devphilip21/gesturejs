@@ -14,13 +14,14 @@ pan(element, { threshold: 10 }).subscribe((event) => {
 Alternatively, it can be extended using pipelines.
 
 ```typescript
+import { pipe } from "cereb";
 import { pan } from "@cereb/pan";
 import { withVelocity } from "@cereb/pan/extensions";
 
 const gestureStream = pipe(
   pan(element, { threshold: 10 }),
   withVelocity(),
-)
+);
 
 gestureStream.subscribe((event) => {
   element.style.transform = `translate(${event.deltaX}px, ${event.deltaY}px)`;
@@ -34,25 +35,12 @@ gestureStream.subscribe((event) => {
 - **Extensible** - Add velocity tracking, axis locking, and custom behaviors via operators
 - **Zero GC Jank** - Object pooling keeps animations smooth at 60+ events/sec
 
-## Architecture
-
-<p align="center">
-  <img src="docs/assets/cereb-base-structure-diagram.webp" alt="cereb architecture" width="600" />
-</p>
-
-| Layer | Role |
-|-------|------|
-| **Gesture Layer** | Recognizes gestures (pan, pinch) from signal streams |
-| **Signal Layer** | Normalizes inputs into a unified interface |
-| **Native Events Layer** | Raw pointer, touch, mouse events |
-
 ## Packages
 
 | Package | Description |
 |---------|-------------|
-| [@cereb/pan](./packages/gesture/pan) | Pan gesture recognition |
-| [@cereb/single-pointer](./packages/signal/single-pointer) | Unified pointer/touch/mouse input |
-| [@cereb/core](./packages/core) | Core abstractions: stream, signal, and gesture |
+| [cereb](./packages/core) | Core |
+| [@cereb/pan](./packages/pan) | Pan gesture recognition |
 
 ## License
 

@@ -5,7 +5,7 @@ User input modeling and orchestration with a lightweight reactive stream library
 ## Installation
 
 ```bash
-npm install @cereb/core
+npm install cereb
 ```
 
 ## Quick Start
@@ -14,7 +14,7 @@ Cereb models user input as lightweight reactive streams—from low-level DOM eve
 Below is a minimal example for a **single pointer** stream.
 
 ```typescript
-import { singlePointer } from "@cereb/core";
+import { singlePointer } from "cereb";
 
 /**
  * Provides a stream for a single pointer.
@@ -46,7 +46,7 @@ singlePointer(canvas).subscribe((e) => {
 Cereb includes factories to convert DOM events into streams, and to build higher-level streams by merging mouse/touch/pointer events.
 
 ```typescript
-import { domEvent, mouseEvents } from "@cereb/core";
+import { domEvent, mouseEvents } from "cereb";
 
 const $touchScrollContainer = domEvent(scrollContainerElement, "touchstart");
 const $mouseSomething = mouseEvents(somethingElement);
@@ -55,8 +55,8 @@ const $mouseSomething = mouseEvents(somethingElement);
 You can also build a `singlePointer` stream from touch events:
 
 ```typescript
-import { touchEvents, pipe } from "@cereb/core";
-import { singlePointerEmitter } from "@cereb/core/single-pointer/touch";
+import { touchEvents, pipe } from "cereb";
+import { singlePointerEmitter } from "cereb/single-pointer/touch";
 
 const $pointSomething = pipe(
   touchEvents(somethingElement),
@@ -71,7 +71,7 @@ $pointSomething.subscribe((e) => console.log(e.x, e.y));
 All streams are blockable - events are silently dropped when blocked:
 
 ```typescript
-import { singlePointer } from "@cereb/core";
+import { singlePointer } from "cereb";
 
 const stream$ = singlePointer(element);
 
@@ -96,7 +96,7 @@ Core includes common stream operators:
 | `distinctUntilChanged` | Skip consecutive duplicates |
 
 ```typescript
-import { pipe, filter, throttle, map } from "@cereb/core";
+import { pipe, filter, throttle, map } from "cereb";
 
 const stream = pipe(
   singlePointer(element),
@@ -109,7 +109,7 @@ const stream = pipe(
 ### Combining Streams
 
 ```typescript
-import { pipe, merge, singlePointer, domEvent } from "@cereb/core";
+import { pipe, merge, singlePointer, domEvent } from "cereb";
 
 const keyboard = domEvent(window, "keydown");
 const pointer = singlePointer(element);
