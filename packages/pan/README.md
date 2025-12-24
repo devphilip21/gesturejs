@@ -18,10 +18,9 @@ npm install @cereb/pan
 ```typescript
 import { pan } from "@cereb/pan";
 
-const stream = pan(element, { threshold: 10 });
-const unsub = stream.subscribe((event) => {
+pan(element).subscribe((event) => {
   console.log(event.deltaX, event.deltaY); // displacement from start
-  console.log(event.phase); // start, change, end, cancel
+  console.log(event.phase); // start, move, end, cancel
 });
 ```
 
@@ -42,23 +41,6 @@ const unsub = stream.subscribe((event) => {
   console.log(event.velocityX, event.velocityY);
   console.log(event.phase); // start, change, end, cancel
 });
-```
-
-### Composable Usage
-
-For more control, use `singlePointerToPan` operator with your own pointer source:
-
-```typescript
-import { singlePointer } from "@cereb/single-pointer";
-import { singlePointerToPan } from "@cereb/pan";
-import { withVelocity } from "@cereb/pan/extensions";
-import { pipe } from "@cereb/core";
-
-const stream = pipe(
-  singlePointer(element),
-  singlePointerToPan({ threshold: 10 }),
-  withVelocity()
-);
 ```
 
 ## Recipes
@@ -97,23 +79,6 @@ const stream = pipe(
 stream.subscribe((event) => {
   // One of deltaX/deltaY will always be 0 after axis is determined
   element.style.transform = `translate(${event.deltaX}px, ${event.deltaY}px)`;
-});
-```
-
-### Object Pooling
-
-```typescript
-import { pan } from "@cereb/pan";
-
-/**
- * Pooling reduces allocations/GC pressure for high-frequency input
- * - but emitted objects are reused (mutated/reset). Don't keep references.
- * - If you need to persist data, copy the fields you need.
- */
-const stream = pan(element, {
-  threshold: 10,
-  pooling: true,
-  pointer: { pooling: true }, // also pool SinglePointer events
 });
 ```
 

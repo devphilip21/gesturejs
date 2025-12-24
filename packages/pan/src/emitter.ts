@@ -1,25 +1,18 @@
-import type { SinglePointer } from "cereb";
-import type { PanEvent } from "./event.js";
-import { createDefaultPanEvent } from "./event.js";
+import type { SinglePointerSignal } from "cereb";
 import { calculateDistance, getDirection } from "./geometry.js";
+import { createDefaultPanSignal, type PanSignal } from "./pan-signal.js";
 import { panEventPool } from "./pool.js";
 import { createInitialPanState, type PanState, resetPanState } from "./state.js";
-import type { PanDirectionMode, PanPhase } from "./types.js";
+import type { PanDirectionMode, PanOptions, PanPhase } from "./types.js";
 
 const DEFAULT_THRESHOLD = 10;
-
-export interface PanEmitterOptions {
-  threshold?: number;
-  direction?: PanDirectionMode;
-  pooling?: boolean;
-}
 
 /**
  * Stateful processor that transforms SinglePointer events into PanEvent.
  * Can be used imperatively or integrated into custom pipelines.
  */
 export interface PanEmitter {
-  process(pointer: SinglePointer): PanEvent | null;
+  process(pointer: SinglePointerSignal): PanSignal | null;
   readonly isActive: boolean;
   readonly thresholdMet: boolean;
   reset(): void;
@@ -63,100 +56,101 @@ function isThresholdMet(
  * });
  * ```
  */
-export function createPanEmitter(options: PanEmitterOptions = {}): PanEmitter {
+export function createPanEmitter(options: PanOptions = {}): PanEmitter {
   const { threshold = DEFAULT_THRESHOLD, direction = "all", pooling = false } = options;
-
   const state: PanState = createInitialPanState();
 
-  function acquireEvent(): PanEvent {
+  function acquireSignal(): PanSignal {
     if (pooling) {
       return panEventPool.acquire();
     }
-    return createDefaultPanEvent();
+    return createDefaultPanSignal();
   }
 
-  function createPanEvent(pointer: SinglePointer, phase: PanPhase): PanEvent {
-    const event = acquireEvent();
+  function createPanSignal(pointerSignal: SinglePointerSignal, phase: PanPhase): PanSignal {
+    const signal = acquireSignal();
 
-    const deltaX = pointer.x - state.startX;
-    const deltaY = pointer.y - state.startY;
+    const deltaX = pointerSignal.value.x - state.startX;
+    const deltaY = pointerSignal.value.y - state.startY;
 
-    event.timestamp = pointer.timestamp;
-    event.deviceId = state.deviceId;
-    event.phase = phase;
-    event.deltaX = deltaX;
-    event.deltaY = deltaY;
-    event.distance = state.totalDistance;
-    event.direction = getDirection(deltaX, deltaY);
-    event.x = pointer.x;
-    event.y = pointer.y;
-    event.pageX = pointer.pageX;
-    event.pageY = pointer.pageY;
+    signal.value.phase = phase;
+    signal.value.deltaX = deltaX;
+    signal.value.deltaY = deltaY;
+    signal.value.distance = state.totalDistance;
+    signal.value.direction = getDirection(deltaX, deltaY);
+    signal.value.x = pointerSignal.value.x;
+    signal.value.y = pointerSignal.value.y;
+    signal.value.pageX = pointerSignal.value.pageX;
+    signal.value.pageY = pointerSignal.value.pageY;
 
-    return event;
+    return signal;
   }
 
-  function handleStart(pointer: SinglePointer): null {
+  function handleStart(signal: SinglePointerSignal): null {
     state.isActive = true;
     state.thresholdMet = false;
-    state.startX = pointer.x;
-    state.startY = pointer.y;
-    state.startTimestamp = pointer.timestamp;
-    state.prevX = pointer.x;
-    state.prevY = pointer.y;
-    state.prevTimestamp = pointer.timestamp;
+    state.startX = signal.value.x;
+    state.startY = signal.value.y;
+    state.startTimestamp = signal.createdAt;
+    state.prevX = signal.value.x;
+    state.prevY = signal.value.y;
+    state.prevTimestamp = signal.createdAt;
     state.totalDistance = 0;
-    state.deviceId = pointer.deviceId;
+    state.deviceId = signal.deviceId;
     return null;
   }
 
-  function handleMove(pointer: SinglePointer): PanEvent | null {
+  function handleMove(signal: SinglePointerSignal): PanSignal | null {
     if (!state.isActive) return null;
 
-    const deltaX = pointer.x - state.startX;
-    const deltaY = pointer.y - state.startY;
+    const deltaX = signal.value.x - state.startX;
+    const deltaY = signal.value.y - state.startY;
 
-    const segmentDistance = calculateDistance(state.prevX, state.prevY, pointer.x, pointer.y);
+    const segmentDistance = calculateDistance(
+      state.prevX,
+      state.prevY,
+      signal.value.x,
+      signal.value.y,
+    );
     state.totalDistance += segmentDistance;
 
-    let result: PanEvent | null = null;
+    let result: PanSignal | null = null;
 
     if (!state.thresholdMet) {
       if (isThresholdMet(deltaX, deltaY, threshold, direction)) {
         state.thresholdMet = true;
-        result = createPanEvent(pointer, "start");
+        result = createPanSignal(signal, "start");
       }
     } else {
-      result = createPanEvent(pointer, "change");
+      result = createPanSignal(signal, "move");
     }
 
-    state.prevX = pointer.x;
-    state.prevY = pointer.y;
-    state.prevTimestamp = pointer.timestamp;
+    state.prevX = signal.value.x;
+    state.prevY = signal.value.y;
+    state.prevTimestamp = signal.createdAt;
 
     return result;
   }
 
-  function handleEnd(pointer: SinglePointer): PanEvent | null {
+  function handleEnd(signal: SinglePointerSignal): PanSignal | null {
     if (!state.isActive) return null;
 
-    let result: PanEvent | null = null;
+    let result: PanSignal | null = null;
 
     if (state.thresholdMet) {
-      result = createPanEvent(pointer, "end");
+      result = createPanSignal(signal, "end");
     }
 
     resetPanState(state);
     return result;
   }
 
-  function handleCancel(pointer: SinglePointer): PanEvent | null {
+  function handleCancel(signal: SinglePointerSignal): PanSignal | null {
     if (!state.isActive) return null;
 
-    let result: PanEvent | null = null;
-
+    let result: PanSignal | null = null;
     if (state.thresholdMet) {
-      result = createPanEvent(pointer, "cancel");
+      result = createPanSignal(signal, "cancel");
     }
 
     resetPanState(state);
@@ -164,16 +158,16 @@ export function createPanEmitter(options: PanEmitterOptions = {}): PanEmitter {
   }
 
   return {
-    process(pointer: SinglePointer): PanEvent | null {
-      switch (pointer.phase) {
+    process(signal: SinglePointerSignal): PanSignal | null {
+      switch (signal.value.phase) {
         case "start":
-          return handleStart(pointer);
+          return handleStart(signal);
         case "move":
-          return handleMove(pointer);
+          return handleMove(signal);
         case "end":
-          return handleEnd(pointer);
+          return handleEnd(signal);
         case "cancel":
-          return handleCancel(pointer);
+          return handleCancel(signal);
         default:
           return null;
       }

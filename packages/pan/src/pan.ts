@@ -1,7 +1,7 @@
-import type { Operator, SinglePointer, SinglePointerOptions, Stream } from "cereb";
+import type { Operator, SinglePointerSignal, Stream } from "cereb";
 import { createStream, pipe, singlePointer } from "cereb";
 import { createPanEmitter } from "./emitter.js";
-import type { PanEvent } from "./event.js";
+import type { PanSignal } from "./pan-signal.js";
 import type { PanOptions } from "./types.js";
 
 /**
@@ -18,7 +18,9 @@ import type { PanOptions } from "./types.js";
  * ).subscribe(pan => console.log(pan.deltaX, pan.velocityX));
  * ```
  */
-export function singlePointerToPan(options: PanOptions = {}): Operator<SinglePointer, PanEvent> {
+export function panFromSinglePointer(
+  options: PanOptions = {},
+): Operator<SinglePointerSignal, PanSignal> {
   return (source) =>
     createStream((observer) => {
       const emitter = createPanEmitter(options);
@@ -43,10 +45,6 @@ export function singlePointerToPan(options: PanOptions = {}): Operator<SinglePoi
     });
 }
 
-export interface PanGestureOptions extends PanOptions {
-  pointer?: SinglePointerOptions;
-}
-
 /**
  * Creates a pan gesture stream from an element.
  *
@@ -60,8 +58,6 @@ export interface PanGestureOptions extends PanOptions {
  * ).subscribe(event => console.log(event.deltaX, event.velocityX));
  * ```
  */
-export function pan(target: EventTarget, options: PanGestureOptions = {}): Stream<PanEvent> {
-  const { pointer: pointerOptions, ...panOptions } = options;
-
-  return pipe(singlePointer(target, pointerOptions), singlePointerToPan(panOptions));
+export function pan(target: EventTarget): Stream<PanSignal> {
+  return pipe(singlePointer(target), panFromSinglePointer());
 }

@@ -1,6 +1,6 @@
 import type { Operator } from "cereb";
 import { createStream } from "cereb";
-import type { PanEvent } from "../event.js";
+import type { PanSignal } from "../pan-signal.js";
 
 /**
  * Extension interface for velocity data.
@@ -53,10 +53,7 @@ function calculateVelocity(
  * });
  * ```
  */
-export function withVelocity<T extends {}>(): Operator<
-  PanEvent<T>,
-  PanEvent<T & VelocityExtension>
-> {
+export function withVelocity(): Operator<PanSignal, PanSignal> {
   return (source) =>
     createStream((observer) => {
       let prevX = 0;
@@ -65,29 +62,36 @@ export function withVelocity<T extends {}>(): Operator<
       let initialized = false;
 
       const unsub = source.subscribe({
-        next(event) {
-          if (event.phase === "start") {
-            prevX = event.x;
-            prevY = event.y;
-            prevTimestamp = event.timestamp;
+        next(signal) {
+          if (signal.value.phase === "start") {
+            prevX = signal.value.x;
+            prevY = signal.value.y;
+            prevTimestamp = signal.createdAt;
             initialized = true;
           }
 
           const { velocityX, velocityY } = initialized
-            ? calculateVelocity(event.x, event.y, event.timestamp, prevX, prevY, prevTimestamp)
+            ? calculateVelocity(
+                signal.value.x,
+                signal.value.y,
+                signal.createdAt,
+                prevX,
+                prevY,
+                prevTimestamp,
+              )
             : { velocityX: 0, velocityY: 0 };
 
-          prevX = event.x;
-          prevY = event.y;
-          prevTimestamp = event.timestamp;
+          prevX = signal.value.x;
+          prevY = signal.value.y;
+          prevTimestamp = signal.createdAt;
 
-          if (event.phase === "end" || event.phase === "cancel") {
+          if (signal.value.phase === "end" || signal.value.phase === "cancel") {
             initialized = false;
           }
 
-          const extended = event as PanEvent<T & VelocityExtension>;
-          extended.velocityX = velocityX;
-          extended.velocityY = velocityY;
+          const extended = signal as PanSignal<VelocityExtension>;
+          extended.value.velocityX = velocityX;
+          extended.value.velocityY = velocityY;
 
           observer.next(extended);
         },

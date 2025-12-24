@@ -1,6 +1,6 @@
 import type { Operator } from "cereb";
 import { createStream } from "cereb";
-import type { PanEvent } from "../event.js";
+import type { PanSignal } from "../pan-signal.js";
 
 export type LockedAxis = "horizontal" | "vertical" | null;
 
@@ -33,9 +33,7 @@ export interface AxisLockOptions {
  * });
  * ```
  */
-export function axisLock<T extends {}>(
-  options: AxisLockOptions = {},
-): Operator<PanEvent<T>, PanEvent<T>> {
+export function axisLock(options: AxisLockOptions = {}): Operator<PanSignal, PanSignal> {
   const { lockThreshold = 0 } = options;
 
   return (source) =>
@@ -43,9 +41,9 @@ export function axisLock<T extends {}>(
       let lockedAxis: LockedAxis = null;
       let lockDetermined = false;
 
-      function determineAxis(event: PanEvent<T>): LockedAxis {
-        const absX = Math.abs(event.deltaX);
-        const absY = Math.abs(event.deltaY);
+      function determineAxis(signal: PanSignal): LockedAxis {
+        const absX = Math.abs(signal.value.deltaX);
+        const absY = Math.abs(signal.value.deltaY);
 
         if (absX <= lockThreshold && absY <= lockThreshold) {
           return null; // Not enough movement to determine
@@ -54,35 +52,37 @@ export function axisLock<T extends {}>(
         return absX > absY ? "horizontal" : "vertical";
       }
 
-      function applyAxisLock(event: PanEvent<T>): void {
+      function applyAxisLock(signal: PanSignal): void {
         if (lockedAxis === "horizontal") {
-          event.deltaY = 0;
-          if ("velocityY" in event) {
-            (event as { velocityY: number }).velocityY = 0;
+          signal.value.deltaY = 0;
+          if ("velocityY" in signal.value) {
+            (signal.value as { velocityY: number }).velocityY = 0;
           }
-          if (event.direction === "up" || event.direction === "down") {
-            event.direction = event.deltaX > 0 ? "right" : event.deltaX < 0 ? "left" : "none";
+          if (signal.value.direction === "up" || signal.value.direction === "down") {
+            signal.value.direction =
+              signal.value.deltaX > 0 ? "right" : signal.value.deltaX < 0 ? "left" : "none";
           }
         } else if (lockedAxis === "vertical") {
-          event.deltaX = 0;
-          if ("velocityX" in event) {
-            (event as { velocityX: number }).velocityX = 0;
+          signal.value.deltaX = 0;
+          if ("velocityX" in signal.value) {
+            (signal.value as { velocityX: number }).velocityX = 0;
           }
-          if (event.direction === "left" || event.direction === "right") {
-            event.direction = event.deltaY > 0 ? "down" : event.deltaY < 0 ? "up" : "none";
+          if (signal.value.direction === "left" || signal.value.direction === "right") {
+            signal.value.direction =
+              signal.value.deltaY > 0 ? "down" : signal.value.deltaY < 0 ? "up" : "none";
           }
         }
       }
 
       const unsub = source.subscribe({
-        next(event) {
-          if (event.phase === "start") {
+        next(signal) {
+          if (signal.value.phase === "start") {
             lockedAxis = null;
             lockDetermined = false;
           }
 
-          if (!lockDetermined && event.phase !== "cancel") {
-            const axis = determineAxis(event);
+          if (!lockDetermined && signal.value.phase !== "cancel") {
+            const axis = determineAxis(signal);
             if (axis !== null) {
               lockedAxis = axis;
               lockDetermined = true;
@@ -90,12 +90,12 @@ export function axisLock<T extends {}>(
           }
 
           if (lockDetermined) {
-            applyAxisLock(event);
+            applyAxisLock(signal);
           }
 
-          observer.next(event);
+          observer.next(signal);
 
-          if (event.phase === "end" || event.phase === "cancel") {
+          if (signal.value.phase === "end" || signal.value.phase === "cancel") {
             lockedAxis = null;
             lockDetermined = false;
           }

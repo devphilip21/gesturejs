@@ -1,3 +1,5 @@
+import type { Signal } from "cereb";
+import { createSignal } from "../../cereb/src/core/signal.js";
 import type { PanDirection, PanPhase } from "./types.js";
 
 /**
@@ -12,10 +14,7 @@ import type { PanDirection, PanPhase } from "./types.js";
  * });
  * ```
  */
-export interface BasePanEvent {
-  type: "pan";
-  timestamp: number;
-  deviceId: string;
+export interface PanValue {
   phase: PanPhase;
 
   /** X displacement from start point */
@@ -39,14 +38,13 @@ export interface BasePanEvent {
   pageY: number;
 }
 
-export type PanEvent<TExtensions extends object = object> = BasePanEvent & TExtensions;
+export interface PanSignal<T = {}> extends Signal<"pan", PanValue & T> {}
 
-export function createDefaultPanEvent(): PanEvent {
-  return {
-    type: "pan",
-    timestamp: 0,
-    deviceId: "",
-    phase: "start",
+export const PAN_SIGNAL_KIND = "pan";
+
+export function createDefaultPanSignal(): PanSignal {
+  return createSignal(PAN_SIGNAL_KIND, {
+    phase: "unknown",
     deltaX: 0,
     deltaY: 0,
     distance: 0,
@@ -55,23 +53,17 @@ export function createDefaultPanEvent(): PanEvent {
     y: 0,
     pageX: 0,
     pageY: 0,
-  };
+  });
 }
 
-export function resetPanEvent(event: PanEvent): void {
-  event.timestamp = 0;
-  event.deviceId = "";
-  event.phase = "start";
-  event.deltaX = 0;
-  event.deltaY = 0;
-  event.distance = 0;
-  event.direction = "none";
-  event.x = 0;
-  event.y = 0;
-  event.pageX = 0;
-  event.pageY = 0;
-}
-
-export function isPanEvent(event: { type: string }): event is PanEvent {
-  return event.type === "pan";
+export function resetPanSignal(signal: PanSignal): void {
+  signal.value.phase = "unknown";
+  signal.value.deltaX = 0;
+  signal.value.deltaY = 0;
+  signal.value.distance = 0;
+  signal.value.direction = "none";
+  signal.value.x = 0;
+  signal.value.y = 0;
+  signal.value.pageX = 0;
+  signal.value.pageY = 0;
 }

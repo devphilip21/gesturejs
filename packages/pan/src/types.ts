@@ -1,4 +1,4 @@
-export type PanPhase = "start" | "change" | "end" | "cancel";
+export type PanPhase = "unknown" | "start" | "move" | "end" | "cancel";
 
 export type PanDirection = "up" | "down" | "left" | "right" | "none";
 

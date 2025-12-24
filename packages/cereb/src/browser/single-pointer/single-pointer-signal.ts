@@ -1,5 +1,4 @@
-import { getCerebDeviceId } from "../../core/meta.js";
-import type { Signal } from "../../core/signal.js";
+import { createSignal, type Signal } from "../../core/signal.js";
 import type { SinglePointerButton, SinglePointerPhase, SinglePointerType } from "./types.js";
 
 export interface SinglePointerSignal extends Signal<"single-pointer", SinglePointer> {}
@@ -24,12 +23,7 @@ export interface SinglePointer {
 }
 
 export function createSinglePointerSignal(pointer: SinglePointer): SinglePointerSignal {
-  return {
-    kind: SINGLE_POINTER_SIGNAL_KIND,
-    value: pointer,
-    createdAt: performance.now(),
-    deviceId: getCerebDeviceId(),
-  };
+  return createSignal(SINGLE_POINTER_SIGNAL_KIND, pointer);
 }
 
 export function createDefaultSinglePointerSignal(): SinglePointerSignal {
