@@ -5,9 +5,8 @@
 ```typescript
 import { pan } from "@cereb/pan";
 
-pan(element, { threshold: 10 }).subscribe((event) => {
-  element.style.transform = `translate(${event.deltaX}px, ${event.deltaY}px)`;
-  element.innerText = `velocity: ${event.velocityX}, ${event.velocityY}`;
+pan(element).subscribe((signal) => {
+  element.style.transform = `translate(${signal.deltaX}px, ${signal.deltaY}px)`;
 });
 ```
 
@@ -18,14 +17,14 @@ import { pipe } from "cereb";
 import { pan } from "@cereb/pan";
 import { withVelocity } from "@cereb/pan/extensions";
 
-const gestureStream = pipe(
-  pan(element, { threshold: 10 }),
+const panCanvas$ = pipe(
+  pan(canvas, { threshold: 10 }),
   withVelocity(),
 );
 
-gestureStream.subscribe((event) => {
-  element.style.transform = `translate(${event.deltaX}px, ${event.deltaY}px)`;
-  element.innerText = `velocity: ${event.velocityX}, ${event.velocityY}`; // Type inference automatically
+panCanvas$.subscribe((signal) => {
+  target.style.transform = `translate(${signal.deltaX}px, ${signal.deltaY}px)`;
+  target.innerText = `velocity: ${signal.velocityX}, ${signal.velocityY}`; // Type inference automatically
 });
 ```
 

@@ -18,9 +18,9 @@ npm install @cereb/pan
 ```typescript
 import { pan } from "@cereb/pan";
 
-pan(element).subscribe((event) => {
-  console.log(event.deltaX, event.deltaY); // displacement from start
-  console.log(event.phase); // start, move, end, cancel
+pan(element).subscribe((signal) => {
+  console.log(signal.deltaX, signal.deltaY); // displacement from start
+  console.log(signal.phase); // start, move, end, cancel
 });
 ```
 
@@ -31,15 +31,15 @@ import { pan } from "@cereb/pan";
 import { withVelocity } from "@cereb/pan/extensions";
 import { pipe } from "@cereb/core";
 
-const stream = pipe(
-  pan(element, { threshold: 10 }),
+const panCanvas$ = pipe(
+  pan(canvas, { threshold: 10 }),
   withVelocity()
 );
 
-const unsub = stream.subscribe((event) => {
-  console.log(event.deltaX, event.deltaY); // displacement from start
-  console.log(event.velocityX, event.velocityY);
-  console.log(event.phase); // start, change, end, cancel
+const unsub = panCanvas$.subscribe((signal) => {
+  console.log(signal.deltaX, signal.deltaY); // displacement from start
+  console.log(signal.velocityX, signal.velocityY);
+  console.log(signal.phase); // start, change, end, cancel
 });
 ```
 
@@ -54,7 +54,7 @@ import { pan } from "@cereb/pan";
  * Only trigger when horizontal movement exceeds threshold.
  * Vertical movement is ignored for threshold calculation.
  */
-const stream = pan(element, {
+const pan$ = pan(element, {
   threshold: 10,
   direction: "horizontal", // "horizontal" | "vertical" | "all"
 });
@@ -71,12 +71,12 @@ import { pipe } from "@cereb/core";
  * Lock gesture to the initially detected axis.
  * After lock, movement on the opposite axis is zeroed out.
  */
-const stream = pipe(
+const pan$ = pipe(
   pan(element, { threshold: 10 }),
   axisLock()
 );
 
-stream.subscribe((event) => {
+pan$.subscribe((event) => {
   // One of deltaX/deltaY will always be 0 after axis is determined
   element.style.transform = `translate(${event.deltaX}px, ${event.deltaY}px)`;
 });
