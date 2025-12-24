@@ -63,6 +63,12 @@ jobs:
               continue
             fi
 
+            # Skip placeholder version (99.99.99)
+            if [ "$LOCAL_VERSION" = "99.99.99" ]; then
+              echo "Skipping $PKG_NAME@$LOCAL_VERSION (placeholder version)"
+              continue
+            fi
+
             # Check if version already exists on npm
             PUBLISHED=$(npm view "$PKG_NAME@$LOCAL_VERSION" version 2>/dev/null || echo "")
 

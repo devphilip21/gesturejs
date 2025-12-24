@@ -6,10 +6,7 @@ export default ({ dirname }: { dirname: string }): UserConfig => ({
     lib: {
       entry: {
         index: resolve(dirname, "src/index.ts"),
-        operators: resolve(dirname, "src/operators.ts"),
-        "single-pointer/touch": resolve(dirname, "src/browser/single-pointer/touch.ts"),
-        "single-pointer/mouse": resolve(dirname, "src/browser/single-pointer/mouse.ts"),
-        "single-pointer/pointer": resolve(dirname, "src/browser/single-pointer/pointer.ts"),
+        "extensions/index": resolve(dirname, "src/extensions/index.ts"),
       },
       formats: ["es", "cjs"],
       fileName: (format, entryName) => {
@@ -18,7 +15,7 @@ export default ({ dirname }: { dirname: string }): UserConfig => ({
       },
     },
     rollupOptions: {
-      external: [],
+      external: ["cereb"],
     },
   },
 });

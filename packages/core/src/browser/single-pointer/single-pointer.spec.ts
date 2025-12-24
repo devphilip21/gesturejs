@@ -1,0 +1,68 @@
+import { describe, expect, it } from "vitest";
+import {
+  createDefaultSinglePointer,
+  isSinglePointer,
+  resetSinglePointer,
+} from "./single-pointer.js";
+
+describe("createDefaultSinglePointer", () => {
+  it("should create pointer with default values", () => {
+    const pointer = createDefaultSinglePointer();
+
+    expect(pointer).toEqual({
+      phase: "move",
+      x: 0,
+      y: 0,
+      pageX: 0,
+      pageY: 0,
+      pointerType: "unknown",
+      button: "none",
+      pressure: 0.5,
+      timestamp: 0,
+      deviceId: "",
+    });
+  });
+});
+
+describe("resetSinglePointer", () => {
+  it("should reset pointer to default values", () => {
+    const pointer = createDefaultSinglePointer();
+    pointer.timestamp = 100;
+    pointer.deviceId = "mouse-1";
+    pointer.phase = "start";
+    pointer.x = 150;
+    pointer.y = 200;
+    pointer.pageX = 150;
+    pointer.pageY = 700;
+    pointer.pointerType = "mouse";
+    pointer.button = "primary";
+    pointer.pressure = 1.0;
+
+    resetSinglePointer(pointer);
+
+    expect(pointer.timestamp).toBe(0);
+    expect(pointer.deviceId).toBe("");
+    expect(pointer.phase).toBe("move");
+    expect(pointer.x).toBe(0);
+    expect(pointer.y).toBe(0);
+    expect(pointer.pageX).toBe(0);
+    expect(pointer.pageY).toBe(0);
+    expect(pointer.pointerType).toBe("unknown");
+    expect(pointer.button).toBe("none");
+    expect(pointer.pressure).toBe(0.5);
+  });
+});
+
+describe("isSinglePointer", () => {
+  it("should return true for valid single pointer object", () => {
+    const pointer = createDefaultSinglePointer();
+    expect(isSinglePointer(pointer)).toBe(true);
+  });
+
+  it("should return false for non-pointer objects", () => {
+    expect(isSinglePointer(null)).toBe(false);
+    expect(isSinglePointer(undefined)).toBe(false);
+    expect(isSinglePointer({})).toBe(false);
+    expect(isSinglePointer({ x: 0 })).toBe(false);
+  });
+});

@@ -92,40 +92,15 @@ importers:
         specifier: '*'
         version: 2.1.9(@types/node@24.10.4)(jsdom@25.0.1)
 
-  packages/gesture/pan:
+  packages/pan:
     dependencies:
-      '@cereb/core':
+      cereb:
         specifier: workspace:^
-        version: link:../../core
-      '@cereb/single-pointer':
-        specifier: workspace:^
-        version: link:../../signal/single-pointer
+        version: link:../core
     devDependencies:
       '@cereb/builder':
         specifier: workspace:^
-        version: link:../../../internal/builder
-      '@vitest/coverage-v8':
-        specifier: '*'
-        version: 2.1.9(vitest@2.1.9(@types/node@24.10.4)(jsdom@25.0.1))
-      jsdom:
-        specifier: '*'
-        version: 25.0.1
-      vite:
-        specifier: '*'
-        version: 7.3.0(@types/node@24.10.4)(yaml@2.8.2)
-      vitest:
-        specifier: '*'
-        version: 2.1.9(@types/node@24.10.4)(jsdom@25.0.1)
-
-  packages/signal/single-pointer:
-    dependencies:
-      '@cereb/core':
-        specifier: workspace:^
-        version: link:../../core
-    devDependencies:
-      '@cereb/builder':
-        specifier: workspace:^
-        version: link:../../../internal/builder
+        version: link:../../internal/builder
       '@vitest/coverage-v8':
         specifier: '*'
         version: 2.1.9(vitest@2.1.9(@types/node@24.10.4)(jsdom@25.0.1))
