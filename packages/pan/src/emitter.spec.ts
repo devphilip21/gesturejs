@@ -9,7 +9,6 @@ function createPointer(
   timestamp = 0,
 ): SinglePointer {
   return {
-    type: "pointer",
     timestamp,
     deviceId: "mouse-1",
     phase,

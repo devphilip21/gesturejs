@@ -1,8 +1,4 @@
 packages:
-  - 'packages/core'
-  - 'packages/pan'
-  - 'packages/signal/*'
-  - 'packages/gesture/*'
+  - 'packages/*'
   - 'internal/*'
-  - 'website'
   - 'docs'

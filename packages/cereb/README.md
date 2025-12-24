@@ -58,12 +58,12 @@ You can also build a `singlePointer` stream from touch events:
 import { touchEvents, pipe } from "cereb";
 import { singlePointerEmitter } from "cereb/single-pointer/touch";
 
-const $pointSomething = pipe(
+const pointSomething$ = pipe(
   touchEvents(somethingElement),
   singlePointerEmitter(),
 );
 
-$pointSomething.subscribe((e) => console.log(e.x, e.y));
+pointSomething$.subscribe((e) => console.log(e.x, e.y));
 ```
 
 ### Blocking Streams
@@ -111,12 +111,12 @@ const stream = pipe(
 ```typescript
 import { pipe, merge, singlePointer, domEvent } from "cereb";
 
-const keyboard = domEvent(window, "keydown");
-const pointer = singlePointer(element);
+const keyboard$ = domEvent(window, "keydown");
+const pointer$ = singlePointer(element);
 
 // You can subscribe to events from multiple sources as one stream.
 // This example simply merges, but you can orchestrate behavior with pipelines and operators.
-const combined = merge(keyboard, pointer);
+const combined$ = merge(keyboard$, pointer$);
 ```
 
 ## License
