@@ -1,13 +1,12 @@
-import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
+import { defineConfig } from "astro/config";
 
 export default defineConfig({
   site: "https://cereb.dev",
   integrations: [
     starlight({
       title: "Cereb",
-      description:
-        "High-performance gesture recognition library for the web",
+      description: "High-performance gesture recognition library for the web",
       social: [
         {
           icon: "github",
@@ -45,9 +44,7 @@ export default defineConfig({
             },
             {
               label: "Signal",
-              items: [
-                { label: "Single Pointer", slug: "api/signal/single-pointer" },
-              ],
+              items: [{ label: "Single Pointer", slug: "api/signal/single-pointer" }],
             },
             {
               label: "Event",

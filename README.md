@@ -1,30 +1,31 @@
 # Cereb
 
- Composable, high-performance user interaction interpreter for JavaScript runtimes.
+User input modeling and orchestration with a lightweight reactive stream library.
 
 ```typescript
-import { pan } from "@cereb/pan";
+import { pipe, singlePointer } from "cereb";
+import { offset, singlePointerSession } from "cereb/operators";
 
-pan(element).subscribe((signal) => {
-  element.style.transform = `translate(${signal.deltaX}px, ${signal.deltaY}px)`;
-});
-```
+pipe(
+  // Subscribe to a single-pointer signal from `window`.
+  singlePointer(window),
 
-Alternatively, it can be extended using pipelines.
+  // Treat start → end as one session (signals outside the session are ignored).
+  singlePointerSession(),
 
-```typescript
-import { pipe } from "cereb";
-import { pan } from "@cereb/pan";
-import { withVelocity } from "@cereb/pan/extensions";
+  // `singlePointer(window)` yields window-relative x/y.
+  // Compute canvas-relative coordinates and add `offsetX`/`offsetY`.
+  offset({ target: canvas }),
+).subscribe((signal) => {
+  // Read values from the signal and draw.
+  const { phase, offsetX, offsetY, pointerType } = signal.value;
 
-const panCanvas$ = pipe(
-  pan(canvas, { threshold: 10 }),
-  withVelocity(),
-);
-
-panCanvas$.subscribe((signal) => {
-  target.style.transform = `translate(${signal.deltaX}px, ${signal.deltaY}px)`;
-  target.innerText = `velocity: ${signal.velocityX}, ${signal.velocityY}`; // Type inference automatically
+  drawTrackingPointer({
+    x: offsetX,
+    y: offsetY,
+    phase,
+    pointerType,
+  });
 });
 ```
 
@@ -43,4 +44,4 @@ panCanvas$.subscribe((signal) => {
 
 ## License
 
-MIT
+Cereb is [MIT licensed](./packages/cereb/LICENSE).

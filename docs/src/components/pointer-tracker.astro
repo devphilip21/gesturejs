@@ -304,8 +304,6 @@
     handlePointer(signal: CanvasSignal) {
       this.updatePointerInfo(signal);
 
-      console.log(signal.value.phase);
-
       switch (signal.value.phase) {
         case "start":
           this.handleStart(signal);
@@ -365,7 +363,7 @@
     const eventHandler = new PointerEventHandler(box, canvasManager, drawingState, infoElements);
 
     pipe(
-      singlePointer(box),
+      singlePointer(window),
       singlePointerSession(),
       offset({ target: box })
     ).subscribe(signal => {

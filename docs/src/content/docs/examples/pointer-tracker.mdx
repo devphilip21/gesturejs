@@ -16,10 +16,24 @@ import { pipe, singlePointer } from "cereb";
 import { offset, singlePointerSession } from "cereb/operators";
 
 pipe(
-  singlePointer(box), // stream of "Single Pointer"
-  singlePointerSession(), // filter start~end phase
-  offset({ target: box }) // add offsetX, offsetY relative to target element
-).subscribe(signal => {
-  trackPointer(signal);
+  // Subscribe to a single-pointer signal from `window`.
+  singlePointer(window),
+
+  // Treat start → end as one session (signals outside the session are ignored).
+  singlePointerSession(),
+
+  // `singlePointer(window)` yields window-relative x/y.
+  // Compute canvas-relative coordinates and add `offsetX`/`offsetY`.
+  offset({ target: canvas }),
+).subscribe((signal) => {
+  // Read values from the signal and draw.
+  const { phase, offsetX, offsetY, pointerType } = signal.value;
+
+  drawTrackingPointer({
+    x: offsetX,
+    y: offsetY,
+    phase,
+    pointerType,
+  });
 });
 ```
