@@ -14,6 +14,9 @@
         "noUnusedImports": "error",
         "noUnusedVariables": "error"
       },
+      "complexity": {
+        "noBannedTypes": "off"
+      },
       "suspicious": {
         "noExplicitAny": "warn",
         "noAssignInExpressions": "off",

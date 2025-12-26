@@ -7,12 +7,13 @@ on:
       - main
 
 permissions:
-  contents: write
+  contents: read
   id-token: write
 
 jobs:
   release:
     runs-on: ubuntu-latest
+    environment: release
 
     steps:
       - name: Checkout
@@ -42,43 +43,203 @@ jobs:
         run: pnpm install
 
       - name: Build packages
-        run: npx nx run-many -t build --projects=packages/core/*,packages/signal/*,packages/gesture/*
+        run: npx nx run-many -t build --projects=cereb,@cereb/*
 
       - name: Run tests
-        run: npx nx run-many -t test --projects=packages/core/*,packages/signal/*,packages/gesture/*
+        run: npx nx run-many -t test --projects=cereb,@cereb/*
 
-      - name: Publish packages (dependency order, skip published)
+      - name: Publish packages (Trusted Publishing / provenance, custom order)
+        # Prerequisite: npm Trusted Publishing(OIDC) must be configured for each package
+        # and bound to this repository + workflow path (`.github/workflows/release.yml`).
+        #
+        # Why not `nx release publish`?
+        # - This keeps publishing as a simple loop so you can easily insert manual filtering/mutation steps.
+        # - We still use Nx's project graph to derive a dependency-aware publish order.
         run: |
-          # Get packages in dependency order using pnpm
-          PACKAGES=$(pnpm -r --sort exec pwd 2>/dev/null | grep packages)
+          set -euo pipefail
 
-          for PKG_DIR in $PACKAGES; do
-            PKG_NAME=$(node -p "require('$PKG_DIR/package.json').name")
-            LOCAL_VERSION=$(node -p "require('$PKG_DIR/package.json').version")
-            IS_PRIVATE=$(node -p "require('$PKG_DIR/package.json').private || false")
+          # Export Nx project graph to JSON (no browser, no watch)
+          npx nx graph --file=nx-graph.json --view=projects --open=false --watch=false
 
-            # Skip private packages
-            if [ "$IS_PRIVATE" = "true" ]; then
-              echo "Skipping $PKG_NAME (private)"
+          # Compute dependency-aware publish order for public packages under packages/*
+          # and write a workspace packageName->version map for resolving workspace:* specs before publishing.
+          node <<'NODE' > publish-plan.tsv
+          const fs = require('node:fs');
+          const path = require('node:path');
+
+          /** @typedef {{graph:{nodes: Record<string, any>, dependencies: Record<string, Array<{target:string,type:string,source:string}>>}}} GraphJson */
+          /** @type {GraphJson} */
+          const graphJson = JSON.parse(fs.readFileSync('nx-graph.json', 'utf8'));
+          const graph = graphJson.graph;
+
+          const workspaceRoot = process.cwd();
+          const nodes = graph.nodes ?? {};
+          const deps = graph.dependencies ?? {};
+
+          // Build workspace packageName -> version map (for resolving workspace:* specs)
+          const workspaceVersions = {};
+          for (const node of Object.values(nodes)) {
+            const root = node?.data?.root;
+            if (typeof root !== 'string') continue;
+            const pkgJsonPath = path.join(workspaceRoot, root, 'package.json');
+            if (!fs.existsSync(pkgJsonPath)) continue;
+            const pkg = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'));
+            if (typeof pkg?.name === 'string' && typeof pkg?.version === 'string') {
+              workspaceVersions[pkg.name] = pkg.version;
+            }
+          }
+          fs.writeFileSync('workspace-versions.json', JSON.stringify(workspaceVersions, null, 2) + '\n');
+
+          // Candidates: projects whose root is under packages/* and have a package.json
+          const candidates = new Map(); // projectName -> {projectName, root, pkgName, version}
+          for (const [projectName, node] of Object.entries(nodes)) {
+            const root = node?.data?.root;
+            if (typeof root !== 'string') continue;
+            if (!root.startsWith('packages/')) continue;
+            const pkgJsonPath = path.join(workspaceRoot, root, 'package.json');
+            if (!fs.existsSync(pkgJsonPath)) continue;
+            const pkg = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'));
+            if (pkg?.private === true) continue;
+            if (typeof pkg?.name !== 'string' || typeof pkg?.version !== 'string') continue;
+            candidates.set(projectName, { projectName, root, pkgName: pkg.name, version: pkg.version });
+          }
+
+          // Build adjacency (only among candidates)
+          const inDegree = new Map();
+          const outgoing = new Map();
+          for (const projectName of candidates.keys()) {
+            inDegree.set(projectName, 0);
+            outgoing.set(projectName, new Set());
+          }
+          for (const [source, edges] of Object.entries(deps)) {
+            if (!candidates.has(source)) continue;
+            for (const edge of edges ?? []) {
+              const target = edge?.target;
+              if (!candidates.has(target)) continue;
+              if (!outgoing.get(target).has(source)) {
+                // We want: target must be published before source (source depends on target)
+                outgoing.get(target).add(source);
+                inDegree.set(source, inDegree.get(source) + 1);
+              }
+            }
+          }
+
+          // Kahn topo sort (stable-ish by name)
+          const queue = Array.from(inDegree.entries())
+            .filter(([, deg]) => deg === 0)
+            .map(([name]) => name)
+            .sort();
+
+          const ordered = [];
+          while (queue.length) {
+            const n = queue.shift();
+            ordered.push(n);
+            for (const m of outgoing.get(n) ?? []) {
+              inDegree.set(m, inDegree.get(m) - 1);
+              if (inDegree.get(m) === 0) {
+                queue.push(m);
+                queue.sort();
+              }
+            }
+          }
+
+          if (ordered.length !== candidates.size) {
+            const remaining = Array.from(inDegree.entries()).filter(([, d]) => d > 0).map(([n]) => n);
+            throw new Error(`Cycle detected among publish candidates: ${remaining.join(', ')}`);
+          }
+
+          // Output: ROOT<TAB>PKG_NAME<TAB>VERSION
+          for (const projectName of ordered) {
+            const { root, pkgName, version } = candidates.get(projectName);
+            process.stdout.write(`${root}\t${pkgName}\t${version}\n`);
+          }
+          NODE
+
+          echo "Publish plan (dependency order):"
+          cat publish-plan.tsv
+
+          while IFS=$'\t' read -r PKG_ROOT PKG_NAME PKG_VERSION; do
+            echo ""
+            echo "==> Candidate: ${PKG_NAME}@${PKG_VERSION} (${PKG_ROOT})"
+
+            # Optional hook: filter/mutate before publishing.
+            # Example ideas:
+            # - Skip by name/tag/version
+            # - Patch package.json fields
+            # - Rebuild a single package, etc.
+            #
+            # if [ "$PKG_NAME" = "some-package" ]; then
+            #   echo "Skipping $PKG_NAME by custom rule"
+            #   continue
+            # fi
+
+            # Skip if this exact version is already published
+            if npm view "${PKG_NAME}@${PKG_VERSION}" version >/dev/null 2>&1; then
+              echo "Skipping ${PKG_NAME}@${PKG_VERSION} (already published)"
               continue
             fi
 
-            # Skip placeholder version (99.99.99)
-            if [ "$LOCAL_VERSION" = "99.99.99" ]; then
-              echo "Skipping $PKG_NAME@$LOCAL_VERSION (placeholder version)"
-              continue
-            fi
+            echo "Publishing ${PKG_NAME}@${PKG_VERSION}..."
+            (
+              set -euo pipefail
 
-            # Check if version already exists on npm
-            PUBLISHED=$(npm view "$PKG_NAME@$LOCAL_VERSION" version 2>/dev/null || echo "")
+              # Prepare package.json for publishing:
+              # - resolve workspace:* dependency specs to actual workspace versions
+              # - remove devDependencies so they are not published
+              export PKG_ROOT
+          node <<'NODE'
+              const fs = require('node:fs');
+              const path = require('node:path');
 
-            if [ -z "$PUBLISHED" ]; then
-              echo "Publishing $PKG_NAME@$LOCAL_VERSION..."
-              pnpm --filter "$PKG_NAME" publish --access public --no-git-checks
-            else
-              echo "Skipping $PKG_NAME@$LOCAL_VERSION (already published)"
-            fi
-          done
+              const pkgRoot = process.env.PKG_ROOT;
+              if (!pkgRoot) throw new Error('PKG_ROOT is required');
+
+              const versions = JSON.parse(fs.readFileSync('workspace-versions.json', 'utf8'));
+              const pkgJsonPath = path.join(pkgRoot, 'package.json');
+              const bakPath = path.join(pkgRoot, '.package.json.publish.bak');
+
+              const original = fs.readFileSync(pkgJsonPath, 'utf8');
+              if (!fs.existsSync(bakPath)) {
+                fs.writeFileSync(bakPath, original);
+              }
+
+              const pkg = JSON.parse(original);
+
+              function resolveWorkspaceSpec(spec, version) {
+                if (typeof spec !== 'string') return spec;
+                if (!spec.startsWith('workspace:')) return spec;
+                const suffix = spec.slice('workspace:'.length);
+                if (suffix === '^') return `^${version}`;
+                if (suffix === '~') return `~${version}`;
+                // workspace:* (or empty) -> pin to the current workspace version
+                return `${version}`;
+              }
+
+              for (const field of ['dependencies', 'peerDependencies', 'optionalDependencies']) {
+                const deps = pkg[field];
+                if (!deps) continue;
+                for (const [name, spec] of Object.entries(deps)) {
+                  if (typeof spec !== 'string' || !spec.startsWith('workspace:')) continue;
+                  const v = versions[name];
+                  if (!v) {
+                    throw new Error(`Cannot resolve ${name} (${spec}) for ${pkg.name}: not found in workspace-versions.json`);
+                  }
+                  deps[name] = resolveWorkspaceSpec(spec, v);
+                }
+              }
+
+              // Remove devDependencies from the published manifest
+              delete pkg.devDependencies;
+
+              fs.writeFileSync(pkgJsonPath, JSON.stringify(pkg, null, 2) + '\n');
+          NODE
+
+              # Always restore original package.json when leaving this subshell
+              trap 'if [ -f "${PKG_ROOT}/.package.json.publish.bak" ]; then mv -f "${PKG_ROOT}/.package.json.publish.bak" "${PKG_ROOT}/package.json"; fi' EXIT
+
+              cd "${PKG_ROOT}"
+              npm publish --provenance --access public --no-git-checks
+            )
+          done < publish-plan.tsv
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true

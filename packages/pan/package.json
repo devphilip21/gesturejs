@@ -1,7 +1,7 @@
 {
   "name": "@cereb/pan",
   "description": "Pan gesture recognition - Stream-based, Extensible, Zero GC Jank",
-  "version": "0.1.2",
+  "version": "0.3.0",
   "license": "MIT",
   "author": "devphilip21 <philip21.dev@gmail.com>",
   "repository": {
@@ -33,10 +33,10 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
-    "./extensions": {
-      "types": "./dist/extensions/index.d.ts",
-      "import": "./dist/extensions/index.js",
-      "require": "./dist/extensions/index.cjs"
+    "./operators": {
+      "types": "./dist/operators/index.d.ts",
+      "import": "./dist/operators/index.js",
+      "require": "./dist/operators/index.cjs"
     }
   },
   "files": [
