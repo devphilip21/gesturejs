@@ -3,10 +3,10 @@ import { createStream } from "../../core/stream.js";
 import type { DomEventSignal } from "../dom-event/dom-event-signal.js";
 import { pointerEvents } from "../dom-event/pointer-events.js";
 import {
-  createSinglePointerEmitter,
-  type SinglePointerEmitter,
-  type SinglePointerEmitterOptions,
-} from "./emitter.js";
+  createSinglePointerRecognizer,
+  type SinglePointerRecognizer,
+  type SinglePointerRecognizerOptions,
+} from "./recognizer.js";
 import type { SinglePointerSignal } from "./single-pointer-signal.js";
 import {
   type SinglePointerButton,
@@ -15,9 +15,9 @@ import {
   toSinglePointerButton,
 } from "./types.js";
 
-export function createPointerEmitter(
-  options: SinglePointerEmitterOptions = {},
-): SinglePointerEmitter<DomEventSignal<PointerEvent>> {
+export function createPointerRecognizer(
+  options: SinglePointerRecognizerOptions = {},
+): SinglePointerRecognizer<DomEventSignal<PointerEvent>> {
   function processer(
     domEventSignal: DomEventSignal<PointerEvent>,
     signal: SinglePointerSignal,
@@ -59,19 +59,19 @@ export function createPointerEmitter(
     signal.value.pressure = e.pressure;
   }
 
-  return createSinglePointerEmitter(processer, options);
+  return createSinglePointerRecognizer(processer, options);
 }
 
-export function pointerToSinglePointer(
-  options: SinglePointerEmitterOptions = {},
+export function singlePointerFromPointer(
+  options: SinglePointerRecognizerOptions = {},
 ): Operator<DomEventSignal<PointerEvent>, SinglePointerSignal> {
   return (source) =>
     createStream((observer) => {
-      const emitter = createPointerEmitter(options);
+      const recognizer = createPointerRecognizer(options);
 
       const unsub = source.subscribe({
         next(event) {
-          const pointer = emitter.process(event);
+          const pointer = recognizer.process(event);
           if (pointer) {
             observer.next(pointer);
           }
@@ -86,14 +86,14 @@ export function pointerToSinglePointer(
 
       return () => {
         unsub();
-        emitter.dispose();
+        recognizer.dispose();
       };
     });
 }
 
 export function singlePointer(target: EventTarget): Stream<SinglePointerSignal> {
   const source = pointerEvents(target);
-  return pointerToSinglePointer()(source);
+  return singlePointerFromPointer()(source);
 }
 
 function normalizePointerType(type: string): SinglePointerType {

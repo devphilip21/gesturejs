@@ -2,21 +2,21 @@ import type { Signal } from "../../core/signal.js";
 import { singlePointerPool } from "./pool.js";
 import { createSinglePointerSignal, type SinglePointerSignal } from "./single-pointer-signal.js";
 
-export interface SinglePointerEmitter<InputSignal extends Signal> {
+export interface SinglePointerRecognizer<InputSignal extends Signal> {
   process(event: InputSignal): SinglePointerSignal;
   readonly isActive: boolean;
   reset(): void;
   dispose(): void;
 }
 
-export interface SinglePointerEmitterOptions {
+export interface SinglePointerRecognizerOptions {
   pooling?: boolean;
 }
 
-export function createSinglePointerEmitter<InputSignal extends Signal>(
+export function createSinglePointerRecognizer<InputSignal extends Signal>(
   processor: (inputSignal: InputSignal, pointerSignal: SinglePointerSignal) => void,
-  options: SinglePointerEmitterOptions = {},
-): SinglePointerEmitter<InputSignal> {
+  options: SinglePointerRecognizerOptions = {},
+): SinglePointerRecognizer<InputSignal> {
   const { pooling = false } = options;
   let current: SinglePointerSignal | null = null;
 

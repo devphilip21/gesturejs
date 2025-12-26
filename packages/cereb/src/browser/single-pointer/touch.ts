@@ -1,2 +1,4 @@
-export type { SinglePointer } from "./single-pointer-signal.js";
-export { createTouchEmitter, touchToSinglePointer as singlePointer } from "./touch-emitter.js";
+export {
+  createTouchRecognizer,
+  singlePointerFromTouch as singlePointerRecognizer,
+} from "./recognizer-from-touch.js";

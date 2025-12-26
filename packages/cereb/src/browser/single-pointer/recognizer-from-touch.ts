@@ -2,16 +2,16 @@ import type { Operator } from "../../core/stream.js";
 import { createStream } from "../../core/stream.js";
 import type { DomEventSignal } from "../dom-event/dom-event-signal.js";
 import {
-  createSinglePointerEmitter,
-  type SinglePointerEmitter,
-  type SinglePointerEmitterOptions,
-} from "./emitter.js";
+  createSinglePointerRecognizer,
+  type SinglePointerRecognizer,
+  type SinglePointerRecognizerOptions,
+} from "./recognizer.js";
 import type { SinglePointerSignal } from "./single-pointer-signal.js";
 import type { SinglePointerPhase } from "./types.js";
 
-export function createTouchEmitter(
-  options: SinglePointerEmitterOptions = {},
-): SinglePointerEmitter<DomEventSignal<TouchEvent>> {
+export function createTouchRecognizer(
+  options: SinglePointerRecognizerOptions = {},
+): SinglePointerRecognizer<DomEventSignal<TouchEvent>> {
   function processer(event: DomEventSignal<TouchEvent>, signal: SinglePointerSignal): void {
     const e = event.value;
     const touch = e.touches[0] ?? e.changedTouches[0];
@@ -44,19 +44,19 @@ export function createTouchEmitter(
     signal.value.pressure = touch.force || 0.5;
   }
 
-  return createSinglePointerEmitter(processer, options);
+  return createSinglePointerRecognizer(processer, options);
 }
 
-export function touchToSinglePointer(
-  options: SinglePointerEmitterOptions = {},
+export function singlePointerFromTouch(
+  options: SinglePointerRecognizerOptions = {},
 ): Operator<DomEventSignal<TouchEvent>, SinglePointerSignal> {
   return (source) =>
     createStream((observer) => {
-      const emitter = createTouchEmitter(options);
+      const recognizer = createTouchRecognizer(options);
 
       const unsub = source.subscribe({
         next(event) {
-          const pointer = emitter.process(event);
+          const pointer = recognizer.process(event);
           if (pointer) {
             observer.next(pointer);
           }
@@ -71,7 +71,7 @@ export function touchToSinglePointer(
 
       return () => {
         unsub();
-        emitter.dispose();
+        recognizer.dispose();
       };
     });
 }

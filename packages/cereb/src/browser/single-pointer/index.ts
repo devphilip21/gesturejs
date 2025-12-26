@@ -1,4 +1,4 @@
-export { singlePointer } from "./pointer-emitter.js";
+export { singlePointer } from "./recognizer-from-pointer.js";
 export type {
   SINGLE_POINTER_SIGNAL_KIND,
   SinglePointer,

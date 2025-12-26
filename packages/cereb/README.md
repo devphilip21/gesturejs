@@ -58,11 +58,11 @@ You can also build a `singlePointer` stream from touch events:
 
 ```typescript
 import { touchEvents, pipe } from "cereb";
-import { singlePointerEmitter } from "cereb/single-pointer/touch";
+import { singlePointerRecognizer } from "cereb/single-pointer/touch";
 
 const pointSomething$ = pipe(
   touchEvents(somethingElement),
-  singlePointerEmitter(),
+  singlePointerRecognizer(),
 );
 
 pointSomething$.subscribe((signal) => { /* .. */ });

@@ -2,10 +2,10 @@ import type { Operator } from "../../core/stream.js";
 import { createStream } from "../../core/stream.js";
 import type { DomEventSignal } from "../dom-event/dom-event-signal.js";
 import {
-  createSinglePointerEmitter,
-  type SinglePointerEmitter,
-  type SinglePointerEmitterOptions,
-} from "./emitter.js";
+  createSinglePointerRecognizer,
+  type SinglePointerRecognizer,
+  type SinglePointerRecognizerOptions,
+} from "./recognizer.js";
 import type { SinglePointerSignal } from "./single-pointer-signal.js";
 import {
   type SinglePointerButton,
@@ -13,9 +13,9 @@ import {
   toSinglePointerButton,
 } from "./types.js";
 
-export function createMouseEmitter(
-  options: SinglePointerEmitterOptions = {},
-): SinglePointerEmitter<DomEventSignal<MouseEvent>> {
+export function createMouseRecognizer(
+  options: SinglePointerRecognizerOptions = {},
+): SinglePointerRecognizer<DomEventSignal<MouseEvent>> {
   function processer(
     domEventSignal: DomEventSignal<MouseEvent>,
     signal: SinglePointerSignal,
@@ -48,19 +48,19 @@ export function createMouseEmitter(
     signal.value.pressure = phase === "move" && e.buttons === 0 ? 0 : 0.5;
   }
 
-  return createSinglePointerEmitter(processer, options);
+  return createSinglePointerRecognizer(processer, options);
 }
 
-export function mouseToSinglePointer(
-  options: SinglePointerEmitterOptions = {},
+export function singlePointerFromMouse(
+  options: SinglePointerRecognizerOptions = {},
 ): Operator<DomEventSignal<MouseEvent>, SinglePointerSignal> {
   return (source) =>
     createStream((observer) => {
-      const emitter = createMouseEmitter(options);
+      const recognizer = createMouseRecognizer(options);
 
       const unsub = source.subscribe({
         next(event) {
-          const pointer = emitter.process(event);
+          const pointer = recognizer.process(event);
           observer.next(pointer);
         },
         error(err) {
@@ -73,7 +73,7 @@ export function mouseToSinglePointer(
 
       return () => {
         unsub();
-        emitter.dispose();
+        recognizer.dispose();
       };
     });
 }
