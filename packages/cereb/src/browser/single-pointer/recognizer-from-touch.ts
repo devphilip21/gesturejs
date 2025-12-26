@@ -1,16 +1,12 @@
 import type { Operator } from "../../core/stream.js";
 import { createStream } from "../../core/stream.js";
 import type { DomEventSignal } from "../dom-event/dom-event-signal.js";
-import {
-  createSinglePointerRecognizer,
-  type SinglePointerRecognizer,
-  type SinglePointerRecognizerOptions,
-} from "./recognizer.js";
+import { createSinglePointerRecognizer, type SinglePointerRecognizer } from "./recognizer.js";
 import type { SinglePointerSignal } from "./single-pointer-signal.js";
-import type { SinglePointerPhase } from "./types.js";
+import type { SinglePointerOptions, SinglePointerPhase } from "./types.js";
 
 export function createTouchRecognizer(
-  options: SinglePointerRecognizerOptions = {},
+  options: SinglePointerOptions = {},
 ): SinglePointerRecognizer<DomEventSignal<TouchEvent>> {
   function processer(event: DomEventSignal<TouchEvent>, signal: SinglePointerSignal): void {
     const e = event.value;
@@ -48,7 +44,7 @@ export function createTouchRecognizer(
 }
 
 export function singlePointerFromTouch(
-  options: SinglePointerRecognizerOptions = {},
+  options: SinglePointerOptions = {},
 ): Operator<DomEventSignal<TouchEvent>, SinglePointerSignal> {
   return (source) =>
     createStream((observer) => {

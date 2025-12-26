@@ -1,3 +1,7 @@
+export interface SinglePointerOptions {
+  pooling?: boolean; // default: false
+}
+
 export type SinglePointerType = "touch" | "mouse" | "pen" | "unknown";
 
 export type SinglePointerPhase = "unknown" | "start" | "move" | "end" | "cancel";

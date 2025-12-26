@@ -1,22 +1,18 @@
-import type { Operator, Stream } from "../../core/stream.js";
+import type { Operator } from "../../core/stream.js";
 import { createStream } from "../../core/stream.js";
 import type { DomEventSignal } from "../dom-event/dom-event-signal.js";
-import { pointerEvents } from "../dom-event/pointer-events.js";
-import {
-  createSinglePointerRecognizer,
-  type SinglePointerRecognizer,
-  type SinglePointerRecognizerOptions,
-} from "./recognizer.js";
+import { createSinglePointerRecognizer, type SinglePointerRecognizer } from "./recognizer.js";
 import type { SinglePointerSignal } from "./single-pointer-signal.js";
 import {
   type SinglePointerButton,
+  type SinglePointerOptions,
   type SinglePointerPhase,
   type SinglePointerType,
   toSinglePointerButton,
 } from "./types.js";
 
 export function createPointerRecognizer(
-  options: SinglePointerRecognizerOptions = {},
+  options: SinglePointerOptions = {},
 ): SinglePointerRecognizer<DomEventSignal<PointerEvent>> {
   function processer(
     domEventSignal: DomEventSignal<PointerEvent>,
@@ -63,7 +59,7 @@ export function createPointerRecognizer(
 }
 
 export function singlePointerFromPointer(
-  options: SinglePointerRecognizerOptions = {},
+  options: SinglePointerOptions = {},
 ): Operator<DomEventSignal<PointerEvent>, SinglePointerSignal> {
   return (source) =>
     createStream((observer) => {
@@ -89,11 +85,6 @@ export function singlePointerFromPointer(
         recognizer.dispose();
       };
     });
-}
-
-export function singlePointer(target: EventTarget): Stream<SinglePointerSignal> {
-  const source = pointerEvents(target);
-  return singlePointerFromPointer()(source);
 }
 
 function normalizePointerType(type: string): SinglePointerType {

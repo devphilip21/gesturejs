@@ -1,4 +1,4 @@
-export { singlePointer } from "./recognizer-from-pointer.js";
+export { singlePointer } from "./default-factory.js";
 export type {
   SINGLE_POINTER_SIGNAL_KIND,
   SinglePointer,

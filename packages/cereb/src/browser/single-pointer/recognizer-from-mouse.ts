@@ -1,20 +1,17 @@
 import type { Operator } from "../../core/stream.js";
 import { createStream } from "../../core/stream.js";
 import type { DomEventSignal } from "../dom-event/dom-event-signal.js";
-import {
-  createSinglePointerRecognizer,
-  type SinglePointerRecognizer,
-  type SinglePointerRecognizerOptions,
-} from "./recognizer.js";
+import { createSinglePointerRecognizer, type SinglePointerRecognizer } from "./recognizer.js";
 import type { SinglePointerSignal } from "./single-pointer-signal.js";
 import {
   type SinglePointerButton,
+  type SinglePointerOptions,
   type SinglePointerPhase,
   toSinglePointerButton,
 } from "./types.js";
 
 export function createMouseRecognizer(
-  options: SinglePointerRecognizerOptions = {},
+  options: SinglePointerOptions = {},
 ): SinglePointerRecognizer<DomEventSignal<MouseEvent>> {
   function processer(
     domEventSignal: DomEventSignal<MouseEvent>,
@@ -52,7 +49,7 @@ export function createMouseRecognizer(
 }
 
 export function singlePointerFromMouse(
-  options: SinglePointerRecognizerOptions = {},
+  options: SinglePointerOptions = {},
 ): Operator<DomEventSignal<MouseEvent>, SinglePointerSignal> {
   return (source) =>
     createStream((observer) => {
