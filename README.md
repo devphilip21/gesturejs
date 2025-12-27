@@ -7,7 +7,7 @@ import { singlePointer } from "cereb";
 
 singlePointer(element).subscribe((signal) => {
   // IMPORTANT: signal is a readonly object by the library's philosophy.
-  //   - reason: prevent side-effect, gc optimization.
+  //   - reason: prevent side-effect and enable safe composition.
   //   - It is possible to extend the signal with new key/value pairs.
   const { x, y, pageX, pageY } = signal.value
 });
@@ -46,7 +46,7 @@ pipe(
 
 - **Observable-Based** - Compose with `pipe`, `filter`, `merge` and other stream operators
 - **Extensible** - Add velocity tracking, axis locking, and custom behaviors via operators
-- **Zero GC Jank** - Object pooling keeps animations smooth at 60+ events/sec
+- **Lightweight** - Minimal overhead for high-frequency input handling
 
 ## Packages
 

@@ -19,7 +19,6 @@ import { singlePointer } from "cereb";
 /**
  * Provides a stream for a single pointer.
  * - Merges DOM events from pointer start → end/cancel into one stream and normalizes them into a single, clean interface.
- * - Optimized to reduce GC pressure from high-frequency event objects (dozens per second).
  * - Keeps pointer handling clear and purpose-driven—no need to juggle multiple DOM event shapes.
  * - Lets you coordinate and control priority across multiple input streams.
  */
@@ -39,7 +38,7 @@ singlePointer(canvas).subscribe((signal) => {
 - **Unified Input Abstraction** - Handle mouse, touch, and pen with a single `SinglePointer` interface
 - **Composable Pipelines** - Transform streams with operators like `filter`, `map`, `throttle`, and more
 - **Stream Orchestration** - Schedule and coordinate multiple streams (coming soon)
-- **Zero GC Jank** - Built-in object pooling keeps high-frequency input smooth
+- **Lightweight** - Minimal overhead for high-frequency input handling
 
 ## Recipes
 

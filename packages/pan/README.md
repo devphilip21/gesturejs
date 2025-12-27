@@ -5,7 +5,7 @@ Observable-based pan gesture recognition with composable operators.
 ### Why @cereb/pan?
 - **Observable-Based** - Compose with pipe, filter, merge and other stream operators
 - **Extensible** - Add velocity tracking, axis locking, and custom behaviors via operators (type-inference support)
-- **Zero GC Jank** - Object pooling keeps animations smooth at 60+ events/sec
+- **Lightweight** - Minimal overhead for high-frequency gesture handling
 
 ## Installation
 
