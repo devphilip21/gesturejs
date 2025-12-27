@@ -1,7 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
+import type {
+  MultiPointer,
+  MultiPointerSignal,
+  PointerInfo,
+} from "../browser/multi-pointer/multi-pointer-signal.js";
+import type { SinglePointerPhase } from "../browser/single-pointer/types.js";
 import type { Signal } from "../core/signal.js";
 import { createStream } from "../core/stream.js";
-import { session } from "./session.js";
+import { multiPointerSession, session } from "./session.js";
 
 type Phase = "start" | "move" | "end" | "cancel";
 
@@ -98,5 +104,119 @@ describe("session", () => {
     operator(source).subscribe({ next: () => {}, error: errorHandler });
 
     expect(errorHandler).toHaveBeenCalledWith(expect.any(Error));
+  });
+});
+
+function createPointerInfo(id: string, phase: SinglePointerPhase, x = 0, y = 0): PointerInfo {
+  return {
+    id,
+    phase,
+    x,
+    y,
+    pageX: x,
+    pageY: y,
+    pointerType: "touch",
+    button: "none",
+    pressure: 0.5,
+  };
+}
+
+function createMultiPointerSignal(pointers: PointerInfo[]): MultiPointerSignal {
+  const multiPointer: MultiPointer = {
+    phase: pointers.length > 0 ? "active" : "idle",
+    pointers,
+    count: pointers.length,
+  };
+  return {
+    kind: "multi-pointer",
+    value: multiPointer,
+    deviceId: "test",
+    createdAt: performance.now(),
+  };
+}
+
+describe("multiPointerSession", () => {
+  it("should start session when required count of pointers are working", () => {
+    const signals: MultiPointerSignal[] = [];
+    const operator = multiPointerSession(2);
+
+    const source = createStream<MultiPointerSignal>((observer) => {
+      // 1 pointer - not enough
+      observer.next(createMultiPointerSignal([createPointerInfo("p1", "start", 10, 10)]));
+      // 2 pointers - session starts
+      observer.next(
+        createMultiPointerSignal([
+          createPointerInfo("p1", "move", 10, 10),
+          createPointerInfo("p2", "start", 20, 20),
+        ]),
+      );
+      // move during session
+      observer.next(
+        createMultiPointerSignal([
+          createPointerInfo("p1", "move", 15, 15),
+          createPointerInfo("p2", "move", 25, 25),
+        ]),
+      );
+      // end session
+      observer.next(
+        createMultiPointerSignal([
+          createPointerInfo("p1", "end", 15, 15),
+          createPointerInfo("p2", "move", 25, 25),
+        ]),
+      );
+      // after session - ignored
+      observer.next(createMultiPointerSignal([createPointerInfo("p2", "move", 30, 30)]));
+      return () => {};
+    });
+
+    operator(source).subscribe({ next: (v) => signals.push(v) });
+
+    expect(signals).toHaveLength(3);
+    expect(signals[0].value.count).toBe(2);
+    expect(signals[1].value.count).toBe(2);
+    expect(signals[2].value.pointers.some((p) => p.phase === "end")).toBe(true);
+  });
+
+  it("should ignore additional pointers beyond required count", () => {
+    const signals: MultiPointerSignal[] = [];
+    const operator = multiPointerSession(2);
+
+    const source = createStream<MultiPointerSignal>((observer) => {
+      // 2 pointers - session starts with p1, p2
+      observer.next(
+        createMultiPointerSignal([
+          createPointerInfo("p1", "start", 10, 10),
+          createPointerInfo("p2", "start", 20, 20),
+        ]),
+      );
+      // 3rd pointer joins - session continues
+      observer.next(
+        createMultiPointerSignal([
+          createPointerInfo("p1", "move", 10, 10),
+          createPointerInfo("p2", "move", 20, 20),
+          createPointerInfo("p3", "start", 30, 30),
+        ]),
+      );
+      // 3rd pointer ends - session still active (not tracked)
+      observer.next(
+        createMultiPointerSignal([
+          createPointerInfo("p1", "move", 10, 10),
+          createPointerInfo("p2", "move", 20, 20),
+          createPointerInfo("p3", "end", 30, 30),
+        ]),
+      );
+      // tracked pointer ends - session ends
+      observer.next(
+        createMultiPointerSignal([
+          createPointerInfo("p1", "end", 10, 10),
+          createPointerInfo("p2", "move", 20, 20),
+        ]),
+      );
+      return () => {};
+    });
+
+    operator(source).subscribe({ next: (v) => signals.push(v) });
+
+    expect(signals).toHaveLength(4);
   });
 });

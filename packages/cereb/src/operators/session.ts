@@ -1,3 +1,4 @@
+import type { MultiPointerSignal } from "../browser/multi-pointer/multi-pointer-signal.js";
 import type { SinglePointerSignal } from "../browser/single-pointer/single-pointer-signal.js";
 import type { Signal } from "../core/signal.js";
 import type { Operator } from "../core/stream.js";
@@ -48,4 +49,54 @@ export function singlePointerSession(): Operator<SinglePointerSignal, SinglePoin
     start: (signal) => signal.value.phase === "start",
     end: (signal) => signal.value.phase === "end" || signal.value.phase === "cancel",
   });
+}
+
+/**
+ * Filters multi-pointer signals to only emit during active sessions.
+ * A session begins when the required number of pointers are in working state (start/move).
+ * A session ends when any of the tracked pointers ends or cancels.
+ * Additional pointers beyond requiredCount are ignored; only the initial tracked pointers matter.
+ */
+export function multiPointerSession(
+  requiredCount: number,
+): Operator<MultiPointerSignal, MultiPointerSignal> {
+  return (source) =>
+    createStream((observer) => {
+      let active = false;
+      let trackedPointerIds: Set<string> = new Set();
+
+      return source.subscribe({
+        next(signal) {
+          try {
+            const pointers = signal.value.pointers;
+
+            if (!active) {
+              const workingPointers = pointers.filter(
+                (p) => p.phase === "start" || p.phase === "move",
+              );
+              if (workingPointers.length >= requiredCount) {
+                active = true;
+                trackedPointerIds = new Set(
+                  workingPointers.slice(0, requiredCount).map((p) => p.id),
+                );
+                observer.next(signal);
+              }
+            } else {
+              observer.next(signal);
+              const hasEnded = pointers.some(
+                (p) => trackedPointerIds.has(p.id) && (p.phase === "end" || p.phase === "cancel"),
+              );
+              if (hasEnded) {
+                active = false;
+                trackedPointerIds.clear();
+              }
+            }
+          } catch (err) {
+            observer.error?.(err);
+          }
+        },
+        error: observer.error?.bind(observer),
+        complete: observer.complete?.bind(observer),
+      });
+    });
 }
