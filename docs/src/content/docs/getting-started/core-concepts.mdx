@@ -1,0 +1,236 @@
+---
+title: Core Concepts
+description: Understanding the fundamental building blocks of Cereb
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+Cereb is built around a few core abstractions that work together to provide a powerful yet lightweight gesture handling system.
+
+## Signal
+
+A **Signal** is an immutable data container representing a single event at a point in time. Every pointer move, touch start, or gesture change produces a Signal.
+
+```typescript
+interface Signal<K extends string, V> {
+  readonly kind: K;        // Type identifier (e.g., "single-pointer", "pan")
+  readonly value: V;       // The actual event data
+  readonly deviceId: string;
+  readonly createdAt: number;
+}
+```
+
+### Why Immutable?
+
+Signals are designed to be **readonly** for two important reasons:
+
+1. **No Side Effects** - Immutable data prevents accidental mutations that could cause hard-to-debug issues in reactive pipelines.
+2. **GC Optimization** - The library internally reuses Signal objects through pooling. Treating them as readonly ensures predictable behavior.
+
+<Aside type="tip">
+When you need to add computed properties to a Signal, use operators like `offset()` or `withVelocity()`. They extend the Signal's value without mutating the original structure.
+</Aside>
+
+## Stream
+
+A **Stream** is an observable sequence of Signals over time. It's the pipeline through which all events flow.
+
+```typescript
+interface Stream<T extends Signal> {
+  subscribe(observer: (value: T) => void): Unsubscribe;
+  block(): void;
+  unblock(): void;
+  readonly isBlocked: boolean;
+}
+```
+
+### Key Characteristics
+
+- **Lazy** - No work happens until you call `subscribe()`
+- **Unicast by default** - Each subscription creates its own event source. Use `share()` for multicast.
+- **Blockable** - Temporarily pause event propagation without unsubscribing
+
+```typescript
+import { singlePointer } from "cereb";
+
+const stream = singlePointer(element);
+
+// Events only start flowing when you subscribe
+const unsubscribe = stream.subscribe((signal) => {
+  console.log(signal.value.x, signal.value.y);
+});
+
+// Temporarily pause events (useful during modal dialogs, etc.)
+stream.block();
+
+// Resume event flow
+stream.unblock();
+
+// Stop listening entirely
+unsubscribe();
+```
+
+## Operators
+
+**Operators** are functions that transform Streams. They take a Stream as input and return a new Stream with modified behavior.
+
+```typescript
+type Operator<T extends Signal, R extends Signal> = (source: Stream<T>) => Stream<R>;
+```
+
+### Composing with pipe()
+
+The `pipe()` function chains operators together, creating readable data transformation pipelines:
+
+```typescript
+import { pipe, singlePointer } from "cereb";
+import { filter, throttle, offset } from "cereb/operators";
+
+pipe(
+  singlePointer(element),
+  filter((s) => s.value.pointerType === "touch"),
+  throttle(16),
+  offset({ target: canvas }),
+).subscribe((signal) => {
+  // Only touch events, throttled to ~60fps, with canvas-relative coordinates
+});
+```
+
+## Object Pooling
+
+High-frequency events (60+ per second during gestures) can create garbage collection pressure. Cereb uses **object pooling** to reuse Signal objects, eliminating GC stutters during critical animations.
+
+```typescript
+// The library handles pooling automatically.
+// This is what happens internally:
+
+const signal = signalPool.acquire("single-pointer");
+// ... use signal ...
+signalPool.release(signal);  // Returns to pool for reuse
+```
+
+<Aside type="caution">
+This is why Signals should be treated as readonly. The same Signal object may be reused for the next event. Never store references to Signals for later use—extract the values you need immediately.
+</Aside>
+
+```typescript
+// Don't do this
+let lastSignal: SinglePointerSignal;
+stream.subscribe((signal) => {
+  lastSignal = signal;  // This reference will become stale!
+});
+
+// Do this instead
+let lastPosition = { x: 0, y: 0 };
+stream.subscribe((signal) => {
+  lastPosition = { x: signal.value.x, y: signal.value.y };  // Extract the values
+});
+```
+
+## Session
+
+A **Session** represents a bounded sequence of events with a clear start and end. For pointer input, a session typically spans from `start` (pointer down) to `end` (pointer up) or `cancel`.
+
+```typescript
+import { pipe, singlePointer } from "cereb";
+import { singlePointerSession } from "cereb/operators";
+
+pipe(
+  singlePointer(element),
+  singlePointerSession(),  // Only emit during active pointer sessions
+).subscribe((signal) => {
+  // signal.value.phase is "start" | "move" | "end" | "cancel"
+});
+```
+
+The `session()` operator lets you define custom session boundaries:
+
+```typescript
+session({
+  start: (signal) => signal.value.phase === "start",
+  end: (signal) => signal.value.phase === "end" || signal.value.phase === "cancel",
+});
+```
+
+## Gesture Recognition
+
+Cereb separates raw input handling from gesture recognition. The **cereb** package provides normalized pointer input, while gesture packages (like **@cereb/pan**) interpret that input as higher-level gestures.
+
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│  Pointer/Touch  │────▶│  SinglePointer  │────▶│   Pan Gesture   │
+│     Events      │     │     Signal      │     │     Signal      │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+      Raw DOM              Normalized              Interpreted
+```
+
+### SinglePointer
+
+The `singlePointer()` function unifies mouse, touch, and pointer events into a consistent Signal format:
+
+```typescript
+interface SinglePointer {
+  phase: "start" | "move" | "end" | "cancel";
+  x: number;          // clientX
+  y: number;          // clientY
+  pageX: number;
+  pageY: number;
+  pointerType: "mouse" | "touch" | "pen" | "unknown";
+  button: "left" | "middle" | "right" | "none";
+  pressure: number;   // 0.0 ~ 1.0
+  id: string;
+}
+```
+
+### Building Gestures
+
+Gesture packages use operators to transform SinglePointer signals into gesture-specific signals:
+
+```typescript
+import { pipe, singlePointer } from "cereb";
+import { panRecognizer, withVelocity } from "@cereb/pan";
+
+pipe(
+  singlePointer(element),
+  panRecognizer({ threshold: 10 }),
+  withVelocity(),
+).subscribe((pan) => {
+  console.log(pan.value.deltaX, pan.value.velocityX);
+});
+```
+
+## Putting It Together
+
+Here's how all the concepts work together in a real-world example:
+
+```typescript
+import { pipe, singlePointer } from "cereb";
+import { offset, singlePointerSession, throttle } from "cereb/operators";
+
+const stream = pipe(
+  // 1. Create a Stream from pointer events
+  singlePointer(canvas),
+
+  // 2. Filter to active sessions only
+  singlePointerSession(),
+
+  // 3. Add canvas-relative coordinates
+  offset({ target: canvas }),
+
+  // 4. Limit to 60fps
+  throttle(16),
+);
+
+// 5. Subscribe to receive Signals
+const unsubscribe = stream.subscribe((signal) => {
+  const { phase, offsetX, offsetY } = signal.value;
+
+  if (phase === "start") {
+    beginPath(offsetX, offsetY);
+  } else if (phase === "move") {
+    drawTo(offsetX, offsetY);
+  } else {
+    endPath();
+  }
+});
+```

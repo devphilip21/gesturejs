@@ -72,3 +72,8 @@ starlight-theme-select {
 .table-outlined :where(tbody tr:last-child td) {
   border-bottom: 0;
 }
+
+/* Hero action buttons - bold text */
+.hero .actions a {
+  font-weight: 700;
+}
