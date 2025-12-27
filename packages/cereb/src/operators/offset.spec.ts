@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { SinglePointerSignal } from "../browser/single-pointer/single-pointer-signal.js";
 import { createSinglePointerSignal } from "../browser/single-pointer/single-pointer-signal.js";
+import { createSignal, type Signal } from "../core/signal.js";
 import { createStream } from "../core/stream.js";
 import { pipe } from "../ochestrations/pipe.js";
 import { type OffsetOperatorResult, offset } from "./offset.js";
@@ -77,9 +78,9 @@ describe("offset operator", () => {
     });
   });
 
-  it("should recalculate rect on every event in auto mode", () => {
+  it("should recalculate rect on every event when recalculate$ is not provided", () => {
     const { element, getBoundingClientRect } = createMockElement();
-    const op = offset<SinglePointerSignal>({ target: element, manual: false });
+    const op = offset<SinglePointerSignal>({ target: element });
 
     const source = createStream<SinglePointerSignal>((observer) => {
       observer.next(createMockPointerSignal(100, 100));
@@ -92,9 +93,16 @@ describe("offset operator", () => {
     expect(getBoundingClientRect).toHaveBeenCalledTimes(2);
   });
 
-  it("should cache rect in manual mode until recalculate() is called", () => {
+  it("should cache rect when recalculate$ is provided", () => {
     const { element, getBoundingClientRect } = createMockElement();
-    const op = offset<SinglePointerSignal>({ target: element, manual: true });
+
+    let emitRecalculate: () => void;
+    const recalculate$ = createStream<Signal>((observer) => {
+      emitRecalculate = () => observer.next(createSignal("recalculate", null));
+      return () => {};
+    });
+
+    const op = offset<SinglePointerSignal>({ target: element, recalculate$ });
 
     const source = createStream<SinglePointerSignal>((observer) => {
       observer.next(createMockPointerSignal(100, 100));
@@ -104,10 +112,36 @@ describe("offset operator", () => {
 
     pipe(source, op).subscribe(() => {});
 
+    // Should only call once due to caching
     expect(getBoundingClientRect).toHaveBeenCalledTimes(1);
 
-    op.recalculate();
+    // Trigger recalculate
+    emitRecalculate!();
     expect(getBoundingClientRect).toHaveBeenCalledTimes(2);
+  });
+
+  it("should unsubscribe from recalculate$ on cleanup", () => {
+    const { element } = createMockElement();
+
+    let unsubscribed = false;
+    const recalculate$ = createStream<Signal>((observer) => {
+      return () => {
+        unsubscribed = true;
+      };
+    });
+
+    const op = offset<SinglePointerSignal>({ target: element, recalculate$ });
+
+    const source = createStream<SinglePointerSignal>((observer) => {
+      observer.next(createMockPointerSignal(100, 100));
+      return () => {};
+    });
+
+    const unsub = pipe(source, op).subscribe(() => {});
+    expect(unsubscribed).toBe(false);
+
+    unsub();
+    expect(unsubscribed).toBe(true);
   });
 
   it("should throw error if target is null", () => {
