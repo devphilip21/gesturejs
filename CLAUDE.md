@@ -1,5 +1,55 @@
 # Project Guidelines for Claude Code
 
+## Project Overview
+
+**Cereb** is a lightweight reactive stream library for user input modeling and orchestration. It provides a unified abstraction for handling pointer/touch/mouse events through an Observable-based pattern, enabling composable gesture recognition pipelines.
+
+### Core Concepts
+
+- **Signal**: Immutable data object containing `kind`, `value`, `deviceId`, and timestamps. All signals are readonly by design to prevent side-effects and enable safe composition.
+- **Stream**: Observable-based event stream with built-in `block()`/`unblock()` control. Single observer by default; use `share()` for multicast.
+- **Operator**: Functions that transform streams (e.g., `filter`, `map`, `session`, `offset`, `zoom`, `throttle`, `debounce`).
+
+### Package Structure
+
+| Package | NPM Name | Description |
+|---------|----------|-------------|
+| `packages/cereb` | `cereb` | Core library: Stream primitives, SinglePointer events, operators |
+| `packages/pan` | `@cereb/pan` | Pan gesture recognition (drag/swipe with velocity, direction) |
+| `packages/pinch` | `@cereb/pinch` | Pinch gesture recognition (two-finger zoom with distance/center) |
+| `docs/` | `@cereb/docs` | Astro-based documentation site with interactive examples |
+
+### Design Philosophy
+
+1. **Observable-Based**: Compose with `pipe()`, `filter()`, `merge()`, and stream operators
+2. **Extensible**: Add velocity tracking, axis locking, zoom transforms via operators
+3. **Lightweight**: Minimal overhead for high-frequency input handling (60fps+)
+4. **Immutable Signals**: Signals are readonly; operators extend values without mutation
+
+### Typical Usage Pattern
+
+```typescript
+import { pipe, singlePointer } from "cereb";
+import { session, offset } from "cereb/operators";
+import { pan } from "@cereb/pan";
+
+pipe(
+  singlePointer(element),   // Normalized pointer stream
+  session(),                // Group start → end as one session
+  offset({ target }),       // Add element-relative coordinates
+  pan(),                    // Recognize pan gesture with velocity/direction
+).subscribe((signal) => {
+  const { phase, deltaX, deltaY, velocityX, velocityY } = signal.value;
+  // Handle pan gesture...
+});
+```
+
+### Key Signal Types
+
+- **SinglePointerSignal**: Normalized pointer data (phase, x, y, pointerType, pressure)
+- **PanSignal**: Pan gesture data (deltaX/Y, velocity, distance, direction)
+- **PinchSignal**: Pinch gesture data (distance, deltaDistance, centerX/Y, velocity)
+
 ## Source Code Comment Rules
 
 ### Must Do
