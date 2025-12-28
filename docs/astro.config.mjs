@@ -27,7 +27,10 @@ export default defineConfig({
         },
         {
           label: "Examples",
-          autogenerate: { directory: "examples" },
+          items: [
+            { label: "Pointer Tracker", slug: "examples/pointer-tracker" },
+            { label: "Space Adventure", slug: "examples/space-adventure" },
+          ],
         },
         {
           label: "API Reference",
