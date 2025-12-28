@@ -12,24 +12,49 @@ This demo uses `pinch()` from `@cereb/pinch` to implement zoom in/out on a space
 ## Code
 
 ```ts
-import { pipe } from "cereb";
-import { zoom } from "cereb/operators";
+import { pipe, keyboard, wheel, domEvent } from "cereb";
+import { zoom, share, scan, keyboardFilter, keyboardHeld, wheelFilter, when } from "cereb/operators";
 import { pinch } from "@cereb/pinch";
 
+// Pinch Zoom
 pipe(
-  pinch(box, { threshold: 10 }), // threshold(px): about gesture start
-  zoom({ minScale: 0.25, maxScale: 10 }),
-).subscribe((signal) => {
-  const { phase } = signal.value;
+  pinch(box, { threshold: 10 }),
+  zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE })
+).subscribe(render);
 
-  if (phase === "start") {
-    box.classList.add("active");
-  }
+// 'CTRL' + 'z' + '+/-'
+pipe(
+  keyboard(window, { key: ["+", "=", "-"], preventDefault: true }),
+  when(keyboardHeld(window, { key: "z", modifiers: ["meta", "ctrl"] })),
+  extend<KeyboardSignal, ZoomInput>((signal) => ({
+    ratio: zoomManager.getScale() + (signal.value.key === "+" || signal.value.key === "=" ? 0.15 : -0.15),
+  })),
+  zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE }),
+).subscribe(render);
 
-  renderer.zoom(signal);
+// 'CTRL' + 'wheel'
+pipe(
+  wheel(box, { passive: false, preventDefault: true, modifiers: ["meta", "ctrl"] }),
+  extend<WheelSignal, ZoomInput>((signal) => {
+    return {
+      ratio: zoomManager.getScale() + (-signal.value.deltaY * 0.005),
+    };
+  }),
+  zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE }),
+).subscribe(render);
 
-  if (phase === "end" || phase === "cancel") {
-    box.classList.remove("active");
-  }
-});
+// 'Slider Input'
+pipe(
+  domEvent(slider, "input"),
+  extend<DomEventSignal<Event>, ZoomInput>((signal) => {
+    const inputElement = signal.value.target as HTMLInputElement;
+    const value = Number(inputElement.value);
+    const logScale = logMin + (value / 100) * (logMax - logMin);
+    const scale = Math.exp(logScale);
+    return {
+      ratio: clamp(scale, MIN_SCALE, MAX_SCALE),
+    };
+  }),
+  zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE, baseScale: zoomManager.getScale() }),
+).subscribe(render);
 ```

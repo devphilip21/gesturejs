@@ -1,0 +1,70 @@
+.space-adventure ._demo-box {
+  height: 400px;
+  touch-action: none;
+}
+
+.space-adventure ._demo-box canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.space-adventure ._demo-box ._hint {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  margin: 0;
+  color: var(--sl-color-gray-1);
+  font-size: 0.875rem;
+  pointer-events: none;
+}
+
+.space-adventure ._signal-snapshot-grid ._grid {
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: 1fr;
+}
+
+.space-adventure ._slider-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.space-adventure ._slider-label {
+  font-size: 0.75rem;
+  color: var(--sl-color-gray-3);
+  white-space: nowrap;
+}
+
+.space-adventure ._slider {
+  flex: 1;
+  height: 4px;
+  appearance: none;
+  background: var(--sl-color-gray-5);
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.space-adventure ._slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background: var(--sl-color-white);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.space-adventure ._slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.space-adventure ._slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: var(--sl-color-white);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}

@@ -3,155 +3,47 @@
  * Interactive space canvas demo that uses pinch gesture to zoom in/out.
  * Stars and nebulae are drawn on a canvas, with transform applied for zooming.
  */
+import "./space-adventure.css";
 ---
 
-<div class="space-container">
-  <div class="space-main">
-    <div class="space-box" id="space-box">
-      <canvas id="space-canvas"></canvas>
-      <p class="space-hint">Pinch to zoom in/out</p>
-    </div>
-    <div class="space-info-panel" id="space-info-panel">
-      <div class="info-item">
-        <span class="info-label">scale</span>
-        <span class="info-value" id="info-scale">1.00</span>
-      </div>
-      <div class="info-item">
-        <span class="info-label">phase</span>
-        <span class="info-value" id="info-phase">-</span>
-      </div>
-      <div class="info-item">
-        <span class="info-label">center x</span>
-        <span class="info-value" id="info-center-x">-</span>
-      </div>
-      <div class="info-item">
-        <span class="info-label">center y</span>
-        <span class="info-value" id="info-center-y">-</span>
-      </div>
+<div class="space-adventure">
+  <div class="_demo-box" id="space-box">
+    <canvas id="space-canvas"></canvas>
+    <div class="_tip">
+      <strong class="_tip-title">Tip.</strong>
+      Pinch, Wheel, or +/- to zoom.
     </div>
   </div>
-  <div class="space-controls">
-    <button id="reset-space" type="button">Reset</button>
+  <div class="_demo-controls">
+    <div class="_slider-container">
+      <span class="_slider-label">Zoom</span>
+      <input type="range" id="zoom-slider" class="_slider" min="0" max="100" value="50" />
+    </div>
+    <div class="_buttons">
+      <button id="reset-space" type="button" class="_button">Reset</button>
+    </div>
+  </div>
+  <div class="_signal-snapshot-grid" id="space-info-panel">
+    <strong class="_title">Signal Snapshot</strong>
+    <div class="_grid">
+      <div class="_item">
+        <span class="_label">SCALE</span>
+        <span class="_value" id="info-scale">1.00</span>
+      </div>
+      <div class="_item">
+        <span class="_label">INPUT</span>
+        <span class="_value" id="info-source">-</span>
+      </div>
+    </div>
   </div>
 </div>
 
-<style>
-  .space-container {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .space-main {
-    display: flex;
-    gap: 0.75rem;
-  }
-
-  .space-box {
-    flex: 1;
-    position: relative;
-    width: 100%;
-    height: 350px;
-    border: 2px solid var(--sl-color-gray-5);
-    border-radius: 8px;
-    overflow: hidden;
-    background: #0a0a1a;
-    touch-action: none;
-    cursor: grab;
-  }
-
-  .space-box:active {
-    cursor: grabbing;
-  }
-
-  .space-box canvas {
-    position: absolute;
-    top: -150%;
-    left: -150%;
-    width: 400%;
-    height: 400%;
-    transform-origin: center center;
-    transition: transform 0.05s ease-out;
-  }
-
-  .space-hint {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    margin: 0;
-    color: rgba(255, 255, 255, 0.4);
-    font-size: 0.875rem;
-    pointer-events: none;
-    opacity: 0.7;
-    transition: opacity 0.3s;
-    text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
-  }
-
-  .space-box.active .space-hint {
-    opacity: 0;
-  }
-
-  .space-controls {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
-
-  .space-controls button {
-    padding: 0.5rem 1rem;
-    border: 1px solid var(--sl-color-gray-5);
-    border-radius: 4px;
-    background: var(--sl-color-gray-6);
-    color: var(--sl-color-white);
-    cursor: pointer;
-    font-size: 0.875rem;
-    transition: background 0.2s;
-  }
-
-  .space-controls button:hover {
-    background: var(--sl-color-gray-5);
-  }
-
-  .space-info-panel {
-    width: 100px;
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-top: 0 !important;
-    padding: 0.75rem;
-    border: 2px solid var(--sl-color-gray-5);
-    border-radius: 8px;
-    background: var(--sl-color-gray-6);
-  }
-
-  .info-item {
-    display: flex;
-    flex-direction: column;
-    gap: 0.125rem;
-  }
-
-  .info-label {
-    font-size: 0.625rem;
-    color: var(--sl-color-gray-4);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .info-value {
-    font-size: 0.75rem;
-    color: var(--sl-color-white);
-    font-family: var(--sl-font-mono);
-    word-break: break-all;
-  }
-</style>
-
 <script>
-  import { pipe } from "cereb";
-  import { zoom } from "cereb/operators";
-  import { pinch, type PinchSignal } from "@cereb/pinch";
-  import type { ZoomValue } from "cereb/operators";
+import { pipe, wheel, keyboard, type KeyboardSignal, type WheelSignal, domEvent } from "cereb";
+import { zoom, extend, keyboardHeld, when, type ZoomInput } from "cereb/operators";
+import { pinch, type PinchSignal } from "@cereb/pinch";
+import type { ZoomValue } from "cereb/operators";
+import type { DomEventSignal } from "../../../packages/cereb/dist/browser/dom-event/dom-event-signal";
 
   interface Star {
     x: number;
@@ -186,20 +78,54 @@
     maxLife: number;
   }
 
+  interface Sun {
+    x: number;
+    y: number;
+    radius: number;
+  }
+
+  interface Planet {
+    name: string;
+    orbitRadius: number;
+    orbitAngle: number;
+    orbitSpeed: number;
+    rotationAngle: number;
+    rotationSpeed: number;
+    radius: number;
+    color: string;
+    hasRings?: boolean;
+  }
+
   /**
    * Renders a 3D parallax space scene with multiple star layers,
-   * animated nebulae, and occasional shooting stars.
+   * animated nebulae, occasional shooting stars, and a solar system.
+   *
+   * Uses a virtual world coordinate system (6x canvas size) to enable
+   * zoom-out without showing empty edges. All rendering is done by
+   * transforming world coordinates to canvas coordinates based on
+   * current scale and center position.
    */
   class SpaceRenderer {
     private ctx: CanvasRenderingContext2D;
     private starLayers: Star[][] = [];
-    private nebulae: Nebula[] = [];
     private shootingStars: ShootingStar[] = [];
+    private sun!: Sun;
+    private planets: Planet[] = [];
     private animationId: number | null = null;
     private driftX = 0;
     private driftY = 0;
     private readonly LAYER_COUNT = 4;
     private readonly LAYER_SPEEDS = [0.02, 0.05, 0.1, 0.2];
+
+    // Virtual world is 6x canvas size to fit full solar system
+    private readonly WORLD_SCALE = 6;
+    private worldWidth = 0;
+    private worldHeight = 0;
+
+    // Current view state
+    private viewScale = 1;
+    private viewCenterX = 0.5; // 0~1 ratio within world
+    private viewCenterY = 0.5;
 
     constructor(
       private canvas: HTMLCanvasElement,
@@ -221,65 +147,180 @@
 
     private resize() {
       const rect = this.container.getBoundingClientRect();
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      this.canvas.width = rect.width * 4 * dpr;
-      this.canvas.height = rect.height * 4 * dpr;
-      this.ctx.scale(dpr, dpr);
+      const dpr = window.devicePixelRatio || 1;
+      this.canvas.width = rect.width * dpr;
+      this.canvas.height = rect.height * dpr;
+      // Virtual world is 4x canvas size
+      this.worldWidth = this.canvas.width * this.WORLD_SCALE;
+      this.worldHeight = this.canvas.height * this.WORLD_SCALE;
+    }
+
+    /**
+     * Updates the view state for zoom/pan.
+     * @param scale - Zoom scale (1 = normal, 0.25 = zoomed out to see full world)
+     * @param centerX - View center X as ratio (0~1) within world
+     * @param centerY - View center Y as ratio (0~1) within world
+     */
+    setView(scale: number, centerX: number, centerY: number) {
+      this.viewScale = scale;
+      this.viewCenterX = centerX;
+      this.viewCenterY = centerY;
+    }
+
+    getViewScale() {
+      return this.viewScale;
+    }
+
+    /**
+     * Transforms world coordinates to canvas coordinates based on current view.
+     */
+    private worldToCanvas(wx: number, wy: number): [number, number] {
+      const canvasW = this.canvas.width;
+      const canvasH = this.canvas.height;
+
+      // Viewport size in world coordinates (smaller scale = larger viewport)
+      const viewportW = canvasW / this.viewScale;
+      const viewportH = canvasH / this.viewScale;
+
+      // Viewport center in world coordinates
+      const viewCenterWX = this.worldWidth * this.viewCenterX;
+      const viewCenterWY = this.worldHeight * this.viewCenterY;
+
+      // Viewport top-left in world coordinates
+      const viewX = viewCenterWX - viewportW / 2;
+      const viewY = viewCenterWY - viewportH / 2;
+
+      // Transform world to canvas
+      const cx = (wx - viewX) * this.viewScale;
+      const cy = (wy - viewY) * this.viewScale;
+
+      return [cx, cy];
+    }
+
+    /**
+     * Transforms a radius from world space to canvas space.
+     */
+    private worldRadiusToCanvas(radius: number): number {
+      return radius * this.viewScale;
     }
 
     private generateSpace() {
-      this.generateNebulae();
       this.generateStarLayers();
+      this.generateSolarSystem();
     }
 
-    private generateNebulae() {
-      this.nebulae = [];
-      const nebulaCount = 4 + Math.floor(Math.random() * 3);
-      const colors: [number, number, number][] = [
-        [120, 60, 180],
-        [60, 120, 200],
-        [180, 60, 120],
-        [60, 180, 140],
-        [200, 120, 60],
-        [100, 80, 200],
-      ];
+    private generateSolarSystem() {
+      this.sun = {
+        x: this.worldWidth / 2,
+        y: this.worldHeight / 2,
+        radius: 80,
+      };
 
-      const rect = this.container.getBoundingClientRect();
-      const canvasWidth = rect.width * 4;
-      const canvasHeight = rect.height * 4;
-      for (let i = 0; i < nebulaCount; i++) {
-        this.nebulae.push({
-          x: Math.random() * canvasWidth,
-          y: Math.random() * canvasHeight,
-          z: 0.3 + Math.random() * 0.4,
-          radius: 100 + Math.random() * 150,
-          color: colors[Math.floor(Math.random() * colors.length)],
-          opacity: 0.08 + Math.random() * 0.12,
-          rotationSpeed: (Math.random() - 0.5) * 0.0001,
-          rotationPhase: Math.random() * Math.PI * 2,
-        });
-      }
+      // Distances spread to fill view at minimum zoom
+      this.planets = [
+        {
+          name: "mercury",
+          orbitRadius: 250,
+          orbitAngle: Math.random() * Math.PI * 2,
+          orbitSpeed: 0.0020,
+          rotationAngle: 0,
+          rotationSpeed: 0.004,
+          radius: 10,
+          color: "#b5b5b5",
+        },
+        {
+          name: "venus",
+          orbitRadius: 450,
+          orbitAngle: Math.random() * Math.PI * 2,
+          orbitSpeed: 0.0014,
+          rotationAngle: 0,
+          rotationSpeed: 0.003,
+          radius: 32,
+          color: "#e6c87a",
+        },
+        {
+          name: "earth",
+          orbitRadius: 650,
+          orbitAngle: Math.random() * Math.PI * 2,
+          orbitSpeed: 0.0008,
+          rotationAngle: 0,
+          rotationSpeed: 0.015,
+          radius: 36,
+          color: "#4a90d9",
+        },
+        {
+          name: "mars",
+          orbitRadius: 900,
+          orbitAngle: Math.random() * Math.PI * 2,
+          orbitSpeed: 0.0006,
+          rotationAngle: 0,
+          rotationSpeed: 0.014,
+          radius: 18,
+          color: "#c1440e",
+        },
+        {
+          name: "jupiter",
+          orbitRadius: 1300,
+          orbitAngle: Math.random() * Math.PI * 2,
+          orbitSpeed: 0.00035,
+          rotationAngle: 0,
+          rotationSpeed: 0.025,
+          radius: 85,
+          color: "#d4a574",
+        },
+        {
+          name: "saturn",
+          orbitRadius: 1800,
+          orbitAngle: Math.random() * Math.PI * 2,
+          orbitSpeed: 0.00025,
+          rotationAngle: 0,
+          rotationSpeed: 0.022,
+          radius: 70,
+          color: "#e8d5a3",
+          hasRings: true,
+        },
+        {
+          name: "uranus",
+          orbitRadius: 2350,
+          orbitAngle: Math.random() * Math.PI * 2,
+          orbitSpeed: 0.00018,
+          rotationAngle: 0,
+          rotationSpeed: 0.018,
+          radius: 45,
+          color: "#7de3e3",
+        },
+        {
+          name: "neptune",
+          orbitRadius: 2900,
+          orbitAngle: Math.random() * Math.PI * 2,
+          orbitSpeed: 0.00012,
+          rotationAngle: 0,
+          rotationSpeed: 0.016,
+          radius: 42,
+          color: "#5b8edd",
+        },
+      ];
     }
 
     private generateStarLayers() {
       this.starLayers = [];
-      const rect = this.container.getBoundingClientRect();
-      const canvasWidth = rect.width * 4;
-      const canvasHeight = rect.height * 4;
       const starColors = ["#ffffff", "#ffe8d0", "#d0e8ff", "#ffd8e8", "#d8ffe8", "#e8d8ff"];
 
+      // Generate stars across the entire virtual world
       for (let layer = 0; layer < this.LAYER_COUNT; layer++) {
         const stars: Star[] = [];
         const depth = (layer + 1) / this.LAYER_COUNT;
-        const starCount = Math.floor((50 + (1 - depth) * 150) * 4);
+        // Increased star count (1.5x more stars)
+        const starCount = Math.floor((75 + (1 - depth) * 225) * this.WORLD_SCALE);
 
         for (let i = 0; i < starCount; i++) {
           const isBright = Math.random() < 0.05 + depth * 0.1;
           stars.push({
-            x: Math.random() * canvasWidth,
-            y: Math.random() * canvasHeight,
+            x: Math.random() * this.worldWidth,
+            y: Math.random() * this.worldHeight,
             z: depth,
-            baseRadius: isBright ? 1.2 + Math.random() * 1.8 : 0.3 + Math.random() * 0.8,
+            // Increased base radius so stars remain visible when zoomed out
+            baseRadius: isBright ? 2.5 + Math.random() * 3.0 : 0.8 + Math.random() * 1.5,
             brightness: 0.4 + Math.random() * 0.6,
             twinkleSpeed: 0.3 + Math.random() * 1.5,
             twinklePhase: Math.random() * Math.PI * 2,
@@ -293,12 +334,10 @@
     private spawnShootingStar() {
       if (this.shootingStars.length >= 2 || Math.random() > 0.002) return;
 
-      const rect = this.container.getBoundingClientRect();
-      const canvasWidth = rect.width * 4;
-      const canvasHeight = rect.height * 4;
+      // Spawn shooting stars in the virtual world
       this.shootingStars.push({
-        x: Math.random() * canvasWidth,
-        y: Math.random() * canvasHeight * 0.3,
+        x: Math.random() * this.worldWidth,
+        y: Math.random() * this.worldHeight * 0.3,
         angle: Math.PI * 0.2 + Math.random() * Math.PI * 0.2,
         speed: 4 + Math.random() * 4,
         length: 60 + Math.random() * 80,
@@ -326,47 +365,48 @@
 
     private render(time: number, delta: number) {
       const ctx = this.ctx;
-      const rect = this.container.getBoundingClientRect();
-      const width = rect.width * 4;
-      const height = rect.height * 4;
+      const canvasW = this.canvas.width;
+      const canvasH = this.canvas.height;
 
-      const gradient = ctx.createLinearGradient(0, 0, 0, height);
+      // Clear with background gradient
+      const gradient = ctx.createLinearGradient(0, 0, 0, canvasH);
       gradient.addColorStop(0, "#05050f");
       gradient.addColorStop(0.5, "#0a0a1a");
       gradient.addColorStop(1, "#080815");
       ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, width, height);
+      ctx.fillRect(0, 0, canvasW, canvasH);
 
-      this.renderNebulae(ctx, time, width, height);
-      this.renderStarLayers(ctx, time, width, height);
-      this.renderShootingStars(ctx, delta, width, height);
+      this.renderStarLayers(ctx, time);
+      this.renderOrbitPaths(ctx);
+      this.renderSolarSystem(ctx, time, delta);
+      this.renderShootingStars(ctx, delta);
     }
 
-    private renderNebulae(ctx: CanvasRenderingContext2D, time: number, width: number, height: number) {
-      for (const nebula of this.nebulae) {
-        const parallaxX = this.driftX * nebula.z * 0.5;
-        const parallaxY = this.driftY * nebula.z * 0.5;
-        const x = ((nebula.x - parallaxX) % (width * 1.5)) + width * 0.25;
-        const y = ((nebula.y - parallaxY) % (height * 1.5)) + height * 0.25;
-
-        const pulse = Math.sin(time * 0.0003 + nebula.rotationPhase) * 0.15 + 1;
-        const currentRadius = nebula.radius * pulse;
-        const [r, g, b] = nebula.color;
-
-        const gradient = ctx.createRadialGradient(x, y, 0, x, y, currentRadius);
-        gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${nebula.opacity * 0.8})`);
-        gradient.addColorStop(0.3, `rgba(${r}, ${g}, ${b}, ${nebula.opacity * 0.4})`);
-        gradient.addColorStop(0.6, `rgba(${r * 0.7}, ${g * 0.7}, ${b * 0.7}, ${nebula.opacity * 0.15})`);
-        gradient.addColorStop(1, `rgba(${r * 0.5}, ${g * 0.5}, ${b * 0.5}, 0)`);
-
-        ctx.fillStyle = gradient;
-        ctx.beginPath();
-        ctx.arc(x, y, currentRadius, 0, Math.PI * 2);
-        ctx.fill();
+    private renderSolarSystem(ctx: CanvasRenderingContext2D, time: number, delta: number) {
+      // Update all planet positions first
+      for (const planet of this.planets) {
+        planet.orbitAngle += planet.orbitSpeed * delta;
+        planet.rotationAngle += planet.rotationSpeed * delta;
       }
+
+      // Separate planets into behind and in front of sun (based on orbit position)
+      const behindSun = this.planets.filter(p => Math.sin(p.orbitAngle) > 0);
+      const inFrontOfSun = this.planets.filter(p => Math.sin(p.orbitAngle) <= 0);
+
+      // Sort each group by depth
+      behindSun.sort((a, b) => Math.sin(a.orbitAngle) - Math.sin(b.orbitAngle));
+      inFrontOfSun.sort((a, b) => Math.sin(a.orbitAngle) - Math.sin(b.orbitAngle));
+
+      // Draw: planets behind -> sun -> planets in front
+      this.renderPlanetGroup(ctx, behindSun);
+      this.renderSun(ctx, time);
+      this.renderPlanetGroup(ctx, inFrontOfSun);
     }
 
-    private renderStarLayers(ctx: CanvasRenderingContext2D, time: number, width: number, height: number) {
+    private renderStarLayers(ctx: CanvasRenderingContext2D, time: number) {
+      const canvasW = this.canvas.width;
+      const canvasH = this.canvas.height;
+
       for (let layerIdx = 0; layerIdx < this.starLayers.length; layerIdx++) {
         const layer = this.starLayers[layerIdx];
         const speed = this.LAYER_SPEEDS[layerIdx];
@@ -375,17 +415,24 @@
           const parallaxX = this.driftX * speed * 50;
           const parallaxY = this.driftY * speed * 50;
 
-          let x = (star.x - parallaxX) % (width * 2);
-          let y = (star.y - parallaxY) % (height * 2);
-          if (x < -width * 0.5) x += width * 2;
-          if (y < -height * 0.5) y += height * 2;
+          // World coordinates with parallax and wrapping
+          let worldX = (star.x - parallaxX) % this.worldWidth;
+          let worldY = (star.y - parallaxY) % this.worldHeight;
+          if (worldX < 0) worldX += this.worldWidth;
+          if (worldY < 0) worldY += this.worldHeight;
 
-          if (x < -10 || x > width + 10 || y < -10 || y > height + 10) continue;
+          // Transform to canvas coordinates
+          const [x, y] = this.worldToCanvas(worldX, worldY);
+
+          // Cull if outside visible area
+          if (x < -10 || x > canvasW + 10 || y < -10 || y > canvasH + 10) continue;
 
           const twinkle = Math.sin(time * 0.001 * star.twinkleSpeed + star.twinklePhase);
           const currentBrightness = star.brightness * (0.6 + twinkle * 0.4);
           const depthScale = 0.5 + star.z * 0.5;
-          const radius = star.baseRadius * depthScale;
+          const worldRadius = star.baseRadius * depthScale;
+          // Ensure minimum visible size even when zoomed out
+          const radius = Math.max(0.4, this.worldRadiusToCanvas(worldRadius));
 
           ctx.globalAlpha = currentBrightness * depthScale;
           ctx.fillStyle = star.color;
@@ -409,10 +456,14 @@
       ctx.globalAlpha = 1;
     }
 
-    private renderShootingStars(ctx: CanvasRenderingContext2D, delta: number, width: number, height: number) {
+    private renderShootingStars(ctx: CanvasRenderingContext2D, delta: number) {
+      const canvasW = this.canvas.width;
+      const canvasH = this.canvas.height;
+
       for (let i = this.shootingStars.length - 1; i >= 0; i--) {
         const star = this.shootingStars[i];
         star.life += delta;
+        // Update position in world coordinates
         star.x += Math.cos(star.angle) * star.speed * delta;
         star.y += Math.sin(star.angle) * star.speed * delta;
 
@@ -421,38 +472,242 @@
         const fadeOut = 1 - Math.pow(lifeRatio, 2);
         const opacity = star.opacity * fadeIn * fadeOut;
 
-        if (star.life >= star.maxLife || star.x > width + 50 || star.y > height + 50) {
+        // Remove if life expired or outside world
+        if (star.life >= star.maxLife || star.x > this.worldWidth + 50 || star.y > this.worldHeight + 50) {
           this.shootingStars.splice(i, 1);
           continue;
         }
 
-        const tailX = star.x - Math.cos(star.angle) * star.length;
-        const tailY = star.y - Math.sin(star.angle) * star.length;
+        // Transform to canvas coordinates
+        const [headX, headY] = this.worldToCanvas(star.x, star.y);
+        const tailWorldX = star.x - Math.cos(star.angle) * star.length;
+        const tailWorldY = star.y - Math.sin(star.angle) * star.length;
+        const [tailX, tailY] = this.worldToCanvas(tailWorldX, tailWorldY);
 
-        const gradient = ctx.createLinearGradient(tailX, tailY, star.x, star.y);
+        // Cull if completely outside canvas
+        if (Math.max(headX, tailX) < 0 || Math.min(headX, tailX) > canvasW ||
+            Math.max(headY, tailY) < 0 || Math.min(headY, tailY) > canvasH) continue;
+
+        const gradient = ctx.createLinearGradient(tailX, tailY, headX, headY);
         gradient.addColorStop(0, `rgba(255, 255, 255, 0)`);
         gradient.addColorStop(0.7, `rgba(200, 220, 255, ${opacity * 0.5})`);
         gradient.addColorStop(1, `rgba(255, 255, 255, ${opacity})`);
 
         ctx.strokeStyle = gradient;
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2 * this.viewScale;
         ctx.lineCap = "round";
         ctx.beginPath();
         ctx.moveTo(tailX, tailY);
-        ctx.lineTo(star.x, star.y);
+        ctx.lineTo(headX, headY);
         ctx.stroke();
 
         ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
         ctx.beginPath();
-        ctx.arc(star.x, star.y, 2, 0, Math.PI * 2);
+        ctx.arc(headX, headY, 2 * this.viewScale, 0, Math.PI * 2);
         ctx.fill();
       }
+    }
+
+    // Tilt factor for 3D perspective (0 = top-down, 1 = side view)
+    private readonly ORBIT_TILT = 0.3;
+
+    private renderOrbitPaths(ctx: CanvasRenderingContext2D) {
+      const [sunX, sunY] = this.worldToCanvas(this.sun.x, this.sun.y);
+
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
+      ctx.lineWidth = 1;
+
+      for (const planet of this.planets) {
+        const orbitRadiusX = this.worldRadiusToCanvas(planet.orbitRadius);
+        const orbitRadiusY = orbitRadiusX * this.ORBIT_TILT;
+        ctx.beginPath();
+        ctx.ellipse(sunX, sunY, orbitRadiusX, orbitRadiusY, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    }
+
+    private renderSun(ctx: CanvasRenderingContext2D, _time: number) {
+      const [x, y] = this.worldToCanvas(this.sun.x, this.sun.y);
+      const radius = this.worldRadiusToCanvas(this.sun.radius);
+
+      // Cull if outside visible area
+      if (x + radius * 3 < 0 || x - radius * 3 > this.canvas.width ||
+          y + radius * 3 < 0 || y - radius * 3 > this.canvas.height) return;
+
+      // Outer corona glow
+      const coronaGradient = ctx.createRadialGradient(x, y, radius * 0.5, x, y, radius * 2.5);
+      coronaGradient.addColorStop(0, "rgba(255, 200, 100, 0.3)");
+      coronaGradient.addColorStop(0.4, "rgba(255, 150, 50, 0.15)");
+      coronaGradient.addColorStop(1, "rgba(255, 100, 0, 0)");
+      ctx.fillStyle = coronaGradient;
+      ctx.beginPath();
+      ctx.arc(x, y, radius * 2.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Main sun body
+      const sunGradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
+      sunGradient.addColorStop(0, "#fffef0");
+      sunGradient.addColorStop(0.3, "#ffee88");
+      sunGradient.addColorStop(0.7, "#ffcc33");
+      sunGradient.addColorStop(1, "#ff8800");
+      ctx.fillStyle = sunGradient;
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Inner bright core
+      const coreGradient = ctx.createRadialGradient(x, y, 0, x, y, radius * 0.4);
+      coreGradient.addColorStop(0, "rgba(255, 255, 255, 0.8)");
+      coreGradient.addColorStop(1, "rgba(255, 255, 200, 0)");
+      ctx.fillStyle = coreGradient;
+      ctx.beginPath();
+      ctx.arc(x, y, radius * 0.4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    private renderPlanetGroup(ctx: CanvasRenderingContext2D, planets: Planet[]) {
+      for (const planet of planets) {
+        // Calculate planet's world position with tilted orbit
+        const planetWorldX = this.sun.x + Math.cos(planet.orbitAngle) * planet.orbitRadius;
+        const planetWorldY = this.sun.y + Math.sin(planet.orbitAngle) * planet.orbitRadius * this.ORBIT_TILT;
+
+        const [x, y] = this.worldToCanvas(planetWorldX, planetWorldY);
+        const radius = this.worldRadiusToCanvas(planet.radius);
+
+        // Cull if outside visible area
+        const cullRadius = planet.hasRings ? radius * 2.5 : radius;
+        if (x + cullRadius < 0 || x - cullRadius > this.canvas.width ||
+            y + cullRadius < 0 || y - cullRadius > this.canvas.height) continue;
+
+        // Draw Saturn's rings behind the planet
+        if (planet.hasRings) {
+          this.renderSaturnRings(ctx, x, y, radius, planet.rotationAngle);
+        }
+
+        // Draw planet body with crisp edges
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.clip();
+
+        // Planet gradient
+        const planetGradient = ctx.createRadialGradient(
+          x - radius * 0.3, y - radius * 0.3, 0,
+          x, y, radius
+        );
+
+        if (planet.name === "earth") {
+          // Earth with continents
+          planetGradient.addColorStop(0, "#4a90d9");
+          planetGradient.addColorStop(0.5, "#2e6ab3");
+          planetGradient.addColorStop(1, "#1a4a7a");
+          ctx.fillStyle = planetGradient;
+          ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+
+          // Continents
+          const continentOffset = planet.rotationAngle * 0.5;
+          ctx.fillStyle = "#3d8b4a";
+          for (let i = 0; i < 3; i++) {
+            const angle = continentOffset + (i * Math.PI * 2) / 3;
+            const cx = x + Math.cos(angle) * radius * 0.4;
+            const cy = y + Math.sin(angle * 0.5) * radius * 0.3;
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, radius * 0.35, radius * 0.25, angle, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        } else if (planet.name === "jupiter") {
+          // Jupiter with bands
+          planetGradient.addColorStop(0, "#e8cba8");
+          planetGradient.addColorStop(0.5, "#d4a574");
+          planetGradient.addColorStop(1, "#a67c52");
+          ctx.fillStyle = planetGradient;
+          ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+
+          // Horizontal bands
+          ctx.fillStyle = "rgba(180, 120, 80, 0.4)";
+          for (let i = -2; i <= 2; i++) {
+            ctx.fillRect(x - radius, y + i * radius * 0.3 - radius * 0.08, radius * 2, radius * 0.16);
+          }
+        } else if (planet.name === "mars") {
+          // Mars with polar caps
+          planetGradient.addColorStop(0, "#e07050");
+          planetGradient.addColorStop(0.5, "#c1440e");
+          planetGradient.addColorStop(1, "#8b3010");
+          ctx.fillStyle = planetGradient;
+          ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+
+          // Polar cap
+          ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+          ctx.beginPath();
+          ctx.ellipse(x, y - radius * 0.7, radius * 0.4, radius * 0.2, 0, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          // Generic planet
+          const baseColor = planet.color;
+          const r = parseInt(baseColor.slice(1, 3), 16);
+          const g = parseInt(baseColor.slice(3, 5), 16);
+          const b = parseInt(baseColor.slice(5, 7), 16);
+
+          planetGradient.addColorStop(0, `rgb(${Math.min(255, r + 40)}, ${Math.min(255, g + 40)}, ${Math.min(255, b + 40)})`);
+          planetGradient.addColorStop(0.5, baseColor);
+          planetGradient.addColorStop(1, `rgb(${Math.max(0, r - 40)}, ${Math.max(0, g - 40)}, ${Math.max(0, b - 40)})`);
+          ctx.fillStyle = planetGradient;
+          ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+        }
+
+        // Day/night shadow
+        const sunAngle = Math.atan2(this.sun.y - planetWorldY, this.sun.x - planetWorldX);
+        const shadowGradient = ctx.createRadialGradient(
+          x + Math.cos(sunAngle) * radius * 0.5,
+          y + Math.sin(sunAngle) * radius * 0.5,
+          0,
+          x - Math.cos(sunAngle) * radius * 0.3,
+          y - Math.sin(sunAngle) * radius * 0.3,
+          radius * 1.2
+        );
+        shadowGradient.addColorStop(0, "rgba(0, 0, 0, 0)");
+        shadowGradient.addColorStop(0.5, "rgba(0, 0, 20, 0.3)");
+        shadowGradient.addColorStop(1, "rgba(0, 0, 30, 0.7)");
+        ctx.fillStyle = shadowGradient;
+        ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+
+        ctx.restore();
+      }
+    }
+
+    private renderSaturnRings(ctx: CanvasRenderingContext2D, x: number, y: number, planetRadius: number, _rotation: number) {
+      const innerRadius = planetRadius * 1.3;
+      const outerRadius = planetRadius * 2.2;
+
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(1, 0.3); // Tilt the rings
+
+      // Ring gradient
+      const ringGradient = ctx.createRadialGradient(0, 0, innerRadius, 0, 0, outerRadius);
+      ringGradient.addColorStop(0, "rgba(210, 180, 140, 0)");
+      ringGradient.addColorStop(0.1, "rgba(210, 180, 140, 0.6)");
+      ringGradient.addColorStop(0.3, "rgba(180, 150, 110, 0.4)");
+      ringGradient.addColorStop(0.5, "rgba(210, 180, 140, 0.5)");
+      ringGradient.addColorStop(0.7, "rgba(180, 150, 110, 0.3)");
+      ringGradient.addColorStop(1, "rgba(210, 180, 140, 0)");
+
+      ctx.fillStyle = ringGradient;
+      ctx.beginPath();
+      ctx.arc(0, 0, outerRadius, 0, Math.PI * 2);
+      ctx.arc(0, 0, innerRadius, 0, Math.PI * 2, true);
+      ctx.fill();
+
+      ctx.restore();
     }
 
     regenerate() {
       this.driftX = 0;
       this.driftY = 0;
       this.shootingStars = [];
+      this.viewScale = 1;
+      this.viewCenterX = 0.5;
+      this.viewCenterY = 0.5;
       this.generateSpace();
     }
 
@@ -466,117 +721,153 @@
   type ZoomedPinchSignal = PinchSignal<ZoomValue>;
 
   /**
-   * Manages zoom state and applies transforms to the canvas.
+   * Manages zoom state and updates SpaceRenderer's view.
+   * No CSS transforms - all zooming is handled by the renderer's coordinate system.
    */
   class ZoomManager {
     private currentScale = 1;
     private baseScale = 1;
-    private transformOriginX = 50;
-    private transformOriginY = 50;
+    private centerX = 0.5; // View center as ratio (0~1) in world
+    private centerY = 0.5;
 
     constructor(
-      private canvas: HTMLCanvasElement,
       private container: HTMLElement,
-      private minScale: number,
-      private maxScale: number
-    ) {}
-
-    handlePinch(signal: ZoomedPinchSignal) {
-      const { phase, scale, centerX, centerY } = signal.value;
-
-      if (phase === "start") {
-        this.baseScale = this.currentScale;
-        this.updateTransformOrigin(centerX, centerY);
-      }
-
-      if (phase === "start" || phase === "change") {
-        const newScale = this.baseScale * scale;
-        this.currentScale = Math.max(this.minScale, Math.min(this.maxScale, newScale));
-        this.applyTransform();
-      }
+      private renderer: SpaceRenderer,
+    ) {
+      this.applyView();
     }
 
-    private updateTransformOrigin(clientX: number, clientY: number) {
-      const rect = this.container.getBoundingClientRect();
-      this.transformOriginX = ((clientX - rect.left) / rect.width) * 100;
-      this.transformOriginY = ((clientY - rect.top) / rect.height) * 100;
-      this.canvas.style.transformOrigin = `${this.transformOriginX}% ${this.transformOriginY}%`;
-    }
-
-    private applyTransform() {
-      this.canvas.style.transform = `scale(${this.currentScale})`;
+    private applyView() {
+      this.renderer.setView(this.currentScale, this.centerX, this.centerY);
     }
 
     reset() {
       this.currentScale = 1;
       this.baseScale = 1;
-      this.transformOriginX = 50;
-      this.transformOriginY = 50;
-      this.canvas.style.transformOrigin = "center center";
-      this.canvas.style.transform = "scale(1)";
+      this.centerX = 0.5;
+      this.centerY = 0.5;
+      this.applyView();
     }
 
     getScale() {
       return this.currentScale;
     }
+
+    setScale(newScale: number) {
+      this.currentScale = newScale;
+      this.applyView();
+    }
+
+    adjustScale(delta: number) {
+      this.setScale(this.currentScale + delta);
+    }
   }
+
+  type InputSource = "pinch" | "keyboard" | "wheel" | "slider";
 
   function initSpacePinchZoom() {
     const box = document.getElementById("space-box");
     const canvas = document.getElementById("space-canvas") as HTMLCanvasElement;
     const resetBtn = document.getElementById("reset-space");
+    const slider = document.getElementById("zoom-slider") as HTMLInputElement;
     const infoScale = document.getElementById("info-scale");
-    const infoPhase = document.getElementById("info-phase");
-    const infoCenterX = document.getElementById("info-center-x");
-    const infoCenterY = document.getElementById("info-center-y");
+    const infoSource = document.getElementById("info-source");
 
-    if (!box || !canvas || !resetBtn || !infoScale || !infoPhase || !infoCenterX || !infoCenterY) {
+    if (!box || !canvas || !resetBtn || !slider || !infoScale || !infoSource) {
       return;
     }
 
-    const spaceRenderer = new SpaceRenderer(canvas, box);
-    const zoomManager = new ZoomManager(canvas, box, 0.25, 5);
+    const MIN_SCALE = 0.2;
+    const MAX_SCALE = 5;
+    const logMin = Math.log(MIN_SCALE);
+    const logMax = Math.log(MAX_SCALE);
 
-    const updateInfo = (signal: ZoomedPinchSignal) => {
-      const { phase, centerX, centerY } = signal.value;
-      infoScale.textContent = zoomManager.getScale().toFixed(2);
-      infoPhase.textContent = phase;
-      infoCenterX.textContent = Math.round(centerX).toString();
-      infoCenterY.textContent = Math.round(centerY).toString();
+    const spaceRenderer = new SpaceRenderer(canvas, box);
+    const zoomManager = new ZoomManager(box, spaceRenderer);
+
+    const syncSlider = (scale: number) => {
+      const logScale = Math.log(scale);
+      const value = ((logScale - logMin) / (logMax - logMin)) * 100;
+      slider.value = String(value);
     };
 
-    pipe(
-      pinch(box, { threshold: 10 }),
-      zoom({ minScale: 0.25, maxScale: 10 })
-    ).subscribe((signal) => {
-      const { phase } = signal.value;
+    const updateInfo = (source: string) => {
+      infoScale.textContent = zoomManager.getScale().toFixed(2);
+      infoSource.textContent = source;
+      syncSlider(zoomManager.getScale());
+    };
 
-      if (phase === "start") {
-        box.classList.add("active");
-      }
-
-      zoomManager.handlePinch(signal);
-      updateInfo(signal);
-
-      if (phase === "end" || phase === "cancel") {
-        box.classList.remove("active");
-      }
-    });
+    syncSlider(zoomManager.getScale());
 
     resetBtn.addEventListener("click", () => {
       zoomManager.reset();
       spaceRenderer.regenerate();
       box.classList.remove("active");
+      syncSlider(1);
       infoScale.textContent = "1.00";
-      infoPhase.textContent = "-";
-      infoCenterX.textContent = "-";
-      infoCenterY.textContent = "-";
+      infoSource.textContent = "-";
     });
+
+    const render = <T extends { kind: string; value: { scale: number } }>(
+      signal: T
+    ) => {
+      zoomManager.setScale(signal.value.scale);
+      updateInfo(signal.kind);
+    }
+
+    const pinch$ = pinch(box, { threshold: 10 });
+    const sliderInput$ = domEvent(slider, "input");
+
+    // Pinch Zoom
+    pipe(
+      pinch$,
+      zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE })
+    ).subscribe(render);
+
+    // 'CTRL' + 'z' + '+/-'
+    pipe(
+      keyboard(window, { key: ["+", "=", "-"], preventDefault: true }),
+      when(keyboardHeld(window, { key: "z", modifiers: ["meta", "ctrl"] })),
+      extend<KeyboardSignal, ZoomInput>((signal) => ({
+        ratio: zoomManager.getScale() + (signal.value.key === "+" || signal.value.key === "=" ? 0.15 : -0.15),
+      })),
+      zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE }),
+    ).subscribe(render);
+
+    // 'CTRL' + 'wheel'
+    pipe(
+      wheel(box, { passive: false, preventDefault: true, modifiers: ["meta", "ctrl"] }),
+      extend<WheelSignal, ZoomInput>((signal) => {
+        return {
+          ratio: zoomManager.getScale() + (-signal.value.deltaY * 0.005),
+        };
+      }),
+      zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE }),
+    ).subscribe(render);
+
+    // 'Progress'
+    pipe(
+      sliderInput$,
+      extend<DomEventSignal<Event>, ZoomInput>((signal) => {
+        const inputElement = signal.value.target as HTMLInputElement;
+        const value = Number(inputElement.value);
+        const logScale = logMin + (value / 100) * (logMax - logMin);
+        const scale = Math.exp(logScale);
+        return {
+          ratio: clamp(scale, MIN_SCALE, MAX_SCALE),
+        };
+      }),
+      zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE, baseScale: zoomManager.getScale() }),
+    ).subscribe(render);
   }
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initSpacePinchZoom);
   } else {
     initSpacePinchZoom();
+  }
+
+  function clamp(value: number, min: number, max: number): number {
+    return Math.max(min, Math.min(max, value));
   }
 </script>

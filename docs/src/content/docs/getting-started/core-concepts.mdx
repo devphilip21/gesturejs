@@ -20,17 +20,6 @@ interface Signal<K extends string, V> {
 }
 ```
 
-### Why Immutable?
-
-Signals are designed to be **readonly** for two important reasons:
-
-1. **No Side Effects** - Immutable data prevents accidental mutations that could cause hard-to-debug issues in reactive pipelines.
-2. **GC Optimization** - The library internally reuses Signal objects through pooling. Treating them as readonly ensures predictable behavior.
-
-<Aside type="tip">
-When you need to add computed properties to a Signal, use operators like `offset()` or `withVelocity()`. They extend the Signal's value without mutating the original structure.
-</Aside>
-
 ## Stream
 
 A **Stream** is an observable sequence of Signals over time. It's the pipeline through which all events flow.
@@ -93,37 +82,6 @@ pipe(
   offset({ target: canvas }),
 ).subscribe((signal) => {
   // Only touch events, throttled to ~60fps, with canvas-relative coordinates
-});
-```
-
-## Object Pooling
-
-High-frequency events (60+ per second during gestures) can create garbage collection pressure. Cereb uses **object pooling** to reuse Signal objects, eliminating GC stutters during critical animations.
-
-```typescript
-// The library handles pooling automatically.
-// This is what happens internally:
-
-const signal = signalPool.acquire("single-pointer");
-// ... use signal ...
-signalPool.release(signal);  // Returns to pool for reuse
-```
-
-<Aside type="caution">
-This is why Signals should be treated as readonly. The same Signal object may be reused for the next event. Never store references to Signals for later use—extract the values you need immediately.
-</Aside>
-
-```typescript
-// Don't do this
-let lastSignal: SinglePointerSignal;
-stream.subscribe((signal) => {
-  lastSignal = signal;  // This reference will become stale!
-});
-
-// Do this instead
-let lastPosition = { x: 0, y: 0 };
-stream.subscribe((signal) => {
-  lastPosition = { x: signal.value.x, y: signal.value.y };  // Extract the values
 });
 ```
 
@@ -217,8 +175,8 @@ const stream = pipe(
   // 3. Add canvas-relative coordinates
   offset({ target: canvas }),
 
-  // 4. Limit to 60fps
-  throttle(16),
+  // 4. Limit to 30fps
+  throttle(32),
 );
 
 // 5. Subscribe to receive Signals

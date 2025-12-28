@@ -3,142 +3,52 @@
  * Interactive demo component that draws dots following pointer movement.
  * Uses cereb's singlePointer stream to track pointer events.
  */
+import "./pointer-tracker.css";
 ---
-
-<div class="pointer-tracker-container">
-  <div class="pointer-tracker-main">
-    <div class="pointer-tracker-box" id="pointer-tracker-box">
-      <canvas id="pointer-tracker-canvas"></canvas>
-      <p class="pointer-tracker-hint">Click and drag to draw</p>
-    </div>
-    <div class="pointer-tracker-info-panel" id="pointer-info-panel">
-      <div class="info-item">
-        <span class="info-label">x</span>
-        <span class="info-value" id="info-x">-</span>
-      </div>
-      <div class="info-item">
-        <span class="info-label">y</span>
-        <span class="info-value" id="info-y">-</span>
-      </div>
-      <div class="info-item">
-        <span class="info-label">phase</span>
-        <span class="info-value" id="info-phase">-</span>
-      </div>
-      <div class="info-item">
-        <span class="info-label">type</span>
-        <span class="info-value" id="info-type">-</span>
-      </div>
+<div class="pointer-tracker">
+  <div id="pointer-tracker-box" class="_demo-box">
+    <canvas id="pointer-tracker-canvas"></canvas>
+    <p id="pointer-tracker-hint" class="_hint">Sign here.</p>
+    <div class="_tip">
+      <strong class="_tip-title">Tip.</strong>
+      Touch and drag to sign.
     </div>
   </div>
-  <div class="pointer-tracker-controls">
-    <button id="clear-canvas" type="button">Clear</button>
+  <div class="_demo-controls">
+    <div class="_buttons">
+      <button id="clear-canvas" type="button" class="_button">Reset</button>
+    </div>
+  </div>
+  <div id="pointer-tracker-status" class="_signal-snapshot-grid">
+    <strong class="_title">Signal Snapshot</strong>
+    <div class="_grid">
+      <div class="_item">
+        <span class="_label">X</span>
+        <span id="info-x" class="_value">-</span>
+      </div>
+      <div class="_item">
+        <span class="_label">Y</span>
+        <span id="info-y" class="_value">-</span>
+      </div>
+      <div class="_item">
+        <span class="_label">OFFSET X</span>
+        <span id="info-offsetX" class="_value">-</span>
+      </div>
+      <div class="_item">
+        <span class="_label">OFFSET Y</span>
+        <span id="info-offsetY" class="_value">-</span>
+      </div>
+      <div class="_item">
+        <span class="_label">PHASE</span>
+        <span id="info-phase" class="_value">-</span>
+      </div>
+      <div class="_item">
+        <span class="_label">POINTER TYPE</span>
+        <span id="info-type" class="_value">-</span>
+      </div>
+    </div>
   </div>
 </div>
-
-<style>
-  .pointer-tracker-container {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .pointer-tracker-main {
-    display: flex;
-    gap: 0.75rem;
-  }
-
-  .pointer-tracker-box {
-    flex: 1;
-    position: relative;
-    width: 100%;
-    height: 300px;
-    border: 2px solid var(--sl-color-gray-5);
-    border-radius: 8px;
-    overflow: hidden;
-    background: var(--sl-color-gray-6);
-    touch-action: none;
-    cursor: crosshair;
-  }
-
-  .pointer-tracker-box canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  .pointer-tracker-hint {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    margin: 0;
-    color: var(--sl-color-gray-3);
-    font-size: 0.875rem;
-    pointer-events: none;
-    opacity: 0.7;
-    transition: opacity 0.2s;
-  }
-
-  .pointer-tracker-box.active .pointer-tracker-hint {
-    opacity: 0;
-  }
-
-  .pointer-tracker-controls {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
-
-  .pointer-tracker-controls button {
-    padding: 0.5rem 1rem;
-    border: 1px solid var(--sl-color-gray-5);
-    border-radius: 4px;
-    background: var(--sl-color-gray-6);
-    color: var(--sl-color-white);
-    cursor: pointer;
-    font-size: 0.875rem;
-    transition: background 0.2s;
-  }
-
-  .pointer-tracker-controls button:hover {
-    background: var(--sl-color-gray-5);
-  }
-
-  .pointer-tracker-info-panel {
-    width: 100px;
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-top: 0 !important;
-    padding: 0.75rem;
-    border: 2px solid var(--sl-color-gray-5);
-    border-radius: 8px;
-    background: var(--sl-color-gray-6);
-  }
-
-  .info-item {
-    display: flex;
-    flex-direction: column;
-    gap: 0.125rem;
-  }
-
-  .info-label {
-    font-size: 0.625rem;
-    color: var(--sl-color-gray-4);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .info-value {
-    font-size: 0.75rem;
-    color: var(--sl-color-white);
-    font-family: var(--sl-font-mono);
-    word-break: break-all;
-  }
-</style>
 
 <script>
   import { pipe, singlePointer, type ExtendSignalValue, type SinglePointerSignal } from "cereb";
@@ -169,10 +79,10 @@
       if (boxBg && boxBg !== "transparent") {
         const match = boxBg.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
         if (match) {
-          return `rgba(${match[1]}, ${match[2]}, ${match[3]}, 0.05)`;
+          return `rgba(${match[1]}, ${match[2]}, ${match[3]}, 0.02)`;
         }
       }
-      return "rgba(38, 38, 38, 0.05)";
+      return "rgba(38, 38, 38, 0.02)";
     }
 
     private setupCanvas() {
@@ -296,6 +206,9 @@
       private infoElements: {
         x: HTMLElement;
         y: HTMLElement;
+        hint: HTMLElement;
+        offsetX: HTMLElement;
+        offsetY: HTMLElement;
         phase: HTMLElement;
         type: HTMLElement;
       }
@@ -306,6 +219,7 @@
 
       switch (signal.value.phase) {
         case "start":
+          this.infoElements.hint.classList.add("hidden");
           this.handleStart(signal);
           break;
         case "move":
@@ -319,9 +233,11 @@
     }
 
     private updatePointerInfo(signal: CanvasSignal) {
-      const { x, y, phase, pointerType } = signal.value;
+      const { x, y, offsetX, offsetY, phase, pointerType } = signal.value;
       this.infoElements.x.textContent = String(Math.round(x));
       this.infoElements.y.textContent = String(Math.round(y));
+      this.infoElements.offsetX.textContent = String(Math.round(offsetX));
+      this.infoElements.offsetY.textContent = String(Math.round(offsetY));
       this.infoElements.phase.textContent = phase;
       this.infoElements.type.textContent = pointerType;
     }
@@ -347,37 +263,41 @@
   }
 
   function initPointerTracker() {
-    const box = document.getElementById("pointer-tracker-box");
-    const canvas = document.getElementById("pointer-tracker-canvas") as HTMLCanvasElement;
-    const clearBtn = document.getElementById("clear-canvas");
-    const infoX = document.getElementById("info-x");
-    const infoY = document.getElementById("info-y");
-    const infoPhase = document.getElementById("info-phase");
-    const infoType = document.getElementById("info-type");
+    const boxEl = document.getElementById("pointer-tracker-box")!;
+    const canvasEl = document.getElementById("pointer-tracker-canvas")! as HTMLCanvasElement;
+    const clearBtnEl = document.getElementById("clear-canvas")!;
+    const hintEl = document.getElementById("pointer-tracker-hint")!;
 
-    if (!box || !canvas || !clearBtn || !infoX || !infoY || !infoPhase || !infoType) return;
+    const infoXEl = document.getElementById("info-x")!;
+    const infoYEl = document.getElementById("info-y")!;
+    const infoOffsetXEl = document.getElementById("info-offsetX")!;
+    const infoOffsetYEl = document.getElementById("info-offsetY")!;
+    const infoPhaseEl = document.getElementById("info-phase")!;
+    const infoTypeEl = document.getElementById("info-type")!;
 
-    const canvasManager = new CanvasManager(canvas, box);
+    const canvasManager = new CanvasManager(canvasEl, boxEl);
     const drawingState = new DrawingState();
-    const infoElements = { x: infoX, y: infoY, phase: infoPhase, type: infoType };
-    const eventHandler = new PointerEventHandler(box, canvasManager, drawingState, infoElements);
+    const infoElements = { x: infoXEl, y: infoYEl, hint: hintEl, offsetX: infoOffsetXEl, offsetY: infoOffsetYEl, phase: infoPhaseEl, type: infoTypeEl };
+    const eventHandler = new PointerEventHandler(boxEl, canvasManager, drawingState, infoElements);
 
     pipe(
       singlePointer(window),
       singlePointerSession(),
-      offset({ target: box })
+      offset({ target: boxEl })
     ).subscribe(signal => {
       eventHandler.handlePointer(signal);
     });
 
-    clearBtn.addEventListener("click", () => {
+    clearBtnEl.addEventListener("click", () => {
       canvasManager.clear();
       drawingState.reset();
-      box.classList.remove("active");
-      infoX.textContent = "-";
-      infoY.textContent = "-";
-      infoPhase.textContent = "-";
-      infoType.textContent = "-";
+      hintEl.classList.remove("hidden");
+      infoXEl.textContent = "-";
+      infoYEl.textContent = "-";
+      infoOffsetXEl.textContent = "-";
+      infoOffsetYEl.textContent = "-";
+      infoPhaseEl.textContent = "-";
+      infoTypeEl.textContent = "-";
     });
   }
 
