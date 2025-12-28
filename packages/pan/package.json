@@ -1,7 +1,7 @@
 {
   "name": "@cereb/pan",
   "description": "Pan gesture recognition, designed to work seamlessly with reactive streams and other gesture interactions.",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "license": "MIT",
   "author": "devphilip21 <philip21.dev@gmail.com>",
   "repository": {
