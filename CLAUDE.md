@@ -11,6 +11,73 @@
 - Do not leave comments just for section-dividing purposes
 - Do not write comments for things that can be understood from the code alone
 
+## Commit Message Rules
+
+Follow this format for all commits:
+
+```
+{task_type}({package}): {title_message}
+
+- Key point 1
+- Key point 2
+- Key point 3
+```
+
+### Guidelines for Description
+- Description is optional—include only if it adds essential context
+- Keep it concise: 1–2 bullet points is ideal, maximum 4
+- Prioritize accuracy and clarity over quantity
+- Focus on "why" and purpose, not implementation details
+
+### Task Types
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation changes
+- `test`: Test additions or modifications
+- `refactor`: Code refactoring
+- `perf`: Performance improvements
+- `style`: Code style changes (formatting, etc.)
+- `chore`: Build, dependency, or tooling changes
+
+### Package Names
+- `core`: Core library
+- `pan`: Pan gesture recognition
+- `pinch`: Pinch gesture recognition
+- `single-pointer`: Single pointer events
+- `docs`: Documentation site
+
+### Examples
+
+```
+feat(pinch): add pinch gesture recognition
+
+- Implement distance-based pinch detection
+- Add velocity calculation for zoom gestures
+- Integrate with existing pointer tracking system
+```
+
+```
+fix(core): resolve zoom operator issue
+
+- Fix incorrect scale calculation in zoom operator
+- Update pointer position normalization
+- Add tests for edge cases
+```
+
+```
+docs(pan): update velocity documentation
+
+- Add API reference for velocity properties
+- Include code examples for pan gesture handling
+- Update README with performance notes
+```
+
+### Commit Behavior
+- Only consider files that are already staged for commit
+- Do not ask about adding unstaged or untracked files
+- Use `git status` to identify staged files and base commit messages only on those files
+- Do not prompt to add or stage any files that the user has not already staged
+
 ## Test Code Rules
 
 ### File Structure
