@@ -1,0 +1,582 @@
+---
+/**
+ * Interactive space canvas demo that uses pinch gesture to zoom in/out.
+ * Stars and nebulae are drawn on a canvas, with transform applied for zooming.
+ */
+---
+
+<div class="space-container">
+  <div class="space-main">
+    <div class="space-box" id="space-box">
+      <canvas id="space-canvas"></canvas>
+      <p class="space-hint">Pinch to zoom in/out</p>
+    </div>
+    <div class="space-info-panel" id="space-info-panel">
+      <div class="info-item">
+        <span class="info-label">scale</span>
+        <span class="info-value" id="info-scale">1.00</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">phase</span>
+        <span class="info-value" id="info-phase">-</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">center x</span>
+        <span class="info-value" id="info-center-x">-</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">center y</span>
+        <span class="info-value" id="info-center-y">-</span>
+      </div>
+    </div>
+  </div>
+  <div class="space-controls">
+    <button id="reset-space" type="button">Reset</button>
+  </div>
+</div>
+
+<style>
+  .space-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .space-main {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .space-box {
+    flex: 1;
+    position: relative;
+    width: 100%;
+    height: 350px;
+    border: 2px solid var(--sl-color-gray-5);
+    border-radius: 8px;
+    overflow: hidden;
+    background: #0a0a1a;
+    touch-action: none;
+    cursor: grab;
+  }
+
+  .space-box:active {
+    cursor: grabbing;
+  }
+
+  .space-box canvas {
+    position: absolute;
+    top: -150%;
+    left: -150%;
+    width: 400%;
+    height: 400%;
+    transform-origin: center center;
+    transition: transform 0.05s ease-out;
+  }
+
+  .space-hint {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.875rem;
+    pointer-events: none;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+  }
+
+  .space-box.active .space-hint {
+    opacity: 0;
+  }
+
+  .space-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .space-controls button {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 4px;
+    background: var(--sl-color-gray-6);
+    color: var(--sl-color-white);
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: background 0.2s;
+  }
+
+  .space-controls button:hover {
+    background: var(--sl-color-gray-5);
+  }
+
+  .space-info-panel {
+    width: 100px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0 !important;
+    padding: 0.75rem;
+    border: 2px solid var(--sl-color-gray-5);
+    border-radius: 8px;
+    background: var(--sl-color-gray-6);
+  }
+
+  .info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+
+  .info-label {
+    font-size: 0.625rem;
+    color: var(--sl-color-gray-4);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .info-value {
+    font-size: 0.75rem;
+    color: var(--sl-color-white);
+    font-family: var(--sl-font-mono);
+    word-break: break-all;
+  }
+</style>
+
+<script>
+  import { pipe } from "cereb";
+  import { zoom } from "cereb/operators";
+  import { pinch, type PinchSignal } from "@cereb/pinch";
+  import type { ZoomValue } from "cereb/operators";
+
+  interface Star {
+    x: number;
+    y: number;
+    z: number;
+    baseRadius: number;
+    brightness: number;
+    twinkleSpeed: number;
+    twinklePhase: number;
+    color: string;
+  }
+
+  interface Nebula {
+    x: number;
+    y: number;
+    z: number;
+    radius: number;
+    color: [number, number, number];
+    opacity: number;
+    rotationSpeed: number;
+    rotationPhase: number;
+  }
+
+  interface ShootingStar {
+    x: number;
+    y: number;
+    angle: number;
+    speed: number;
+    length: number;
+    opacity: number;
+    life: number;
+    maxLife: number;
+  }
+
+  /**
+   * Renders a 3D parallax space scene with multiple star layers,
+   * animated nebulae, and occasional shooting stars.
+   */
+  class SpaceRenderer {
+    private ctx: CanvasRenderingContext2D;
+    private starLayers: Star[][] = [];
+    private nebulae: Nebula[] = [];
+    private shootingStars: ShootingStar[] = [];
+    private animationId: number | null = null;
+    private driftX = 0;
+    private driftY = 0;
+    private readonly LAYER_COUNT = 4;
+    private readonly LAYER_SPEEDS = [0.02, 0.05, 0.1, 0.2];
+
+    constructor(
+      private canvas: HTMLCanvasElement,
+      private container: HTMLElement
+    ) {
+      this.ctx = canvas.getContext("2d")!;
+      this.setupCanvas();
+      this.generateSpace();
+      this.startAnimation();
+    }
+
+    private setupCanvas() {
+      this.resize();
+      window.addEventListener("resize", () => {
+        this.resize();
+        this.generateSpace();
+      });
+    }
+
+    private resize() {
+      const rect = this.container.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      this.canvas.width = rect.width * 4 * dpr;
+      this.canvas.height = rect.height * 4 * dpr;
+      this.ctx.scale(dpr, dpr);
+    }
+
+    private generateSpace() {
+      this.generateNebulae();
+      this.generateStarLayers();
+    }
+
+    private generateNebulae() {
+      this.nebulae = [];
+      const nebulaCount = 4 + Math.floor(Math.random() * 3);
+      const colors: [number, number, number][] = [
+        [120, 60, 180],
+        [60, 120, 200],
+        [180, 60, 120],
+        [60, 180, 140],
+        [200, 120, 60],
+        [100, 80, 200],
+      ];
+
+      const rect = this.container.getBoundingClientRect();
+      const canvasWidth = rect.width * 4;
+      const canvasHeight = rect.height * 4;
+      for (let i = 0; i < nebulaCount; i++) {
+        this.nebulae.push({
+          x: Math.random() * canvasWidth,
+          y: Math.random() * canvasHeight,
+          z: 0.3 + Math.random() * 0.4,
+          radius: 100 + Math.random() * 150,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          opacity: 0.08 + Math.random() * 0.12,
+          rotationSpeed: (Math.random() - 0.5) * 0.0001,
+          rotationPhase: Math.random() * Math.PI * 2,
+        });
+      }
+    }
+
+    private generateStarLayers() {
+      this.starLayers = [];
+      const rect = this.container.getBoundingClientRect();
+      const canvasWidth = rect.width * 4;
+      const canvasHeight = rect.height * 4;
+      const starColors = ["#ffffff", "#ffe8d0", "#d0e8ff", "#ffd8e8", "#d8ffe8", "#e8d8ff"];
+
+      for (let layer = 0; layer < this.LAYER_COUNT; layer++) {
+        const stars: Star[] = [];
+        const depth = (layer + 1) / this.LAYER_COUNT;
+        const starCount = Math.floor((50 + (1 - depth) * 150) * 4);
+
+        for (let i = 0; i < starCount; i++) {
+          const isBright = Math.random() < 0.05 + depth * 0.1;
+          stars.push({
+            x: Math.random() * canvasWidth,
+            y: Math.random() * canvasHeight,
+            z: depth,
+            baseRadius: isBright ? 1.2 + Math.random() * 1.8 : 0.3 + Math.random() * 0.8,
+            brightness: 0.4 + Math.random() * 0.6,
+            twinkleSpeed: 0.3 + Math.random() * 1.5,
+            twinklePhase: Math.random() * Math.PI * 2,
+            color: starColors[Math.floor(Math.random() * starColors.length)],
+          });
+        }
+        this.starLayers.push(stars);
+      }
+    }
+
+    private spawnShootingStar() {
+      if (this.shootingStars.length >= 2 || Math.random() > 0.002) return;
+
+      const rect = this.container.getBoundingClientRect();
+      const canvasWidth = rect.width * 4;
+      const canvasHeight = rect.height * 4;
+      this.shootingStars.push({
+        x: Math.random() * canvasWidth,
+        y: Math.random() * canvasHeight * 0.3,
+        angle: Math.PI * 0.2 + Math.random() * Math.PI * 0.2,
+        speed: 4 + Math.random() * 4,
+        length: 60 + Math.random() * 80,
+        opacity: 0.8 + Math.random() * 0.2,
+        life: 0,
+        maxLife: 80 + Math.random() * 40,
+      });
+    }
+
+    private startAnimation() {
+      let lastTime = 0;
+      const animate = (time: number) => {
+        const delta = Math.min((time - lastTime) / 16.67, 2);
+        lastTime = time;
+
+        this.driftX += 0.015 * delta;
+        this.driftY += 0.008 * delta;
+
+        this.spawnShootingStar();
+        this.render(time, delta);
+        this.animationId = requestAnimationFrame(animate);
+      };
+      this.animationId = requestAnimationFrame(animate);
+    }
+
+    private render(time: number, delta: number) {
+      const ctx = this.ctx;
+      const rect = this.container.getBoundingClientRect();
+      const width = rect.width * 4;
+      const height = rect.height * 4;
+
+      const gradient = ctx.createLinearGradient(0, 0, 0, height);
+      gradient.addColorStop(0, "#05050f");
+      gradient.addColorStop(0.5, "#0a0a1a");
+      gradient.addColorStop(1, "#080815");
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+
+      this.renderNebulae(ctx, time, width, height);
+      this.renderStarLayers(ctx, time, width, height);
+      this.renderShootingStars(ctx, delta, width, height);
+    }
+
+    private renderNebulae(ctx: CanvasRenderingContext2D, time: number, width: number, height: number) {
+      for (const nebula of this.nebulae) {
+        const parallaxX = this.driftX * nebula.z * 0.5;
+        const parallaxY = this.driftY * nebula.z * 0.5;
+        const x = ((nebula.x - parallaxX) % (width * 1.5)) + width * 0.25;
+        const y = ((nebula.y - parallaxY) % (height * 1.5)) + height * 0.25;
+
+        const pulse = Math.sin(time * 0.0003 + nebula.rotationPhase) * 0.15 + 1;
+        const currentRadius = nebula.radius * pulse;
+        const [r, g, b] = nebula.color;
+
+        const gradient = ctx.createRadialGradient(x, y, 0, x, y, currentRadius);
+        gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${nebula.opacity * 0.8})`);
+        gradient.addColorStop(0.3, `rgba(${r}, ${g}, ${b}, ${nebula.opacity * 0.4})`);
+        gradient.addColorStop(0.6, `rgba(${r * 0.7}, ${g * 0.7}, ${b * 0.7}, ${nebula.opacity * 0.15})`);
+        gradient.addColorStop(1, `rgba(${r * 0.5}, ${g * 0.5}, ${b * 0.5}, 0)`);
+
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(x, y, currentRadius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    private renderStarLayers(ctx: CanvasRenderingContext2D, time: number, width: number, height: number) {
+      for (let layerIdx = 0; layerIdx < this.starLayers.length; layerIdx++) {
+        const layer = this.starLayers[layerIdx];
+        const speed = this.LAYER_SPEEDS[layerIdx];
+
+        for (const star of layer) {
+          const parallaxX = this.driftX * speed * 50;
+          const parallaxY = this.driftY * speed * 50;
+
+          let x = (star.x - parallaxX) % (width * 2);
+          let y = (star.y - parallaxY) % (height * 2);
+          if (x < -width * 0.5) x += width * 2;
+          if (y < -height * 0.5) y += height * 2;
+
+          if (x < -10 || x > width + 10 || y < -10 || y > height + 10) continue;
+
+          const twinkle = Math.sin(time * 0.001 * star.twinkleSpeed + star.twinklePhase);
+          const currentBrightness = star.brightness * (0.6 + twinkle * 0.4);
+          const depthScale = 0.5 + star.z * 0.5;
+          const radius = star.baseRadius * depthScale;
+
+          ctx.globalAlpha = currentBrightness * depthScale;
+          ctx.fillStyle = star.color;
+          ctx.beginPath();
+          ctx.arc(x, y, radius, 0, Math.PI * 2);
+          ctx.fill();
+
+          if (radius > 1.5 && currentBrightness > 0.7) {
+            const glowGradient = ctx.createRadialGradient(x, y, 0, x, y, radius * 5);
+            glowGradient.addColorStop(0, star.color);
+            glowGradient.addColorStop(0.3, star.color.replace(")", ", 0.3)").replace("rgb", "rgba"));
+            glowGradient.addColorStop(1, "transparent");
+            ctx.fillStyle = glowGradient;
+            ctx.globalAlpha = currentBrightness * 0.25;
+            ctx.beginPath();
+            ctx.arc(x, y, radius * 5, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    private renderShootingStars(ctx: CanvasRenderingContext2D, delta: number, width: number, height: number) {
+      for (let i = this.shootingStars.length - 1; i >= 0; i--) {
+        const star = this.shootingStars[i];
+        star.life += delta;
+        star.x += Math.cos(star.angle) * star.speed * delta;
+        star.y += Math.sin(star.angle) * star.speed * delta;
+
+        const lifeRatio = star.life / star.maxLife;
+        const fadeIn = Math.min(lifeRatio * 5, 1);
+        const fadeOut = 1 - Math.pow(lifeRatio, 2);
+        const opacity = star.opacity * fadeIn * fadeOut;
+
+        if (star.life >= star.maxLife || star.x > width + 50 || star.y > height + 50) {
+          this.shootingStars.splice(i, 1);
+          continue;
+        }
+
+        const tailX = star.x - Math.cos(star.angle) * star.length;
+        const tailY = star.y - Math.sin(star.angle) * star.length;
+
+        const gradient = ctx.createLinearGradient(tailX, tailY, star.x, star.y);
+        gradient.addColorStop(0, `rgba(255, 255, 255, 0)`);
+        gradient.addColorStop(0.7, `rgba(200, 220, 255, ${opacity * 0.5})`);
+        gradient.addColorStop(1, `rgba(255, 255, 255, ${opacity})`);
+
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = 2;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(tailX, tailY);
+        ctx.lineTo(star.x, star.y);
+        ctx.stroke();
+
+        ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    regenerate() {
+      this.driftX = 0;
+      this.driftY = 0;
+      this.shootingStars = [];
+      this.generateSpace();
+    }
+
+    destroy() {
+      if (this.animationId) {
+        cancelAnimationFrame(this.animationId);
+      }
+    }
+  }
+
+  type ZoomedPinchSignal = PinchSignal<ZoomValue>;
+
+  /**
+   * Manages zoom state and applies transforms to the canvas.
+   */
+  class ZoomManager {
+    private currentScale = 1;
+    private baseScale = 1;
+    private transformOriginX = 50;
+    private transformOriginY = 50;
+
+    constructor(
+      private canvas: HTMLCanvasElement,
+      private container: HTMLElement,
+      private minScale: number,
+      private maxScale: number
+    ) {}
+
+    handlePinch(signal: ZoomedPinchSignal) {
+      const { phase, scale, centerX, centerY } = signal.value;
+
+      if (phase === "start") {
+        this.baseScale = this.currentScale;
+        this.updateTransformOrigin(centerX, centerY);
+      }
+
+      if (phase === "start" || phase === "change") {
+        const newScale = this.baseScale * scale;
+        this.currentScale = Math.max(this.minScale, Math.min(this.maxScale, newScale));
+        this.applyTransform();
+      }
+    }
+
+    private updateTransformOrigin(clientX: number, clientY: number) {
+      const rect = this.container.getBoundingClientRect();
+      this.transformOriginX = ((clientX - rect.left) / rect.width) * 100;
+      this.transformOriginY = ((clientY - rect.top) / rect.height) * 100;
+      this.canvas.style.transformOrigin = `${this.transformOriginX}% ${this.transformOriginY}%`;
+    }
+
+    private applyTransform() {
+      this.canvas.style.transform = `scale(${this.currentScale})`;
+    }
+
+    reset() {
+      this.currentScale = 1;
+      this.baseScale = 1;
+      this.transformOriginX = 50;
+      this.transformOriginY = 50;
+      this.canvas.style.transformOrigin = "center center";
+      this.canvas.style.transform = "scale(1)";
+    }
+
+    getScale() {
+      return this.currentScale;
+    }
+  }
+
+  function initSpacePinchZoom() {
+    const box = document.getElementById("space-box");
+    const canvas = document.getElementById("space-canvas") as HTMLCanvasElement;
+    const resetBtn = document.getElementById("reset-space");
+    const infoScale = document.getElementById("info-scale");
+    const infoPhase = document.getElementById("info-phase");
+    const infoCenterX = document.getElementById("info-center-x");
+    const infoCenterY = document.getElementById("info-center-y");
+
+    if (!box || !canvas || !resetBtn || !infoScale || !infoPhase || !infoCenterX || !infoCenterY) {
+      return;
+    }
+
+    const spaceRenderer = new SpaceRenderer(canvas, box);
+    const zoomManager = new ZoomManager(canvas, box, 0.25, 5);
+
+    const updateInfo = (signal: ZoomedPinchSignal) => {
+      const { phase, centerX, centerY } = signal.value;
+      infoScale.textContent = zoomManager.getScale().toFixed(2);
+      infoPhase.textContent = phase;
+      infoCenterX.textContent = Math.round(centerX).toString();
+      infoCenterY.textContent = Math.round(centerY).toString();
+    };
+
+    pipe(
+      pinch(box, { threshold: 10 }),
+      zoom({ minScale: 0.25, maxScale: 10 })
+    ).subscribe((signal) => {
+      const { phase } = signal.value;
+
+      if (phase === "start") {
+        box.classList.add("active");
+      }
+
+      zoomManager.handlePinch(signal);
+      updateInfo(signal);
+
+      if (phase === "end" || phase === "cancel") {
+        box.classList.remove("active");
+      }
+    });
+
+    resetBtn.addEventListener("click", () => {
+      zoomManager.reset();
+      spaceRenderer.regenerate();
+      box.classList.remove("active");
+      infoScale.textContent = "1.00";
+      infoPhase.textContent = "-";
+      infoCenterX.textContent = "-";
+      infoCenterY.textContent = "-";
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initSpacePinchZoom);
+  } else {
+    initSpacePinchZoom();
+  }
+</script>

@@ -11,6 +11,7 @@
   "dependencies": {
     "@astrojs/starlight": "^0.33.0",
     "@cereb/pan": "workspace:^",
+    "@cereb/pinch": "workspace:^",
     "astro": "^5.0.0",
     "cereb": "workspace:^",
     "sharp": "^0.33.0"

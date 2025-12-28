@@ -44,7 +44,14 @@ Follow this format for all commits:
 - `pan`: Pan gesture recognition
 - `pinch`: Pinch gesture recognition
 - `single-pointer`: Single pointer events
-- `docs`: Documentation site
+- `docs`: Documentation site (Astro app)
+
+### Important: `docs` Package vs `docs` Task Type
+- The `docs` **task type** refers to documentation changes like README updates, code comments, or API docs
+- The `docs` **package** is an actual Astro application that serves the documentation site
+- When adding new features or examples to the docs package, use `feat(docs)` not `docs(docs)`
+- When fixing bugs in the docs package, use `fix(docs)` not `docs(docs)`
+- Use `docs(*)` only for pure documentation text changes (README, comments, etc.)
 
 ### Examples
 

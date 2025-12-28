@@ -1,0 +1,128 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# -----------------------------
+# Configuration
+# -----------------------------
+BASE_BRANCH=${1:-develop}
+MAX_DIFF_LINES=800
+CLAUDE_MODEL="haiku"
+
+# -----------------------------
+# Branch check
+# -----------------------------
+CURRENT_BRANCH=$(git branch --show-current)
+
+if [[ "$CURRENT_BRANCH" == "$BASE_BRANCH" ]]; then
+  echo "❌ Current branch is the same as base branch ($BASE_BRANCH)."
+  exit 1
+fi
+
+if [[ ! -f ".github/pull_request_template.md" ]]; then
+  echo "❌ .github/pull_request_template.md not found."
+  exit 1
+fi
+
+echo "▶ Creating PR: $BASE_BRANCH ← $CURRENT_BRANCH"
+
+# -----------------------------
+# Collect context
+# -----------------------------
+COMMITS=$(git log "$BASE_BRANCH..HEAD" --oneline)
+STAT=$(git diff --stat "$BASE_BRANCH...HEAD")
+DIFF=$(git diff "$BASE_BRANCH...HEAD" | head -n $MAX_DIFF_LINES)
+TEMPLATE=$(cat .github/pull_request_template.md)
+
+# -----------------------------
+# Claude prompt
+# -----------------------------
+PROMPT=$(cat <<EOF
+You are a fast, lightweight model writing a GitHub Pull Request in English.
+
+This is a Pull Request, NOT a commit message.
+The PR may contain multiple commits.
+
+CRITICAL: Output ONLY the format below. No preamble, no explanation, no markdown formatting around TITLE/BODY labels.
+
+TITLE:
+<one concise sentence>
+
+BODY:
+<markdown content that fills the PR template>
+
+Title rules:
+- Summarize the overall intent of the PR
+- Do NOT mention individual commits
+- Avoid prefixes like "fix:", "refactor:", "chore:"
+- Focus on behavior or system-level impact
+
+PR Template:
+$TEMPLATE
+
+Context:
+
+Commit list:
+$COMMITS
+
+Diff stat:
+$STAT
+
+Partial diff (may be truncated):
+$DIFF
+EOF
+)
+
+# -----------------------------
+# Run Claude via piped input
+# -----------------------------
+CLAUDE_ARGS=(-p --output-format text)
+
+if claude --help 2>&1 | grep -q -- "--model"; then
+  CLAUDE_ARGS+=(--model "$CLAUDE_MODEL")
+fi
+
+echo "▶ Generating PR content with Claude ($CLAUDE_MODEL)..."
+if ! OUTPUT=$(echo "$PROMPT" | claude "${CLAUDE_ARGS[@]}" 2>&1); then
+  echo "❌ Claude command failed"
+  echo "---- Output ----"
+  echo "$OUTPUT"
+  exit 1
+fi
+
+if [[ -z "$OUTPUT" ]]; then
+  echo "❌ Claude returned empty output"
+  exit 1
+fi
+
+# -----------------------------
+# Parse output
+# -----------------------------
+# Normalize: strip markdown bold (**) and handle flexible formatting
+NORMALIZED=$(echo "$OUTPUT" | sed 's/\*\*\(TITLE\|BODY\):\*\*/\1:/g; s/\*\*\(TITLE\|BODY\)\*\*:/\1:/g')
+TITLE=$(echo "$NORMALIZED" | sed -n '/^TITLE:/,/^BODY:/p' | sed '1d;$d' | head -n 1 | xargs)
+BODY=$(echo "$NORMALIZED" | sed -n '/^BODY:/,$p' | sed '1d')
+
+if [[ -z "$TITLE" || -z "$BODY" ]]; then
+  echo "❌ Failed to extract PR title or body."
+  echo "---- Claude Output ----"
+  echo "$OUTPUT"
+  exit 1
+fi
+
+# -----------------------------
+# Create PR
+# -----------------------------
+echo
+echo "▶ PR Title:"
+echo "$TITLE"
+echo
+echo "▶ Creating PR on GitHub..."
+
+PR_URL=$(gh pr create \
+  --base "$BASE_BRANCH" \
+  --head "$CURRENT_BRANCH" \
+  --title "$TITLE" \
+  --body "$BODY")
+
+echo "✅ PR created: $PR_URL"
+gh pr view "$PR_URL" --json number,state,url,title -q '.'

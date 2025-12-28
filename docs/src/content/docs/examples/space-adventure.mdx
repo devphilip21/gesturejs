@@ -1,0 +1,35 @@
+---
+title: Space Adventure
+description: Multiple gesture demo with a space canvas
+---
+
+import SpaceAdventure from "../../../components/space-adventure.astro";
+
+This demo uses `pinch()` from `@cereb/pinch` to implement zoom in/out on a space-themed canvas with stars and nebulae.
+
+<SpaceAdventure />
+
+## Code
+
+```ts
+import { pipe } from "cereb";
+import { zoom } from "cereb/operators";
+import { pinch } from "@cereb/pinch";
+
+pipe(
+  pinch(box, { threshold: 10 }), // threshold(px): about gesture start
+  zoom({ minScale: 0.25, maxScale: 10 }),
+).subscribe((signal) => {
+  const { phase } = signal.value;
+
+  if (phase === "start") {
+    box.classList.add("active");
+  }
+
+  renderer.zoom(signal);
+
+  if (phase === "end" || phase === "cancel") {
+    box.classList.remove("active");
+  }
+});
+```
