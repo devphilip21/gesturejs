@@ -1,7 +1,7 @@
 {
   "name": "cereb",
   "description": "User input modeling and orchestration with a lightweight reactive stream library.",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "license": "MIT",
   "author": "devphilip21 <philip21.dev@gmail.com>",
   "repository": {
