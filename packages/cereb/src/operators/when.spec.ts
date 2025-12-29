@@ -4,8 +4,8 @@ import { createStream } from "../core/stream.js";
 import { pipe } from "../ochestrations/pipe.js";
 import { when } from "./when.js";
 
-function createGateSignal(held: boolean): Signal<string, { held: boolean }> {
-  return createSignal("gate", { held });
+function createGateSignal(opened: boolean): Signal<string, { opened: boolean }> {
+  return createSignal("gate", { opened });
 }
 
 function createSourceSignal(value: number): Signal<string, number> {
@@ -16,9 +16,9 @@ describe("when operator", () => {
   it("should pass through signals when gate is open (held: true)", () => {
     const values: number[] = [];
 
-    let emitGate: (held: boolean) => void;
-    const gate$ = createStream<Signal<string, { held: boolean }>>((observer) => {
-      emitGate = (held: boolean) => observer.next(createGateSignal(held));
+    let emitGate: (opened: boolean) => void;
+    const gate$ = createStream<Signal<string, { opened: boolean }>>((observer) => {
+      emitGate = (opened: boolean) => observer.next(createGateSignal(opened));
       return () => {};
     });
 
@@ -45,9 +45,9 @@ describe("when operator", () => {
   it("should block signals when gate is closed (held: false)", () => {
     const values: number[] = [];
 
-    let emitGate: (held: boolean) => void;
-    const gate$ = createStream<Signal<string, { held: boolean }>>((observer) => {
-      emitGate = (held: boolean) => observer.next(createGateSignal(held));
+    let emitGate: (opened: boolean) => void;
+    const gate$ = createStream<Signal<string, { opened: boolean }>>((observer) => {
+      emitGate = (opened: boolean) => observer.next(createGateSignal(opened));
       return () => {};
     });
 
@@ -74,7 +74,7 @@ describe("when operator", () => {
   it("should block signals by default when no gate signal received", () => {
     const values: number[] = [];
 
-    const gate$ = createStream<Signal<string, { held: boolean }>>(() => {
+    const gate$ = createStream<Signal<string, { opened: boolean }>>(() => {
       return () => {};
     });
 
@@ -97,9 +97,9 @@ describe("when operator", () => {
   it("should respond to gate state changes", () => {
     const values: number[] = [];
 
-    let emitGate: (held: boolean) => void;
-    const gate$ = createStream<Signal<string, { held: boolean }>>((observer) => {
-      emitGate = (held: boolean) => observer.next(createGateSignal(held));
+    let emitGate: (opened: boolean) => void;
+    const gate$ = createStream<Signal<string, { opened: boolean }>>((observer) => {
+      emitGate = (opened: boolean) => observer.next(createGateSignal(opened));
       return () => {};
     });
 
@@ -160,15 +160,15 @@ describe("when operator", () => {
     const errorHandler = vi.fn();
     const testError = new Error("gate error");
 
-    const gate$ = createStream<Signal<string, { held: boolean }>>((observer) => {
+    const gate$ = createStream<Signal<string, { opened: boolean }>>((observer) => {
       // Simulate accessing a property that throws
       observer.next({
         value: {
-          get held() {
+          get opened() {
             throw testError;
           },
         },
-      } as Signal<string, { held: boolean }>);
+      } as Signal<string, { opened: boolean }>);
       return () => {};
     });
 
@@ -187,7 +187,7 @@ describe("when operator", () => {
   it("should propagate complete from source stream", () => {
     const completeHandler = vi.fn();
 
-    const gate$ = createStream<Signal<string, { held: boolean }>>(() => {
+    const gate$ = createStream<Signal<string, { opened: boolean }>>(() => {
       return () => {};
     });
 
