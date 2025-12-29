@@ -13,7 +13,7 @@ import { createPanRecognizer } from "./recognizer.js";
  * ```typescript
  * singlePointer(element)
  *   .pipe(singlePointerToPan({ threshold: 10 }), withVelocity())
- *   .subscribe(pan => console.log(pan.deltaX, pan.velocityX));
+ *   .on(pan => console.log(pan.deltaX, pan.velocityX));
  * ```
  */
 export function panRecognizer(options: PanOptions = {}): Operator<SinglePointerSignal, PanSignal> {
@@ -21,7 +21,7 @@ export function panRecognizer(options: PanOptions = {}): Operator<SinglePointerS
     createStream((observer) => {
       const recognizer = createPanRecognizer(options);
 
-      const unsub = source.subscribe({
+      const unsub = source.on({
         next(pointer) {
           const event = recognizer.process(pointer);
           if (event) {
@@ -50,7 +50,7 @@ export function panRecognizer(options: PanOptions = {}): Operator<SinglePointerS
  * ```typescript
  * pan(element, { threshold: 10 })
  *   .pipe(withVelocity())
- *   .subscribe(event => console.log(event.deltaX, event.velocityX));
+ *   .on(event => console.log(event.deltaX, event.velocityX));
  * ```
  */
 export function pan(target: EventTarget, options: PanOptions = {}): Stream<PanSignal> {

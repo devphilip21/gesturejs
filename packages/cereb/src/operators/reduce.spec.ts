@@ -50,7 +50,7 @@ describe("reduce", () => {
           { sum: 0, count: 0 },
         ),
       )
-      .subscribe((signal) => {
+      .on((signal) => {
         results.push({ sum: signal.value.sum, count: signal.value.count });
       });
 
@@ -72,7 +72,7 @@ describe("reduce", () => {
           { sum: 100 },
         ),
       )
-      .subscribe((signal) => values.push(signal.value.sum));
+      .on((signal) => values.push(signal.value.sum));
 
     expect(values).toEqual([101, 103]);
   });
@@ -87,7 +87,7 @@ describe("reduce", () => {
           { sum: 0 },
         ),
       )
-      .subscribe((signal) => kinds.push(signal.kind));
+      .on((signal) => kinds.push(signal.kind));
 
     expect(kinds).toEqual(["test-input", "test-input", "test-input"]);
   });
@@ -102,7 +102,7 @@ describe("reduce", () => {
           { sum: 0 },
         ),
       )
-      .subscribe((signal) => deviceIds.push(signal.deviceId));
+      .on((signal) => deviceIds.push(signal.deviceId));
 
     expect(deviceIds).toEqual(["test-device", "test-device"]);
   });
@@ -117,7 +117,7 @@ describe("reduce", () => {
           { sum: 0 },
         ),
       )
-      .subscribe((signal) => {
+      .on((signal) => {
         expect(signal.createdAt).toBeGreaterThanOrEqual(startTime);
       });
   });
@@ -130,7 +130,7 @@ describe("reduce", () => {
           { doubled: 0 },
         ),
       )
-      .subscribe((signal) => {
+      .on((signal) => {
         // Original value preserved
         expect(signal.value.delta).toBe(5);
         // Accumulated value extended
@@ -151,7 +151,7 @@ describe("reduce", () => {
           { sum: 0 },
         ),
       )
-      .subscribe({ next: vi.fn(), error: errorFn });
+      .on({ next: vi.fn(), error: errorFn });
 
     expect(errorFn).toHaveBeenCalledWith(error);
   });
@@ -166,7 +166,7 @@ describe("reduce", () => {
           { total: 0 },
         ),
       )
-      .subscribe((signal) => values.push(signal.value.total));
+      .on((signal) => values.push(signal.value.total));
 
     expect(values).toEqual([1, 3, 6]);
   });
@@ -184,7 +184,7 @@ describe("reduce", () => {
           { seen: false },
         ),
       )
-      .subscribe(() => {});
+      .on(() => {});
 
     expect(receivedSignals).toHaveLength(1);
     expect(receivedSignals[0].kind).toBe("test-input");

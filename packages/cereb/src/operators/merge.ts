@@ -16,13 +16,13 @@ export function mergeWith<T extends Signal, R extends Signal>(
         }
       };
 
-      const unsub1 = source.subscribe({
+      const unsub1 = source.on({
         next: (value) => observer.next(value),
         error: observer.error?.bind(observer),
         complete: checkComplete,
       });
 
-      const unsub2 = other.subscribe({
+      const unsub2 = other.on({
         next: (value) => observer.next(value),
         error: observer.error?.bind(observer),
         complete: checkComplete,
@@ -40,7 +40,7 @@ export function merge<T extends Signal>(...sources: Stream<T>[]): Stream<T> {
     let completedCount = 0;
 
     const unsubs = sources.map((source) =>
-      source.subscribe({
+      source.on({
         next: (value) => observer.next(value),
         error: observer.error?.bind(observer),
         complete: () => {

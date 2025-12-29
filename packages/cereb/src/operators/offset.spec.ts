@@ -54,7 +54,7 @@ describe("offset operator", () => {
       return () => {};
     });
 
-    source.pipe(op).subscribe((v: OffsetPointerSignal) => {
+    source.pipe(op).on((v: OffsetPointerSignal) => {
       values.push({ offsetX: v.value.offsetX, offsetY: v.value.offsetY });
     });
 
@@ -70,7 +70,7 @@ describe("offset operator", () => {
       return () => {};
     });
 
-    source.pipe(op).subscribe((v: OffsetPointerSignal) => {
+    source.pipe(op).on((v: OffsetPointerSignal) => {
       expect(v.value.x).toBe(150);
       expect(v.value.y).toBe(200);
       expect(v.kind).toBe("single-pointer");
@@ -87,7 +87,7 @@ describe("offset operator", () => {
       return () => {};
     });
 
-    source.pipe(op).subscribe(() => {});
+    source.pipe(op).on(() => {});
 
     expect(getBoundingClientRect).toHaveBeenCalledTimes(2);
   });
@@ -109,7 +109,7 @@ describe("offset operator", () => {
       return () => {};
     });
 
-    source.pipe(op).subscribe(() => {});
+    source.pipe(op).on(() => {});
 
     // Should only call once due to caching
     expect(getBoundingClientRect).toHaveBeenCalledTimes(1);
@@ -136,7 +136,7 @@ describe("offset operator", () => {
       return () => {};
     });
 
-    const unsub = source.pipe(op).subscribe(() => {});
+    const unsub = source.pipe(op).on(() => {});
     expect(unsubscribed).toBe(false);
 
     unsub();

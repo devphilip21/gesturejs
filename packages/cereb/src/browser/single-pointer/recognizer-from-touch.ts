@@ -52,7 +52,7 @@ export function singlePointerFromTouch(
     createStream((observer) => {
       const recognizer = createTouchRecognizer(options);
 
-      const unsub = source.subscribe({
+      const unsub = source.on({
         next(event) {
           const pointer = recognizer.process(event);
           if (pointer) {

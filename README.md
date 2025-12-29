@@ -16,8 +16,8 @@ import { singlePointer } from "cereb";
 
 // Create a stream from pointer events
 singlePointer(canvas)
-  // Subscribe to monitor stream changes
-  .subscribe((signal) => {
+  // Listen to stream events
+  .on((signal) => {
     // Receive signals from the stream
     const { phase, x, y } = signal.value;
     switch (phase){
@@ -52,7 +52,7 @@ import { pinch } from "@cereb/pinch";
 // Each operator extends the signal (signals are immutable)
 pinch(element)
   // Operator: Determine scale value.
-  .pipe(zoom({ minScale: 0.5, maxScale: 3.0 })).subscribe((signal) => {
+  .pipe(zoom({ minScale: 0.5, maxScale: 3.0 })).on((signal) => {
     // The scale property is extended from the value.
     // - pinch emits distance → zoom calculates scale
     // - zoom also works with other inputs (keyboard, wheel, etc.)
@@ -123,12 +123,12 @@ const MIN_SCALE = 0.2, MAX_SCALE = 5;
 
 // 'z' key pressed to enter Zoom Mode Stream
 const isInZoomMode$ = keyboardHeld(window, { key: "z" });
-isInZoomMode$.subscribe(toggleZoomModeIndicator);
+isInZoomMode$.on(toggleZoomModeIndicator);
 
 // Pinch Zoom
 pinch(box, { threshold: 10 })
   .pipe(zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE }))
-  .subscribe(render);
+  .on(render);
 
 // 'z' + '+/-'
 keyboard(window, { key: ["+", "=", "-"], preventDefault: true })
@@ -138,7 +138,7 @@ keyboard(window, { key: ["+", "=", "-"], preventDefault: true })
       ratio: zoomManager.getScale() + (signal.value.key === "+" || signal.value.key === "=" ? 0.15 : -0.15),
     })),
     zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE }),
-  ).subscribe(render);
+  ).on(render);
 
 // 'z' + 'wheel'
 wheel(box, { passive: false, preventDefault: true })
@@ -148,7 +148,7 @@ wheel(box, { passive: false, preventDefault: true })
       ratio: zoomManager.getScale() + (-signal.value.deltaY * 0.005),
     })),
     zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE }),
-  ).subscribe(render);
+  ).on(render);
 
 // 'Slider Input'
 domEvent(slider, "input")
@@ -163,7 +163,7 @@ domEvent(slider, "input")
       };
     }),
     zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE, baseScale: zoomManager.getScale() }),
-  ).subscribe(render);
+  ).on(render);
 ```
 
 ### 2. Lightweight Bundle Size
@@ -189,9 +189,9 @@ window.addEventListener('keydown', handler3);
 
 // After: Shared stream, single listener
 // addEventListener called once
-keyboard(window).subscribe(handler1);
-keyboard(window).subscribe(handler2);
-keyboard(window).subscribe(handler3);
+keyboard(window).on(handler1);
+keyboard(window).on(handler2);
+keyboard(window).on(handler3);
 ```
 
 **2. Single Responsibility Operators**

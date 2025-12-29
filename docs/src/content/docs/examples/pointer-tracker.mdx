@@ -24,7 +24,7 @@ singlePointer(window)
     // `singlePointer(window)` yields window-relative x/y.
     // Compute canvas-relative coordinates and add `offsetX`/`offsetY`.
     offset({ target: canvas }),
-  ).subscribe((signal) => {
+  ).on((signal) => {
     // Read values from the signal and draw.
     const { phase, offsetX, offsetY, pointerType } = signal.value;
 

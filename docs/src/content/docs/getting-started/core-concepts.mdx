@@ -26,7 +26,7 @@ A **Stream** is an observable sequence of Signals over time. It's the pipeline t
 
 ```typescript
 interface Stream<T extends Signal> {
-  subscribe(observer: (value: T) => void): Unsubscribe;
+  on(observer: (value: T) => void): Unsubscribe;
   block(): void;
   unblock(): void;
   readonly isBlocked: boolean;
@@ -35,7 +35,7 @@ interface Stream<T extends Signal> {
 
 ### Key Characteristics
 
-- **Lazy** - No work happens until you call `subscribe()`
+- **Lazy** - No work happens until you call `on()`
 - **Unicast by default** - Each subscription creates its own event source. Use `share()` for multicast.
 - **Blockable** - Temporarily pause event propagation without unsubscribing
 
@@ -44,8 +44,8 @@ import { singlePointer } from "cereb";
 
 const stream = singlePointer(element);
 
-// Events only start flowing when you subscribe
-const unsubscribe = stream.subscribe((signal) => {
+// Events only start flowing when you call on()
+const unsubscribe = stream.on((signal) => {
   console.log(signal.value.x, signal.value.y);
 });
 
@@ -80,7 +80,7 @@ pipe(
   filter((s) => s.value.pointerType === "touch"),
   throttle(16),
   offset({ target: canvas }),
-).subscribe((signal) => {
+).on((signal) => {
   // Only touch events, throttled to ~60fps, with canvas-relative coordinates
 });
 ```
@@ -96,7 +96,7 @@ import { singlePointerSession } from "cereb/operators";
 pipe(
   singlePointer(element),
   singlePointerSession(),  // Only emit during active pointer sessions
-).subscribe((signal) => {
+).on((signal) => {
   // signal.value.phase is "start" | "move" | "end" | "cancel"
 });
 ```
@@ -152,7 +152,7 @@ pipe(
   singlePointer(element),
   panRecognizer({ threshold: 10 }),
   withVelocity(),
-).subscribe((pan) => {
+).on((pan) => {
   console.log(pan.value.deltaX, pan.value.velocityX);
 });
 ```
@@ -180,7 +180,7 @@ const stream = pipe(
 );
 
 // 5. Subscribe to receive Signals
-const unsubscribe = stream.subscribe((signal) => {
+const unsubscribe = stream.on((signal) => {
   const { phase, offsetX, offsetY } = signal.value;
 
   if (phase === "start") {

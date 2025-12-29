@@ -8,7 +8,7 @@ describe("map", () => {
 
     fromArray([1, 2, 3])
       .pipe(map((x: TestSignal<number>) => ({ ...x, value: x.value * 2 })))
-      .subscribe((v) => values.push(v.value));
+      .on((v) => values.push(v.value));
 
     expect(values).toEqual([2, 4, 6]);
   });
@@ -23,7 +23,7 @@ describe("map", () => {
           throw error;
         }),
       )
-      .subscribe({ next: vi.fn(), error: errorFn });
+      .on({ next: vi.fn(), error: errorFn });
 
     expect(errorFn).toHaveBeenCalledWith(error);
   });

@@ -815,14 +815,14 @@ import type { DomEventSignal } from "../../../packages/cereb/dist/browser/dom-ev
     const isInZoomMod$ = keyboardHeld(window, { key: "z" });
     const zoomModeIndicator = document.getElementById("space-zoom-mode");
 
-    isInZoomMod$.subscribe((signal) => {
+    isInZoomMod$.on((signal) => {
       zoomModeIndicator?.classList.toggle("active", signal.value.opened);
     });
 
     // Pinch Zoom
     pinch(box, { threshold: 10 })
       .pipe(zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE }))
-      .subscribe(render);
+      .on(render);
 
     // 'z' + '+/-'
     keyboard(window, { key: ["+", "=", "-"], preventDefault: true })
@@ -833,7 +833,7 @@ import type { DomEventSignal } from "../../../packages/cereb/dist/browser/dom-ev
         })),
         zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE })
       )
-      .subscribe(render);
+      .on(render);
 
     // 'z' + 'wheel'
     wheel(box, { passive: false, preventDefault: true })
@@ -844,7 +844,7 @@ import type { DomEventSignal } from "../../../packages/cereb/dist/browser/dom-ev
         })),
         zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE }),
       )
-      .subscribe(render);
+      .on(render);
 
     // 'Progress'
     domEvent(slider, "input")
@@ -860,7 +860,7 @@ import type { DomEventSignal } from "../../../packages/cereb/dist/browser/dom-ev
         }),
         zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE, baseScale: zoomManager.getScale() }),
       )
-      .subscribe(render);
+      .on(render);
   }
 
   if (document.readyState === "loading") {

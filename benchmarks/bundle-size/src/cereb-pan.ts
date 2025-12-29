@@ -6,7 +6,7 @@ import { pan } from "@cereb/pan";
 
 const element = document.getElementById("target")!;
 
-pan(element, { threshold: 10 }).subscribe((signal) => {
+pan(element, { threshold: 10 }).on((signal) => {
   const { phase, deltaX, deltaY, velocityX, velocityY } = signal.value;
 
   if (phase === "move") {

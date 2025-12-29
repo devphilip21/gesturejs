@@ -18,14 +18,14 @@ import { pinch } from "@cereb/pinch";
 
 // 'z' key pressed to enter Zoom Mode Stream
 const isInZoomMode$ = keyboardHeld(window, { key: "z" });
-isInZoomMode$.subscribe(toggleZoomModeIndicator);
+isInZoomMode$.on(toggleZoomModeIndicator);
 
 // Pinch Zoom
 pinch(box, { threshold: 10 })
   .pipe(
     zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE })
   )
-  .subscribe(render);
+  .on(render);
 
 // 'z' + '+/-'
 keyboard(window, { key: ["+", "=", "-"], preventDefault: true })
@@ -36,7 +36,7 @@ keyboard(window, { key: ["+", "=", "-"], preventDefault: true })
     })),
     zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE }),
   )
-  .subscribe(render);
+  .on(render);
 
 // 'CTRL' + 'wheel'
 wheel(box, { passive: false, preventDefault: true })
@@ -47,7 +47,7 @@ wheel(box, { passive: false, preventDefault: true })
     })),
     zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE }),
   )
-  .subscribe(render);
+  .on(render);
 
 // 'Slider Input'
 domEvent(slider, "input")
@@ -63,5 +63,5 @@ domEvent(slider, "input")
     }),
     zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE, baseScale: zoomManager.getScale() }),
   )
-  .subscribe(render);
+  .on(render);
 ```

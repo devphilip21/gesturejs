@@ -49,7 +49,7 @@ describe("multiPointerFromPointer", () => {
     });
 
     const stream = multiPointerFromPointer()(source);
-    stream.subscribe((v) => values.push(v));
+    stream.on((v) => values.push(v));
 
     observer!.next(createDomEventSignal(createMockPointerEvent("pointerdown", 1)));
     observer!.next(createDomEventSignal(createMockPointerEvent("pointerdown", 2)));
@@ -69,7 +69,7 @@ describe("multiPointerFromPointer", () => {
     });
 
     const stream = multiPointerFromPointer()(source);
-    stream.subscribe((v) => values.push(v));
+    stream.on((v) => values.push(v));
 
     observer!.next(
       createDomEventSignal(createMockPointerEvent("pointerdown", 1, { clientX: 10, clientY: 20 })),
@@ -103,7 +103,7 @@ describe("multiPointerFromPointer", () => {
     });
 
     const stream = multiPointerFromPointer()(source);
-    stream.subscribe((v) => values.push(v));
+    stream.on((v) => values.push(v));
 
     observer!.next(createDomEventSignal(createMockPointerEvent("pointerdown", 1)));
     observer!.next(createDomEventSignal(createMockPointerEvent("pointerdown", 2)));
@@ -124,7 +124,7 @@ describe("multiPointerFromPointer", () => {
     });
 
     const stream = multiPointerFromPointer({ maxPointers: 2 })(source);
-    stream.subscribe((v) => values.push(v));
+    stream.on((v) => values.push(v));
 
     observer!.next(createDomEventSignal(createMockPointerEvent("pointerdown", 1)));
     observer!.next(createDomEventSignal(createMockPointerEvent("pointerdown", 2)));
@@ -144,7 +144,7 @@ describe("multiPointerFromPointer", () => {
     });
 
     const stream = multiPointerFromPointer()(source);
-    stream.subscribe((v) => values.push(v));
+    stream.on((v) => values.push(v));
 
     observer!.next(createDomEventSignal(createMockPointerEvent("pointerdown", 1)));
 
@@ -161,7 +161,7 @@ describe("multiPointerFromPointer", () => {
     });
 
     const stream = multiPointerFromPointer()(source);
-    stream.subscribe((v) => values.push(v));
+    stream.on((v) => values.push(v));
 
     observer!.next(createDomEventSignal(createMockPointerEvent("pointerdown", 1)));
     observer!.next(createDomEventSignal(createMockPointerEvent("pointerup", 1)));
@@ -181,7 +181,7 @@ describe("multiPointerFromPointer", () => {
     });
 
     const stream = multiPointerFromPointer()(source);
-    stream.subscribe((v) => values.push(v));
+    stream.on((v) => values.push(v));
 
     observer!.next(createDomEventSignal(createMockPointerEvent("pointerdown", 1)));
     observer!.next(createDomEventSignal(createMockPointerEvent("pointermove", 1)));

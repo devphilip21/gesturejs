@@ -7,7 +7,7 @@ describe("eventStream", () => {
     const source = domEvent(target, "click");
     const values: Event[] = [];
 
-    const unsub = source.subscribe((v) => values.push(v.value));
+    const unsub = source.on((v) => values.push(v.value));
     target.dispatchEvent(new Event("click"));
     target.dispatchEvent(new Event("click"));
     unsub();
@@ -30,7 +30,7 @@ describe("eventStream", () => {
     const source = domEvent(target, "click");
     const values: Event[] = [];
 
-    source.subscribe((v) => values.push(v.value));
+    source.on((v) => values.push(v.value));
 
     target.dispatchEvent(new Event("click"));
     source.block();
@@ -46,7 +46,7 @@ describe("eventStream", () => {
     const source = domEvent(target, "click");
     const values: Event[] = [];
 
-    source.subscribe((v) => values.push(v.value));
+    source.on((v) => values.push(v.value));
 
     target.dispatchEvent(new Event("click"));
     source.block();

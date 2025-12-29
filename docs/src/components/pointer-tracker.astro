@@ -284,7 +284,7 @@ import "./pointer-tracker.css";
       .pipe(
         singlePointerSession(),
         offset({ target: boxEl })
-      ).subscribe(signal => {
+      ).on(signal => {
         eventHandler.handlePointer(signal);
       });
 

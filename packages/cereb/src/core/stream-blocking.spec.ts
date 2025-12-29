@@ -18,7 +18,7 @@ describe("Stream blocking", () => {
       observer.next(testSignal(3));
     });
 
-    source.subscribe((v) => values.push(v.value));
+    source.on((v) => values.push(v.value));
 
     expect(values).toEqual([1, 2, 3]);
   });
@@ -31,7 +31,7 @@ describe("Stream blocking", () => {
       emit = (v) => observer.next(testSignal(v));
     });
 
-    source.subscribe((v) => values.push(v.value));
+    source.on((v) => values.push(v.value));
 
     emit(1);
     source.block();
@@ -50,7 +50,7 @@ describe("Stream blocking", () => {
       emit = (v) => observer.next(testSignal(v));
     });
 
-    source.subscribe((v) => values.push(v.value));
+    source.on((v) => values.push(v.value));
 
     emit(1);
     source.block();
@@ -71,7 +71,7 @@ describe("Stream blocking", () => {
     });
 
     source.block();
-    source.subscribe({ next: vi.fn(), error });
+    source.on({ next: vi.fn(), error });
 
     expect(error).toHaveBeenCalledWith(testError);
   });
@@ -84,7 +84,7 @@ describe("Stream blocking", () => {
     });
 
     source.block();
-    source.subscribe({ next: vi.fn(), complete });
+    source.on({ next: vi.fn(), complete });
 
     expect(complete).toHaveBeenCalled();
   });
@@ -95,7 +95,7 @@ describe("Stream blocking", () => {
     const unsub = createStream<TestSignal>((observer) => {
       observer.next(testSignal(1));
       return cleanup;
-    }).subscribe(vi.fn());
+    }).on(vi.fn());
 
     unsub();
 

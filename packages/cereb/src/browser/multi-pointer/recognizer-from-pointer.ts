@@ -79,7 +79,7 @@ export function multiPointerFromPointer(
     createStream((observer) => {
       const recognizer = createPointerRecognizer(options);
 
-      const unsub = source.subscribe({
+      const unsub = source.on({
         next(event) {
           const signal = recognizer.process(event);
           if (signal) {

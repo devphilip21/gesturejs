@@ -16,7 +16,7 @@ export type Operator<T extends Signal, R extends Signal> = (source: Stream<T>) =
  * By default, streams support a single observer. Use share() for multicast.
  */
 export interface Stream<T extends Signal> {
-  subscribe(observer: Observer<T> | ((value: T) => void)): Unsubscribe;
+  on(observer: Observer<T> | ((value: T) => void)): Unsubscribe;
 
   /** Block event propagation. Events are dropped, not queued. */
   block(): void;
@@ -141,7 +141,7 @@ export function createStream<T extends Signal>(
       blocked = false;
     },
 
-    subscribe(observerOrNext) {
+    on(observerOrNext) {
       const observer = toObserver(observerOrNext);
 
       const wrappedObserver: Observer<T> = {

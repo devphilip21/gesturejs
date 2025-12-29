@@ -11,7 +11,7 @@ describe("debounce", () => {
     const source = createSubject<TestSignal<number>>();
     const values: number[] = [];
 
-    source.pipe(debounce(100)).subscribe((v) => values.push(v.value));
+    source.pipe(debounce(100)).on((v) => values.push(v.value));
 
     source.next(createTestSignal(1));
     expect(values).toEqual([]);
@@ -24,7 +24,7 @@ describe("debounce", () => {
     const source = createSubject<TestSignal<number>>();
     const values: number[] = [];
 
-    source.pipe(debounce(100)).subscribe((v) => values.push(v.value));
+    source.pipe(debounce(100)).on((v) => values.push(v.value));
 
     source.next(createTestSignal(1));
     vi.advanceTimersByTime(50);

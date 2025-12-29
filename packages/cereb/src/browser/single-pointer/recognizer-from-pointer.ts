@@ -67,7 +67,7 @@ export function singlePointerFromPointer(
     createStream((observer) => {
       const recognizer = createPointerRecognizer(options);
 
-      const unsub = source.subscribe({
+      const unsub = source.on({
         next(event) {
           const pointer = recognizer.process(event);
           if (pointer) {

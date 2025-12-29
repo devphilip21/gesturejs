@@ -21,7 +21,7 @@ describe("throttle", () => {
     const source = createSubject<TestSignal<number>>();
     const values: number[] = [];
 
-    source.pipe(throttle(100)).subscribe((v) => values.push(v.value));
+    source.pipe(throttle(100)).on((v) => values.push(v.value));
 
     source.next(createTestSignal(1)); // Emitted immediately (first value)
     advanceTime(50);
@@ -41,7 +41,7 @@ describe("throttleLast", () => {
     const source = createSubject<TestSignal<number>>();
     const values: number[] = [];
 
-    source.pipe(throttleLast(100)).subscribe((v) => values.push(v.value));
+    source.pipe(throttleLast(100)).on((v) => values.push(v.value));
 
     source.next(createTestSignal(1));
     source.next(createTestSignal(2));
@@ -55,7 +55,7 @@ describe("throttleLast", () => {
     const source = createSubject<TestSignal<number>>();
     const values: number[] = [];
 
-    source.pipe(throttleLast(100)).subscribe((v) => values.push(v.value));
+    source.pipe(throttleLast(100)).on((v) => values.push(v.value));
 
     source.next(createTestSignal(1));
     source.next(createTestSignal(2));

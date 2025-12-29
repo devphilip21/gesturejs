@@ -13,8 +13,8 @@ describe("compose", () => {
     const values1: number[] = [];
     const values2: number[] = [];
 
-    tripleOdd(fromArray([1, 2, 3])).subscribe((v) => values1.push(v.value));
-    tripleOdd(fromArray([4, 5, 6])).subscribe((v) => values2.push(v.value));
+    tripleOdd(fromArray([1, 2, 3])).on((v) => values1.push(v.value));
+    tripleOdd(fromArray([4, 5, 6])).on((v) => values2.push(v.value));
 
     expect(values1).toEqual([3, 9]);
     expect(values2).toEqual([15]);

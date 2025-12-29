@@ -49,7 +49,7 @@ export function getSharedKeyboardForKey(target: EventTarget, key: string): Strea
   if (!stream) {
     const baseStream = getSharedKeyboard(target);
     const filteredStream = createStream<KeyboardSignal>((observer) => {
-      return baseStream.subscribe({
+      return baseStream.on({
         next(signal) {
           if (signal.value.repeat) return;
           if (signal.value.key.toLowerCase() !== keyLower) return;

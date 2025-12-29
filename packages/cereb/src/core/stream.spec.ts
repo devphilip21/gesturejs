@@ -32,7 +32,7 @@ describe("createStream", () => {
       observer.next(testSignal(1));
       observer.next(testSignal(2));
       observer.complete?.();
-    }).subscribe({ next: (v) => values.push(v.value), complete });
+    }).on({ next: (v) => values.push(v.value), complete });
 
     expect(values).toEqual([1, 2]);
     expect(complete).toHaveBeenCalled();
@@ -44,7 +44,7 @@ describe("createStream", () => {
 
     createStream<TestSignal>((observer) => {
       observer.error?.(testError);
-    }).subscribe({ next: vi.fn(), error });
+    }).on({ next: vi.fn(), error });
 
     expect(error).toHaveBeenCalledWith(testError);
   });
@@ -55,7 +55,7 @@ describe("createStream", () => {
     const unsub = createStream<TestSignal>((observer) => {
       observer.next(testSignal(1));
       return cleanup;
-    }).subscribe(vi.fn());
+    }).on(vi.fn());
 
     unsub();
 
@@ -76,7 +76,7 @@ describe("createStream", () => {
           filter((x: TestSignal) => x.value % 2 === 1),
           map((x: TestSignal) => ({ ...x, value: x.value * 10 })),
         )
-        .subscribe((v) => values.push(v.value));
+        .on((v) => values.push(v.value));
 
       expect(values).toEqual([10, 30, 50]);
     });
@@ -91,7 +91,7 @@ describe("createStream", () => {
         observer.complete?.();
       })
         .pipe()
-        .subscribe((v) => values.push(v.value));
+        .on((v) => values.push(v.value));
 
       expect(values).toEqual([1, 2, 3]);
     });
@@ -107,7 +107,7 @@ describe("createStream", () => {
       })
         .pipe(filter((x: TestSignal) => x.value % 2 === 1))
         .pipe(map((x: TestSignal) => ({ ...x, value: x.value * 10 })))
-        .subscribe((v) => values.push(v.value));
+        .on((v) => values.push(v.value));
 
       expect(values).toEqual([10, 30, 50]);
     });
@@ -125,7 +125,7 @@ describe("createStream", () => {
           map((x: TestSignal) => ({ ...x, value: String(x.value) }) as Signal<"test", string>),
           map((x: Signal<"test", string>) => ({ ...x, value: `${x.value}!` })),
         )
-        .subscribe((v) => values.push(v.value));
+        .on((v) => values.push(v.value));
 
       expect(values).toEqual(["1!", "2!", "3!"]);
     });

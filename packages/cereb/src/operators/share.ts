@@ -21,12 +21,12 @@ export function share<T extends Signal>(): Operator<T, T> {
         blocked = false;
       },
 
-      subscribe(observerOrNext) {
+      on(observerOrNext) {
         const observer = toObserver(observerOrNext);
         observers.add(observer);
 
         if (observers.size === 1) {
-          sourceUnsub = source.subscribe({
+          sourceUnsub = source.on({
             next(value) {
               if (blocked) return;
               for (const obs of observers) {
@@ -89,7 +89,7 @@ export function shareReplay<T extends Signal>(bufferSize = 1): Operator<T, T> {
         blocked = false;
       },
 
-      subscribe(observerOrNext) {
+      on(observerOrNext) {
         const observer = toObserver(observerOrNext);
 
         for (const value of buffer) {
@@ -108,7 +108,7 @@ export function shareReplay<T extends Signal>(bufferSize = 1): Operator<T, T> {
         observers.add(observer);
 
         if (observers.size === 1 && !sourceUnsub) {
-          sourceUnsub = source.subscribe({
+          sourceUnsub = source.on({
             next(value) {
               buffer.push(value);
               if (buffer.length > bufferSize) {

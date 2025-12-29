@@ -101,7 +101,7 @@ export function keyboardHeld(
       }
     };
 
-    return source.subscribe({
+    return source.on({
       next(signal) {
         try {
           const { key: eventKey, phase, repeat } = signal.value;

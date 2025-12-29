@@ -82,14 +82,14 @@ export function offset<T extends SignalWith<OffsetInputValue>>(
       // Subscribe to recalculate$ if provided
       let recalculateUnsub: (() => void) | undefined;
       if (recalculate$) {
-        recalculateUnsub = recalculate$.subscribe({
+        recalculateUnsub = recalculate$.on({
           next() {
             cachedRect = target.getBoundingClientRect();
           },
         });
       }
 
-      const unsub = source.subscribe({
+      const unsub = source.on({
         next(signal) {
           try {
             const rect = getRect();

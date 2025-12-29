@@ -27,7 +27,7 @@ describe("when operator", () => {
       return () => {};
     });
 
-    source$.pipe(when(gate$)).subscribe((signal) => {
+    source$.pipe(when(gate$)).on((signal) => {
       values.push(signal.value);
     });
 
@@ -56,7 +56,7 @@ describe("when operator", () => {
       return () => {};
     });
 
-    source$.pipe(when(gate$)).subscribe((signal) => {
+    source$.pipe(when(gate$)).on((signal) => {
       values.push(signal.value);
     });
 
@@ -83,7 +83,7 @@ describe("when operator", () => {
       return () => {};
     });
 
-    source$.pipe(when(gate$)).subscribe((signal) => {
+    source$.pipe(when(gate$)).on((signal) => {
       values.push(signal.value);
     });
 
@@ -108,7 +108,7 @@ describe("when operator", () => {
       return () => {};
     });
 
-    source$.pipe(when(gate$)).subscribe((signal) => {
+    source$.pipe(when(gate$)).on((signal) => {
       values.push(signal.value);
     });
 
@@ -144,7 +144,7 @@ describe("when operator", () => {
       };
     });
 
-    const unsub = source$.pipe(when(gate$)).subscribe(() => {});
+    const unsub = source$.pipe(when(gate$)).on(() => {});
 
     expect(gateUnsubscribed).toBe(false);
     expect(sourceUnsubscribed).toBe(false);
@@ -178,7 +178,7 @@ describe("when operator", () => {
       return () => {};
     });
 
-    source$.pipe(when(gate$)).subscribe({
+    source$.pipe(when(gate$)).on({
       next: () => {},
       error: errorHandler,
     });
@@ -198,7 +198,7 @@ describe("when operator", () => {
       return () => {};
     });
 
-    source$.pipe(when(gate$)).subscribe({
+    source$.pipe(when(gate$)).on({
       next: () => {},
       complete: completeHandler,
     });

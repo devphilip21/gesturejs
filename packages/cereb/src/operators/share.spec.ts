@@ -13,8 +13,8 @@ describe("share", () => {
     });
     const shared = source.pipe(share());
 
-    shared.subscribe(vi.fn());
-    shared.subscribe(vi.fn());
+    shared.on(vi.fn());
+    shared.on(vi.fn());
 
     expect(subscribeCount).toBe(1);
   });
@@ -25,8 +25,8 @@ describe("share", () => {
     const values1: number[] = [];
     const values2: number[] = [];
 
-    shared.subscribe((v) => values1.push(v.value));
-    shared.subscribe((v) => values2.push(v.value));
+    shared.on((v) => values1.push(v.value));
+    shared.on((v) => values2.push(v.value));
     source.next(createTestSignal(1));
     source.next(createTestSignal(2));
 
@@ -42,10 +42,10 @@ describe("shareReplay", () => {
     const values1: number[] = [];
     const values2: number[] = [];
 
-    shared.subscribe((v) => values1.push(v.value));
+    shared.on((v) => values1.push(v.value));
     source.next(createTestSignal(1));
     source.next(createTestSignal(2));
-    shared.subscribe((v) => values2.push(v.value));
+    shared.on((v) => values2.push(v.value));
     source.next(createTestSignal(3));
 
     expect(values1).toEqual([1, 2, 3]);
@@ -58,12 +58,12 @@ describe("shareReplay", () => {
     const values1: number[] = [];
     const values2: number[] = [];
 
-    shared.subscribe((v) => values1.push(v.value)); // First subscriber triggers source subscription
+    shared.on((v) => values1.push(v.value)); // First subscriber triggers source subscription
     source.next(createTestSignal(1));
     source.next(createTestSignal(2));
     source.next(createTestSignal(3));
     source.next(createTestSignal(4));
-    shared.subscribe((v) => values2.push(v.value)); // Late subscriber gets replayed values
+    shared.on((v) => values2.push(v.value)); // Late subscriber gets replayed values
 
     expect(values1).toEqual([1, 2, 3, 4]);
     expect(values2).toEqual([2, 3, 4]);
@@ -77,8 +77,8 @@ describe("shareReplay", () => {
     });
     const shared = source.pipe(shareReplay(1));
 
-    const unsub1 = shared.subscribe(vi.fn());
-    const unsub2 = shared.subscribe(vi.fn());
+    const unsub1 = shared.on(vi.fn());
+    const unsub2 = shared.on(vi.fn());
 
     unsub1();
     expect(cleanup).not.toHaveBeenCalled();

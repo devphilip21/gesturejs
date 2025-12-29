@@ -7,7 +7,7 @@ export function throttle<T extends Signal>(ms: number): Operator<T, T> {
     createStream((observer) => {
       let lastTime: number | null = null;
 
-      return source.subscribe({
+      return source.on({
         next(value) {
           const now = performance.now();
           if (lastTime === null || now - lastTime >= ms) {
@@ -28,7 +28,7 @@ export function throttleLast<T extends Signal>(ms: number): Operator<T, T> {
       let hasValue = false;
       let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
-      const unsub = source.subscribe({
+      const unsub = source.on({
         next(value) {
           lastValue = value;
           hasValue = true;

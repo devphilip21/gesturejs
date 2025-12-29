@@ -8,7 +8,7 @@ describe("filter", () => {
 
     fromArray([1, 2, 3, 4, 5])
       .pipe(filter((x: TestSignal<number>) => x.value % 2 === 0))
-      .subscribe((v) => values.push(v.value));
+      .on((v) => values.push(v.value));
 
     expect(values).toEqual([2, 4]);
   });
@@ -22,7 +22,7 @@ describe("filter", () => {
       { name: "Charlie", age: 30 },
     ])
       .pipe(filter((x: TestSignal<{ name: string; age: number }>) => x.value.age >= 18))
-      .subscribe((v) => values.push(v.value));
+      .on((v) => values.push(v.value));
 
     expect(values).toEqual([
       { name: "Alice", age: 25 },
@@ -40,7 +40,7 @@ describe("filter", () => {
           throw error;
         }),
       )
-      .subscribe({ next: vi.fn(), error: errorFn });
+      .on({ next: vi.fn(), error: errorFn });
 
     expect(errorFn).toHaveBeenCalledWith(error);
   });

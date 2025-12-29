@@ -8,8 +8,8 @@ describe("createSubject", () => {
     const values1: number[] = [];
     const values2: number[] = [];
 
-    subject.subscribe((v) => values1.push(v.value));
-    subject.subscribe((v) => values2.push(v.value));
+    subject.on((v) => values1.push(v.value));
+    subject.on((v) => values2.push(v.value));
     subject.next(createTestSignal(1));
     subject.next(createTestSignal(2));
 
@@ -21,7 +21,7 @@ describe("createSubject", () => {
     const subject = createSubject<TestSignal<number>>();
     const values: number[] = [];
 
-    const unsub = subject.subscribe((v) => values.push(v.value));
+    const unsub = subject.on((v) => values.push(v.value));
     subject.next(createTestSignal(1));
     unsub();
     subject.next(createTestSignal(2));
@@ -34,7 +34,7 @@ describe("createSubject", () => {
     const next = vi.fn();
     const complete = vi.fn();
 
-    subject.subscribe({ next, complete });
+    subject.on({ next, complete });
     subject.complete();
     subject.next(createTestSignal(1));
 
@@ -47,7 +47,7 @@ describe("createSubject", () => {
     const subject = createSubject<TestSignal<number>>();
     const errorFn = vi.fn();
 
-    subject.subscribe({ next: vi.fn(), error: errorFn });
+    subject.on({ next: vi.fn(), error: errorFn });
     subject.error(new Error("test"));
 
     expect(errorFn).toHaveBeenCalled();
@@ -58,7 +58,7 @@ describe("createSubject", () => {
     const next = vi.fn();
     const errorFn = vi.fn();
 
-    subject.subscribe({ next, error: errorFn });
+    subject.on({ next, error: errorFn });
     subject.error(new Error("test"));
     subject.next(createTestSignal(1));
 
@@ -73,7 +73,7 @@ describe("createBehaviorSubject", () => {
     const subject = createBehaviorSubject(createTestSignal(10));
     const values: number[] = [];
 
-    subject.subscribe((v) => values.push(v.value));
+    subject.on((v) => values.push(v.value));
 
     expect(values).toEqual([10]);
     expect(subject.getValue().value).toBe(10);
@@ -85,7 +85,7 @@ describe("createBehaviorSubject", () => {
 
     subject.next(createTestSignal(5));
     subject.next(createTestSignal(10));
-    subject.subscribe((v) => values.push(v.value));
+    subject.on((v) => values.push(v.value));
 
     expect(values).toEqual([10]);
     expect(subject.getValue().value).toBe(10);
@@ -96,9 +96,9 @@ describe("createBehaviorSubject", () => {
     const values1: number[] = [];
     const values2: number[] = [];
 
-    subject.subscribe((v) => values1.push(v.value));
+    subject.on((v) => values1.push(v.value));
     subject.next(createTestSignal(1));
-    subject.subscribe((v) => values2.push(v.value));
+    subject.on((v) => values2.push(v.value));
     subject.next(createTestSignal(2));
 
     expect(values1).toEqual([0, 1, 2]);

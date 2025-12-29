@@ -20,7 +20,7 @@ export function session<T extends Signal>(options: SessionOptions<T>): Operator<
     createStream((observer) => {
       let active = false;
 
-      return source.subscribe({
+      return source.on({
         next(value) {
           try {
             if (!active) {
@@ -65,7 +65,7 @@ export function multiPointerSession(
       let active = false;
       let trackedPointerIds: Set<string> = new Set();
 
-      return source.subscribe({
+      return source.on({
         next(signal) {
           try {
             const pointers = signal.value.pointers;

@@ -9,7 +9,7 @@ describe("tap", () => {
 
     fromArray([1, 2, 3])
       .pipe(spy((x: TestSignal<number>) => sideEffects.push(x.value * 10)))
-      .subscribe((v) => values.push(v.value));
+      .on((v) => values.push(v.value));
 
     expect(values).toEqual([1, 2, 3]);
     expect(sideEffects).toEqual([10, 20, 30]);
@@ -25,7 +25,7 @@ describe("tap", () => {
           throw error;
         }),
       )
-      .subscribe({ next: vi.fn(), error: errorFn });
+      .on({ next: vi.fn(), error: errorFn });
 
     expect(errorFn).toHaveBeenCalledWith(error);
   });

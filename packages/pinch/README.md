@@ -13,7 +13,7 @@ npm install cereb @cereb/pinch
 ```typescript
 import { pinch } from "@cereb/pinch";
 
-pinch(element).subscribe((signal) => {
+pinch(element).on((signal) => {
   const { phase, distance, velocity, centerX, centerY } = signal.value;
 
   if (phase === "change") {
@@ -32,7 +32,7 @@ import { pinch } from "@cereb/pinch";
 
 pinch(element)
   .pipe(zoom({ minScale: 0.5, maxScale: 3.0 }))
-  .subscribe((signal) => {
+  .on((signal) => {
     const { scale, scaleVelocity } = signal.value;
 
     element.style.transform = `scale(${scale})`;
@@ -70,7 +70,7 @@ multiPointer(element, { maxPointers: 2 })
   .pipe(
     multiPointerSession(2),
     pinchRecognizer({ threshold: 10 })
-  ).subscribe((signal) => {
+  ).on((signal) => {
     // ...
   });
 ```
@@ -84,7 +84,7 @@ import { createPinchRecognizer } from "@cereb/pinch";
 
 const recognizer = createPinchRecognizer({ threshold: 10 });
 
-multiPointerStream.subscribe((signal) => {
+multiPointerStream.on((signal) => {
   const pinchEvent = recognizer.process(signal);
   if (pinchEvent) {
     console.log(pinchEvent.value.distance);

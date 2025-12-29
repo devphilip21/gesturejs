@@ -13,7 +13,7 @@ npm install --save cereb @cereb/pan
 ```typescript
 import { pan } from "@cereb/pan";
 
-pan(element).subscribe((signal) => {
+pan(element).on((signal) => {
   const { phase, deltaX, deltaY, velocityX, velocityY } = signal.value;
 
   if (phase === "move") {
@@ -32,7 +32,7 @@ import { axisLock } from "@cereb/pan/operators";
 
 pan(element, { threshold: 10 })
   .pipe(axisLock())
-  .subscribe((signal) => {
+  .on((signal) => {
     const { deltaX, deltaY } = signal.value;
 
     // One of deltaX/deltaY will always be 0 after axis is determined
@@ -69,7 +69,7 @@ import { panRecognizer } from "@cereb/pan";
 
 singlePointer(element)
   .pipe(panRecognizer({ threshold: 10 }))
-  .subscribe((signal) => {
+  .on((signal) => {
     // ...
   });
 ```
@@ -83,7 +83,7 @@ import { createPanRecognizer } from "@cereb/pan";
 
 const recognizer = createPanRecognizer({ threshold: 10 });
 
-singlePointerStream.subscribe((signal) => {
+singlePointerStream.on((signal) => {
   const panEvent = recognizer.process(signal);
   if (panEvent) {
     console.log(panEvent.value.deltaX, panEvent.value.velocityX);

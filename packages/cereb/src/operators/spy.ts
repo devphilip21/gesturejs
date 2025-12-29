@@ -21,13 +21,13 @@ import { createStream } from "../core/stream.js";
  *       console.log(e.clientX, e.clientY);
  *     }),
  *   )
- *   .subscribe();
+ *   .on();
  * ```
  */
 export function spy<T extends Signal>(fn: (value: T) => void): Operator<T, T> {
   return (source) =>
     createStream((observer) => {
-      return source.subscribe({
+      return source.on({
         next(value) {
           try {
             fn(value);

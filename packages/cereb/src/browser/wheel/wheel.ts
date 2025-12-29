@@ -67,7 +67,7 @@ function createWheelStream(target: EventTarget, passive: boolean): Stream<WheelS
  * @example
  * ```typescript
  * // Basic usage (passive by default for performance)
- * wheel(element).subscribe(signal => {
+ * wheel(element).on(signal => {
  *   console.log(signal.value.deltaY);
  * });
  *
@@ -76,7 +76,7 @@ function createWheelStream(target: EventTarget, passive: boolean): Stream<WheelS
  *   passive: false,
  *   modifiers: ['meta', 'ctrl'],
  *   preventDefault: true
- * }).subscribe(signal => {
+ * }).on(signal => {
  *   // Only fires when Ctrl or Cmd is held
  * });
  * ```
@@ -112,7 +112,7 @@ export function wheel(target: EventTarget, options?: WheelOptions): Stream<Wheel
   };
 
   return createStream<WheelSignal>((observer) => {
-    return source.subscribe({
+    return source.on({
       next(signal) {
         try {
           if (matchesModifiers(signal.value)) {

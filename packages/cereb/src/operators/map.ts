@@ -7,7 +7,7 @@ export function map<T extends Signal, R extends Signal>(
 ): Operator<T, R> {
   return (source) =>
     createStream((observer) => {
-      return source.subscribe({
+      return source.on({
         next(value) {
           try {
             observer.next(transform(value));

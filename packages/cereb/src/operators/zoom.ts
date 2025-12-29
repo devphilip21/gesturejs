@@ -63,7 +63,7 @@ function clamp(value: number, min: number, max: number): number {
  * pipe(
  *   pinch(element),
  *   zoom({ minScale: 0.5, maxScale: 3.0 })
- * ).subscribe(event => {
+ * ).on(event => {
  *   console.log(event.value.scale);         // 0.5 ~ 3.0
  *   console.log(event.value.scaleVelocity); // scale change per ms
  * });
@@ -80,7 +80,7 @@ export function zoom<T extends SignalWith<ZoomInput>>(
     createStream<OutputSignal>((observer) => {
       let prevScale = baseScale;
 
-      const unsub = source.subscribe({
+      const unsub = source.on({
         next(signal) {
           try {
             const { ratio } = signal.value;

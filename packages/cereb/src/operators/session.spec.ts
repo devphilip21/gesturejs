@@ -44,7 +44,7 @@ describe("session", () => {
       return () => {};
     });
 
-    operator(source).subscribe({ next: (v) => signals.push(v) });
+    operator(source).on({ next: (v) => signals.push(v) });
 
     expect(signals).toHaveLength(4);
     expect(signals[0].value.phase).toBe("start");
@@ -74,7 +74,7 @@ describe("session", () => {
       return () => {};
     });
 
-    operator(source).subscribe({ next: (v) => signals.push(v) });
+    operator(source).on({ next: (v) => signals.push(v) });
 
     expect(signals).toHaveLength(6);
     expect(signals.map((s) => s.value.phase)).toEqual([
@@ -101,7 +101,7 @@ describe("session", () => {
       return () => {};
     });
 
-    operator(source).subscribe({ next: () => {}, error: errorHandler });
+    operator(source).on({ next: () => {}, error: errorHandler });
 
     expect(errorHandler).toHaveBeenCalledWith(expect.any(Error));
   });
@@ -169,7 +169,7 @@ describe("multiPointerSession", () => {
       return () => {};
     });
 
-    operator(source).subscribe({ next: (v) => signals.push(v) });
+    operator(source).on({ next: (v) => signals.push(v) });
 
     expect(signals).toHaveLength(3);
     expect(signals[0].value.count).toBe(2);
@@ -215,7 +215,7 @@ describe("multiPointerSession", () => {
       return () => {};
     });
 
-    operator(source).subscribe({ next: (v) => signals.push(v) });
+    operator(source).on({ next: (v) => signals.push(v) });
 
     expect(signals).toHaveLength(4);
   });

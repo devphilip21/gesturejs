@@ -5,7 +5,7 @@ import { createStream } from "../core/stream.js";
 export function filter<T extends Signal>(predicate: (value: T) => boolean): Operator<T, T> {
   return (source) =>
     createStream((observer) => {
-      return source.subscribe({
+      return source.on({
         next(value) {
           try {
             if (predicate(value)) {

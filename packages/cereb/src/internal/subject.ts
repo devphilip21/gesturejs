@@ -35,7 +35,7 @@ export function createSubject<T extends Signal>(): Subject<T> {
       blocked = false;
     },
 
-    subscribe(observerOrNext) {
+    on(observerOrNext) {
       if (closed) {
         const obs = toObserver(observerOrNext);
         obs.complete?.();
@@ -114,7 +114,7 @@ export function createBehaviorSubject<T extends Signal>(initialValue: T): Behavi
       return currentValue;
     },
 
-    subscribe(observerOrNext) {
+    on(observerOrNext) {
       const observer = toObserver(observerOrNext);
 
       if (closed) {

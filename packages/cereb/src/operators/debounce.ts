@@ -7,7 +7,7 @@ export function debounce<T extends Signal>(ms: number): Operator<T, T> {
     createStream((observer) => {
       let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
-      const unsub = source.subscribe({
+      const unsub = source.on({
         next(value) {
           if (timeoutId !== null) {
             clearTimeout(timeoutId);

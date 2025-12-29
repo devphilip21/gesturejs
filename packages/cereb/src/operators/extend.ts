@@ -9,7 +9,7 @@ export function extend<T extends Signal, A extends object>(
 
   return (source) =>
     createStream<OutputSignal>((observer) => {
-      return source.subscribe({
+      return source.on({
         next(signal) {
           try {
             const a = extender(signal);

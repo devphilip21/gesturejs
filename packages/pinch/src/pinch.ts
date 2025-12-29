@@ -18,7 +18,7 @@ import { createPinchRecognizer } from "./recognizer.js";
  *     pinchRecognizer({ threshold: { ratio: 0.05 } }),
  *     zoom({ minScale: 0.5, maxScale: 3.0 }),
  *   )
- *   .subscribe(pinch => console.log(pinch.value.distance, pinch.value.scale));
+ *   .on(pinch => console.log(pinch.value.distance, pinch.value.scale));
  * ```
  */
 export function pinchRecognizer(
@@ -28,7 +28,7 @@ export function pinchRecognizer(
     createStream((observer) => {
       const recognizer = createPinchRecognizer(options);
 
-      const unsub = source.subscribe({
+      const unsub = source.on({
         next(signal) {
           const event = recognizer.process(signal);
           if (event) {
@@ -58,7 +58,7 @@ export function pinchRecognizer(
  * ```typescript
  * pinch(element, { threshold: { ratio: 0.05 } })
  *   .pipe(zoom({ minScale: 0.5, maxScale: 3.0 }))
- *   .subscribe(event => console.log(event.value.distance, event.value.scale));
+ *   .on(event => console.log(event.value.distance, event.value.scale));
  * ```
  */
 export function pinch(target: EventTarget, options: PinchOptions = {}): Stream<PinchSignal> {

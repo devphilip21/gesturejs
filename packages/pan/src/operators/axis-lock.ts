@@ -27,7 +27,7 @@ export interface AxisLockOptions {
  *   singlePointer(element),
  *   singlePointerToPan({ threshold: 10 }),
  *   axisLock()
- * ).subscribe(event => {
+ * ).on(event => {
  *   // After axis is determined, one of deltaX/deltaY will always be 0
  *   element.style.transform = `translate(${event.deltaX}px, ${event.deltaY}px)`;
  * });
@@ -74,7 +74,7 @@ export function axisLock(options: AxisLockOptions = {}): Operator<PanSignal, Pan
         }
       }
 
-      const unsub = source.subscribe({
+      const unsub = source.on({
         next(signal) {
           if (signal.value.phase === "start") {
             lockedAxis = null;

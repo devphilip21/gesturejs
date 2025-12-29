@@ -19,8 +19,8 @@ export interface KeyboardOptions {
  * Creates a keyboard signal stream. Shares underlying listeners per EventTarget.
  *
  * @example
- * keyboard(window).subscribe(signal => console.log(signal.value.key));
- * keyboard(window, { key: 'z', modifiers: ['meta'] }).subscribe(handleUndo);
+ * keyboard(window).on(signal => console.log(signal.value.key));
+ * keyboard(window, { key: 'z', modifiers: ['meta'] }).on(handleUndo);
  */
 export function keyboard(target: EventTarget, options?: KeyboardOptions): Stream<KeyboardSignal> {
   if (!options) return getSharedKeyboard(target);
@@ -68,7 +68,7 @@ export function keyboard(target: EventTarget, options?: KeyboardOptions): Stream
   };
 
   return createStream<KeyboardSignal>((observer) => {
-    return baseStream.subscribe({
+    return baseStream.on({
       next(signal) {
         const { key, repeat } = signal.value;
         if (!allowRepeat && repeat) return;

@@ -22,7 +22,7 @@ import { createStream } from "../core/stream.js";
  *   keyboard(window),
  *   keyboardFilter({ key: ['+', '-'] }),
  *   when(isZHeld$)  // Only pass through when Z is held
- * ).subscribe(...)
+ * ).on(...)
  * ```
  */
 export function when<TSource extends Signal>(
@@ -32,7 +32,7 @@ export function when<TSource extends Signal>(
     createStream<TSource>((observer) => {
       let isOpen = false;
 
-      const gateUnsub = gate.subscribe({
+      const gateUnsub = gate.on({
         next(signal) {
           try {
             isOpen = signal.value.opened;
@@ -42,7 +42,7 @@ export function when<TSource extends Signal>(
         },
       });
 
-      const sourceUnsub = source.subscribe({
+      const sourceUnsub = source.on({
         next(signal) {
           if (isOpen) {
             observer.next(signal);

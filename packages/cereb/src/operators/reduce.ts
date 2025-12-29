@@ -38,7 +38,7 @@ export function reduce<T extends Signal, A extends object>(
     createStream<OutputSignal>((observer) => {
       let acc = seed ?? ({} as A);
 
-      return source.subscribe({
+      return source.on({
         next(signal) {
           try {
             acc = reducer(acc, signal);
