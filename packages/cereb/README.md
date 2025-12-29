@@ -1,175 +1,197 @@
 # Cereb
 
-User input modeling and orchestration with a lightweight reactive stream library.
-
-## Installation
+**User input handling and orchestration** libray,  
+From low-level events (keyboard, wheel, pointer) to high-level gestures (pan, pinch)
 
 ```bash
-npm install cereb
+npm install --save cereb
 ```
 
-## Quick Start
+## Getting started
 
-Cereb models user input as lightweight reactive streams—from low-level DOM events to pointers, and higher-level gestures like pan or pinch.
-Below is a minimal example for a **single pointer** stream.
+The example below moves an element by tracking pointer position:
 
 ```typescript
 import { singlePointer } from "cereb";
 
-/**
- * Provides a stream for a single pointer.
- * - Merges DOM events from pointer start → end/cancel into one stream and normalizes them into a single, clean interface.
- * - Keeps pointer handling clear and purpose-driven—no need to juggle multiple DOM event shapes.
- * - Lets you coordinate and control priority across multiple input streams.
- */
-singlePointer(canvas).subscribe((signal) => {
-  const { phase, x, y } = signal.value;
+// Create a stream from pointer events
+singlePointer(canvas)
+  // Subscribe to monitor stream changes
+  .subscribe((signal) => {
+    // Receive signals from the stream
+    const { phase, x, y } = signal.value;
+    switch (phase){
+      case "move":
+        element.style.transform = `translate(${x}px, ${y}px)`;
+        break;
+    }
+  });
+```
 
-  switch (phase) {
-    case "move":
-      point.style.setProperty("transform", `translateX(${x}, ${y})`);
-      break;
+## High-level gestures packages
+
+For advanced gestures like pan or pinch, install dedicated packages that build on top of Cereb's core:
+
+| Package | Description |
+|---------|-------------|
+| [@cereb/pan](https://www.npmjs.com/package/@cereb/pan) | Pan/drag gestures with velocity and direction tracking |
+| [@cereb/pinch](https://www.npmjs.com/package/@cereb/pinch) | Pinch-to-zoom with distance and scale calculations |
+
+### Pinch example
+
+```bash
+npm install --save cereb @cereb/pinch
+```
+
+```typescript
+import { pipe } from "cereb";
+import { zoom } from "cereb/operators";
+import { pinch } from "@cereb/pinch";
+
+// pipe creates a pipeline where signals flow through operators
+// Each operator extends the signal (signals are immutable)
+pipe(
+  pinch(element), // Create stream: a pinch gesture
+  zoom({ minScale: 0.5, maxScale: 3.0 }), // Operator: Determine scale value.
+).subscribe((signal) => {
+  // The scale property is extended from the value.
+  // - pinch emits distance → zoom calculates scale
+  // - zoom also works with other inputs (keyboard, wheel, etc.)
+  element.style.transform = `scale(${signal.value.scale})`;
+});
+```
+
+## API overview
+
+Full API docs are coming soon.  
+In the meantime, check the source—it's well-typed and commented:
+
+- [Stream Factories](https://github.com/devphilip21/cereb/tree/main/packages/cereb/src/browser)
+- [Operators](https://github.com/devphilip21/cereb/tree/main/packages/cereb/src/operators)
+
+## The Problems Cereb Solves
+
+### 1. Event-Driven Code Becomes Spaghetti
+
+Traditional event handlers create **scattered logic, side effects, and duplicated code** that's hard to maintain.  
+See how this plays out in a multi-input zoom implementation:
+
+```typescript
+// Before: Scattered handlers, shared state, duplicated logic
+let currentScale = 1;
+let isCtrlPressed = false;
+
+// Track Ctrl key
+window.addEventListener('keydown', e => {
+  if (e.key === 'Control' || e.key === 'Meta') isCtrlPressed = true;
+
+  if (isCtrlPressed && (e.key === '+' || e.key === '-')) {
+    e.preventDefault();
+    currentScale = Math.max(0.2, Math.min(5, currentScale + (e.key === '+' ? 0.15 : -0.15)));
+    applyScale(currentScale);  // Duplicated min/max logic
   }
 });
-```
 
-## What problems does Cereb solve?
-
-- **Unified Input Abstraction** - Handle mouse, touch, and pen with a single `SinglePointer` interface
-- **Composable Pipelines** - Transform streams with operators like `filter`, `map`, `throttle`, and more
-- **Stream Orchestration** - Schedule and coordinate multiple streams (coming soon)
-- **Lightweight** - Minimal overhead for high-frequency input handling
-
-## Recipes
-
-### Session Filtering
-
-Filter events to only emit during active sessions (from pointer down to up/cancel). Events outside a session are ignored.
-
-```typescript
-import { pipe, singlePointer, singlePointerSession } from "cereb";
-
-// Only emits events from start → end/cancel
-const stream = pipe(
-  singlePointer(element),
-  singlePointerSession()
-);
-
-stream.subscribe((signal) => {
-  // Guaranteed to be within an active pointer session
-  const { phase, x, y } = signal.value;
+window.addEventListener('keyup', e => {
+  if (e.key === 'Control' || e.key === 'Meta') isCtrlPressed = false;
 });
-```
 
-For custom session boundaries, use `session` directly:
-
-```typescript
-import { pipe, session } from "cereb";
-
-const stream = pipe(
-  someStream,
-  session({
-    start: (signal) => signal.value.phase === "start",
-    end: (signal) => signal.value.phase === "end",
-  })
-);
-```
-
-### DOM Events
-
-Cereb includes factories to convert DOM events into streams, and to build higher-level streams by merging mouse/touch/pointer events.
-
-```typescript
-import { domEvent, mouseEvents } from "cereb";
-
-const $touchScrollContainer = domEvent(scrollContainerElement, "touchstart");
-const $mouseSomething = mouseEvents(somethingElement);
-```
-
-You can also build a `singlePointer` stream from touch events:
-
-```typescript
-import { touchEvents, pipe } from "cereb";
-import { singlePointerRecognizer } from "cereb/single-pointer/touch";
-
-const pointSomething$ = pipe(
-  touchEvents(somethingElement),
-  singlePointerRecognizer(),
-);
-
-pointSomething$.subscribe((signal) => { /* .. */ });
-```
-
-### Blocking Streams
-
-All streams are blockable - events are silently dropped when blocked:
-
-```typescript
-import { singlePointer } from "cereb";
-
-const stream$ = singlePointer(element);
-
-stream$.subscribe((p) => console.log(p.x, p.y));
-stream$.block(); // Pause event processing
-stream$.unblock(); // Resume event processing
-```
-
-## Cereb Operators
-
-| Operator | Description |
-|----------|-------------|
-| `offset` | Add element-relative `offsetX`, `offsetY` to pointer signals |
-
-```typescript
-import { pipe, singlePointer, offset } from "cereb";
-
-const stream = pipe(
-  singlePointer(element),
-  offset({ target: element }) // includes offsetX, offsetY relative to target element
-);
-
-stream.subscribe((signal) => {
-  const { x, y, offsetX, offsetY } = signal.value;
+// Ctrl + Wheel
+canvas.addEventListener('wheel', e => {
+  if (!isCtrlPressed) return;
+  e.preventDefault();
+  currentScale = Math.max(0.2, Math.min(5, currentScale + (-e.deltaY * 0.005)));
+  applyScale(currentScale);  // Duplicated min/max logic again
 });
+
+// Pinch gesture (touchstart/touchmove/touchend)
+// ... 20+ lines: track two fingers, calculate distance, apply scale
+// ... min/max logic duplicated yet again
+
+// Problem: 6+ scattered handlers, shared state, logic duplicated 3 times
 ```
 
-## General Operators
+<br>
 
-Core includes common stream operators:
-
-| Operator | Description |
-|----------|-------------|
-| `filter` | Emit only values that pass a predicate |
-| `map` | Transform each value |
-| `throttle` | Limit emission rate |
-| `debounce` | Delay until quiet period |
-| `take` / `skip` | Control emission count |
-| `merge` | Combine multiple streams |
-| `share` | Multicast to multiple subscribers |
-| `distinctUntilChanged` | Skip consecutive duplicates |
+Cereb's solution:  
+Model events as streams, and you get readable, reusable, extensible declarative pipelines.
 
 ```typescript
-import { pipe, filter, throttle, map } from "cereb";
+// After: Clear flow, no side effects, composable
+import { pipe, keyboard, keyboardHeld, wheel } from "cereb";
+import { zoom, extend, when } from "cereb/operators";
+import { pinch } from "@cereb/pinch";
 
-const stream = pipe(
-  singlePointer(element),
-  filter((p) => p.phase !== "cancel"),
-  throttle(16), // ~60fps
-  map((p) => ({ x: p.x, y: p.y }))
-);
+const MIN_SCALE = 0.2, MAX_SCALE = 5;
+let currentScale = 1;
+
+// Pinch-to-zoom (touch)
+pipe(
+  pinch(canvas),
+  zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE })
+).subscribe(applyZoom);
+
+// Ctrl/Cmd + Plus/Minus (keyboard)
+pipe(
+  keyboard(window, { key: ["+", "-"], preventDefault: true }),
+  when(keyboardHeld(window, { modifiers: ["meta", "ctrl"] })),
+  extend((signal) => ({
+    ratio: currentScale + (signal.value.key === "+" ? 0.15 : -0.15)
+  })),
+  zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE })
+).subscribe(applyZoom);
+
+// Ctrl/Cmd + Wheel (mouse)
+pipe(
+  wheel(canvas, { modifiers: ["meta", "ctrl"], preventDefault: true }),
+  extend((signal) => ({
+    ratio: currentScale + (-signal.value.deltaY * 0.005)
+  })),
+  zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE })
+).subscribe(applyZoom);
+
+function applyZoom(signal) {
+  currentScale = signal.value.scale;
+  canvas.style.transform = `scale(${currentScale})`;
+}
 ```
 
-### Combining Streams
+### 2. Lightweight Bundle Size
+
+Benchmark: Equivalent pan gesture implementation
+
+| | Minified | Gzipped |
+|--|----------|---------|
+| cereb + @cereb/pan | 4.58 KB | **1.73 KB** |
+| Hammer.js | 20.98 KB | 7.52 KB |
+
+**~77% smaller** than Hammer.js for equivalent pan gesture functionality.
+
+### 3. Performance & Resource Efficiency
+
+**1. Event Listener Reuse**
 
 ```typescript
-import { pipe, merge, singlePointer, domEvent } from "cereb";
+// Before: Multiple addEventListener calls
+window.addEventListener('keydown', handler1);
+window.addEventListener('keydown', handler2);
+window.addEventListener('keydown', handler3);
 
-const keyboard$ = domEvent(window, "keydown");
-const pointer$ = singlePointer(element);
+// After: Shared stream, single listener
+// addEventListener called once
+keyboard(window).subscribe(handler1);
+keyboard(window).subscribe(handler2);
+keyboard(window).subscribe(handler3);
+```
 
-// You can subscribe to events from multiple sources as one stream.
-// This example simply merges, but you can orchestrate behavior with pipelines and operators.
-const combined$ = merge(keyboard$, pointer$);
+**2. Single Responsibility Operators**
+
+```typescript
+pipe(
+  pan(element),           // Pan gesture recognition
+  offset({ target }),     // Element-relative coordinates
+  axisLock()              // Lock to horizontal/vertical
+)
 ```
 
 ## License
