@@ -1,7 +1,7 @@
 {
   "name": "@cereb/pinch",
   "description": "Pinch gesture recognition, designed to work seamlessly with reactive streams and other gesture interactions.",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "license": "MIT",
   "author": "devphilip21 <philip21.dev@gmail.com>",
   "repository": {
