@@ -1,3 +1,4 @@
+export { compose } from "./compose.js";
 export { debounce } from "./debounce.js";
 export { extend } from "./extend.js";
 export { filter } from "./filter.js";

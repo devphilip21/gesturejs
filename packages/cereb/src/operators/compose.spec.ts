@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { fromArray, type TestSignal } from "../internal/test-utils.js";
-import { filter, map } from "../operators/index.js";
 import { compose } from "./compose.js";
+import { filter } from "./filter.js";
+import { map } from "./map.js";
 
 describe("compose", () => {
   it("should compose operators for reuse", () => {
