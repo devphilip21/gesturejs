@@ -7,6 +7,8 @@ From low-level events (keyboard, wheel, pointer, ...) to high-level gestures (pa
 npm install --save cereb
 ```
 
+<br>
+
 ## Getting started
 
 The example below moves an element by tracking pointer position:
@@ -28,6 +30,8 @@ singlePointer(canvas)
   });
 ```
 
+<br>
+
 ## High-level gestures packages
 
 For advanced gestures like pan or pinch, install dedicated packages that build on top of Cereb's core:
@@ -47,10 +51,7 @@ npm install --save cereb @cereb/pinch
 import { zoom } from "cereb/operators";
 import { pinch } from "@cereb/pinch";
 
-// pipe creates a pipeline where signals flow through operators
-// Each operator extends the signal (signals are immutable)
 pinch(element)
-  // Operator: Determine scale value.
   .pipe(zoom({ minScale: 0.5, maxScale: 3.0 }))
   .on((signal) => {
     // The scale property is extended from the value.
@@ -60,6 +61,8 @@ pinch(element)
   });
 ```
 
+<br>
+
 ## API overview
 
 Full API docs are coming soon.  
@@ -67,6 +70,8 @@ In the meantime, check the source—it's well-typed and commented:
 
 - [Stream Factories](https://github.com/devphilip21/cereb/tree/main/packages/cereb/src/browser)
 - [Operators](https://github.com/devphilip21/cereb/tree/main/packages/cereb/src/operators)
+
+<br>
 
 ## The Problems Cereb Solves
 
@@ -176,7 +181,7 @@ Benchmark: Equivalent pan gesture implementation
 
 ### 3. Performance & Resource Efficiency
 
-**1. Event Listener Reuse**
+**3.1. Event Listener Reuse**
 
 ```typescript
 // Before: Multiple addEventListener calls
@@ -191,7 +196,7 @@ keyboard(window).on(handler2);
 keyboard(window).on(handler3);
 ```
 
-**2. Single Responsibility Operators**
+**3.2. Single Responsibility Operators**
 
 ```typescript
 pan(element)                // Pan gesture recognition
@@ -200,6 +205,8 @@ pan(element)                // Pan gesture recognition
     axisLock()              // Lock to horizontal/vertical
   )
 ```
+
+<br>
 
 ## License
 
