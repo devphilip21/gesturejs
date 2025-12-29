@@ -79,36 +79,34 @@ See how this plays out in a multi-input zoom implementation:
 ```typescript
 // Before: Scattered handlers, shared state, duplicated logic
 let currentScale = 1;
-let isCtrlPressed = false;
+let isZoomMode = false;
+let initialPinchDistance = 0;
 
-// Track Ctrl key
 window.addEventListener('keydown', e => {
-  if (e.key === 'Control' || e.key === 'Meta') isCtrlPressed = true;
-
-  if (isCtrlPressed && (e.key === '+' || e.key === '-')) {
+  if (e.key === 'z') { isZoomMode = true; toggleZoomModeIndicator(true); }
+  if (isZoomMode && (e.key === '+' || e.key === '=' || e.key === '-')) {
     e.preventDefault();
-    currentScale = Math.max(0.2, Math.min(5, currentScale + (e.key === '+' ? 0.15 : -0.15)));
-    applyScale(currentScale);  // Duplicated min/max logic
+    currentScale = Math.max(MIN, Math.min(MAX, currentScale + ...));
+    render(currentScale);  // min/max logic here
   }
 });
+window.addEventListener('keyup', e => { /* isZoomMode = false ... */ });
 
-window.addEventListener('keyup', e => {
-  if (e.key === 'Control' || e.key === 'Meta') isCtrlPressed = false;
+box.addEventListener('wheel', e => {
+  if (!isZoomMode) return;
+  currentScale = Math.max(MIN, Math.min(MAX, ...));  // duplicated
+  render(currentScale);
+}, { passive: false });
+
+// Pinch: touchstart/touchmove/touchend, track two fingers, calculate distance...
+box.addEventListener('touchstart', e => { /* ... */ });
+box.addEventListener('touchmove', e => {
+  // ... 10+ lines: distance calculation, ratio, min/max again
 });
+box.addEventListener('touchend', () => { /* cleanup */ });
 
-// Ctrl + Wheel
-canvas.addEventListener('wheel', e => {
-  if (!isCtrlPressed) return;
-  e.preventDefault();
-  currentScale = Math.max(0.2, Math.min(5, currentScale + (-e.deltaY * 0.005)));
-  applyScale(currentScale);  // Duplicated min/max logic again
-});
-
-// Pinch gesture (touchstart/touchmove/touchend)
-// ... 20+ lines: track two fingers, calculate distance, apply scale
-// ... min/max logic duplicated yet again
-
-// Problem: 6+ scattered handlers, shared state, logic duplicated 3 times
+slider.addEventListener('input', e => { /* ... min/max again */ });
+// 8 handlers, 3+ shared states, min/max duplicated everywhere
 ```
 
 <br>
@@ -118,42 +116,56 @@ Model events as streams, and you get readable, reusable, extensible declarative 
 
 ```typescript
 // After: Clear flow, no side effects, composable
-import { pipe, keyboard, keyboardHeld, wheel } from "cereb";
+import { pipe, keyboard, keyboardHeld, wheel, domEvent } from "cereb";
 import { zoom, extend, when } from "cereb/operators";
 import { pinch } from "@cereb/pinch";
 
 const MIN_SCALE = 0.2, MAX_SCALE = 5;
-let currentScale = 1;
 
-// Pinch-to-zoom (touch)
+// 'z' key pressed to enter Zoom Mode Stream
+const isInZoomMode$ = keyboardHeld(window, { key: "z" });
+isInZoomMode$.subscribe(toggleZoomModeIndicator);
+
+// Pinch Zoom
 pipe(
-  pinch(canvas),
+  pinch(box, { threshold: 10 }),
   zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE })
-).subscribe(applyZoom);
+).subscribe(render);
 
-// Ctrl/Cmd + Plus/Minus (keyboard)
+// 'z' + '+/-'
 pipe(
-  keyboard(window, { key: ["+", "-"], preventDefault: true }),
-  when(keyboardHeld(window, { modifiers: ["meta", "ctrl"] })),
-  extend((signal) => ({
-    ratio: currentScale + (signal.value.key === "+" ? 0.15 : -0.15)
+  keyboard(window, { key: ["+", "=", "-"], preventDefault: true }),
+  when(isInZoomMode$),
+  extend<KeyboardSignal, ZoomInput>((signal) => ({
+    ratio: zoomManager.getScale() + (signal.value.key === "+" || signal.value.key === "=" ? 0.15 : -0.15),
   })),
-  zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE })
-).subscribe(applyZoom);
+  zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE }),
+).subscribe(render);
 
-// Ctrl/Cmd + Wheel (mouse)
+// 'z' + 'wheel'
 pipe(
-  wheel(canvas, { modifiers: ["meta", "ctrl"], preventDefault: true }),
-  extend((signal) => ({
-    ratio: currentScale + (-signal.value.deltaY * 0.005)
+  wheel(box, { passive: false, preventDefault: true }),
+  when(isInZoomMode$),
+  extend<WheelSignal, ZoomInput>((signal) => ({
+    ratio: zoomManager.getScale() + (-signal.value.deltaY * 0.005),
   })),
-  zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE })
-).subscribe(applyZoom);
+  zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE }),
+).subscribe(render);
 
-function applyZoom(signal) {
-  currentScale = signal.value.scale;
-  canvas.style.transform = `scale(${currentScale})`;
-}
+// 'Slider Input'
+pipe(
+  domEvent(slider, "input"),
+  extend<DomEventSignal<Event>, ZoomInput>((signal) => {
+    const inputElement = signal.value.target as HTMLInputElement;
+    const value = Number(inputElement.value);
+    const logScale = logMin + (value / 100) * (logMax - logMin);
+    const scale = Math.exp(logScale);
+    return {
+      ratio: clamp(scale, MIN_SCALE, MAX_SCALE),
+    };
+  }),
+  zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE, baseScale: zoomManager.getScale() }),
+).subscribe(render);
 ```
 
 ### 2. Lightweight Bundle Size

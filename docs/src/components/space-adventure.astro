@@ -43,8 +43,7 @@ import "./space-adventure.css";
 <script>
 import { pipe, wheel, keyboard, keyboardHeld, type KeyboardSignal, type WheelSignal, domEvent } from "cereb";
 import { zoom, extend, when, type ZoomInput } from "cereb/operators";
-import { pinch, type PinchSignal } from "@cereb/pinch";
-import type { ZoomValue } from "cereb/operators";
+import { pinch } from "@cereb/pinch";
 import type { DomEventSignal } from "../../../packages/cereb/dist/browser/dom-event/dom-event-signal";
 
   interface Star {
@@ -720,8 +719,6 @@ import type { DomEventSignal } from "../../../packages/cereb/dist/browser/dom-ev
     }
   }
 
-  type ZoomedPinchSignal = PinchSignal<ZoomValue>;
-
   /**
    * Manages zoom state and updates SpaceRenderer's view.
    * No CSS transforms - all zooming is handled by the renderer's coordinate system.
@@ -764,8 +761,6 @@ import type { DomEventSignal } from "../../../packages/cereb/dist/browser/dom-ev
       this.setScale(this.currentScale + delta);
     }
   }
-
-  type InputSource = "pinch" | "keyboard" | "wheel" | "slider";
 
   function initSpacePinchZoom() {
     const box = document.getElementById("space-box");
@@ -817,26 +812,23 @@ import type { DomEventSignal } from "../../../packages/cereb/dist/browser/dom-ev
       updateInfo(signal.kind);
     }
 
-    const pinch$ = pinch(box, { threshold: 10 });
-    const sliderInput$ = domEvent(slider, "input");
-    const zoomMode$ = keyboardHeld(window, { key: "z" });
+    const isInZoomMod$ = keyboardHeld(window, { key: "z" });
     const zoomModeIndicator = document.getElementById("space-zoom-mode");
 
-    zoomMode$.subscribe((signal) => {
+    isInZoomMod$.subscribe((signal) => {
       zoomModeIndicator?.classList.toggle("active", signal.value.opened);
     });
 
     // Pinch Zoom
     pipe(
-      pinch$,
+      pinch(box, { threshold: 10 }),
       zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE })
     ).subscribe(render);
-
 
     // 'z' + '+/-'
     pipe(
       keyboard(window, { key: ["+", "=", "-"], preventDefault: true }),
-      when(zoomMode$),
+      when(isInZoomMod$),
       extend<KeyboardSignal, ZoomInput>((signal) => ({
           ratio: zoomManager.getScale() + (signal.value.key === "+" || signal.value.key === "=" ? 0.15 : -0.15),
         })),
@@ -846,7 +838,7 @@ import type { DomEventSignal } from "../../../packages/cereb/dist/browser/dom-ev
     // 'z' + 'wheel'
     pipe(
       wheel(box, { passive: false, preventDefault: true }),
-      when(zoomMode$),
+      when(isInZoomMod$),
       extend<WheelSignal, ZoomInput>((signal) => ({
         ratio: zoomManager.getScale() + (-signal.value.deltaY * 0.005),
       })),
@@ -855,7 +847,7 @@ import type { DomEventSignal } from "../../../packages/cereb/dist/browser/dom-ev
 
     // 'Progress'
     pipe(
-      sliderInput$,
+      domEvent(slider, "input"),
       extend<DomEventSignal<Event>, ZoomInput>((signal) => {
         const inputElement = signal.value.target as HTMLInputElement;
         const value = Number(inputElement.value);

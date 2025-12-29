@@ -16,16 +16,20 @@ import { pipe, wheel, keyboard, keyboardHeld, domEvent } from "cereb";
 import { zoom, extend, when } from "cereb/operators";
 import { pinch } from "@cereb/pinch";
 
+// 'z' key pressed to enter Zoom Mode Stream
+const isInZoomMode$ = keyboardHeld(window, { key: "z" });
+isInZoomMode$.subscribe(toggleZoomModeIndicator);
+
 // Pinch Zoom
 pipe(
   pinch(box, { threshold: 10 }),
   zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE })
 ).subscribe(render);
 
-// 'CTRL' + 'z' + '+/-'
+// 'z' + '+/-'
 pipe(
   keyboard(window, { key: ["+", "=", "-"], preventDefault: true }),
-  when(keyboardHeld(window, { key: "z", modifiers: ["meta", "ctrl"] })),
+  when(isInZoomMode$),
   extend<KeyboardSignal, ZoomInput>((signal) => ({
     ratio: zoomManager.getScale() + (signal.value.key === "+" || signal.value.key === "=" ? 0.15 : -0.15),
   })),
@@ -34,12 +38,11 @@ pipe(
 
 // 'CTRL' + 'wheel'
 pipe(
-  wheel(box, { passive: false, preventDefault: true, modifiers: ["meta", "ctrl"] }),
-  extend<WheelSignal, ZoomInput>((signal) => {
-    return {
-      ratio: zoomManager.getScale() + (-signal.value.deltaY * 0.005),
-    };
-  }),
+  wheel(box, { passive: false, preventDefault: true }),
+  when(isInZoomMode$),
+  extend<WheelSignal, ZoomInput>((signal) => ({
+    ratio: zoomManager.getScale() + (-signal.value.deltaY * 0.005),
+  })),
   zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE }),
 ).subscribe(render);
 
