@@ -19,6 +19,26 @@
   pointer-events: none;
 }
 
+.space-adventure ._demo-box ._zoom-mode {
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 0;
+  border: 1px solid var(--sl-color-gray-5);
+  border-top: none;
+  border-left: none;
+  border-radius: 8px 0 8px 0;
+  background: var(--sl-color-gray-6);
+  color: var(--sl-color-gray-1);
+  padding: 0.3rem 0.5rem;
+  font-size: 0.8rem;
+  pointer-events: none;
+}
+.space-adventure ._demo-box ._zoom-mode.active {
+  background: var(--sl-color-accent);
+  color: var(--sl-color-black);
+}
+
 .space-adventure ._signal-snapshot-grid ._grid {
   grid-template-columns: repeat(5, 1fr);
   grid-template-rows: 1fr;

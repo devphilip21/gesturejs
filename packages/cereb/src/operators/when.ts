@@ -26,7 +26,7 @@ import { createStream } from "../core/stream.js";
  * ```
  */
 export function when<TSource extends Signal>(
-  gate: Stream<Signal<string, { held: boolean }>>,
+  gate: Stream<Signal<string, { opened: boolean }>>,
 ): Operator<TSource, TSource> {
   return (source) =>
     createStream<TSource>((observer) => {
@@ -35,7 +35,7 @@ export function when<TSource extends Signal>(
       const gateUnsub = gate.subscribe({
         next(signal) {
           try {
-            isOpen = signal.value.held;
+            isOpen = signal.value.opened;
           } catch (err) {
             observer.error?.(err);
           }

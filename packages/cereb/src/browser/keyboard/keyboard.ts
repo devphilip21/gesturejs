@@ -1,103 +1,84 @@
 import { createStream, type Stream } from "../../core/stream.js";
-import { createKeyboardSignalFromEvent, type KeyboardSignal } from "./keyboard-signal.js";
+import type { KeyboardSignal } from "./keyboard-signal.js";
+import { getSharedKeyboard, getSharedKeyboardForKey } from "./shared.js";
 
 export type ModifierKey = "meta" | "ctrl" | "alt" | "shift";
 
 export interface KeyboardOptions {
-  /**
-   * Filter by key value(s). Uses OR logic if array.
-   * Comparison is case-insensitive.
-   * @example 'z' or ['+', '-', '=']
-   */
+  /** Filter by key value(s). Case-insensitive. Uses OR logic if array. */
   key?: string | string[];
-
-  /**
-   * Filter by modifier keys. Uses OR logic (matches if any is pressed).
-   * @example ['meta', 'ctrl'] - matches if metaKey OR ctrlKey is pressed
-   */
+  /** Filter by modifier keys. Uses OR logic. */
   modifiers?: ModifierKey[];
-
-  /**
-   * If true, calls preventDefault() on matching events.
-   * @default false
-   */
+  /** If true, calls preventDefault() on matching events. @default false */
   preventDefault?: boolean;
+  /** If true, allows repeated keydown events. @default false */
+  allowRepeat?: boolean;
 }
 
 /**
- * Creates a stream of keyboard signals from keydown and keyup events on the target.
- * Optionally filters by key and/or modifier keys.
+ * Creates a keyboard signal stream. Shares underlying listeners per EventTarget.
  *
  * @example
- * ```typescript
- * // All keyboard events
- * keyboard(window).subscribe(signal => {
- *   console.log(signal.value.key, signal.value.phase);
- * });
- *
- * // Only +/- keys with Ctrl or Cmd
- * keyboard(window, { key: ['+', '-'], modifiers: ['meta', 'ctrl'] }).subscribe(signal => {
- *   // zoom in/out
- * });
- * ```
+ * keyboard(window).subscribe(signal => console.log(signal.value.key));
+ * keyboard(window, { key: 'z', modifiers: ['meta'] }).subscribe(handleUndo);
  */
 export function keyboard(target: EventTarget, options?: KeyboardOptions): Stream<KeyboardSignal> {
-  const keyList = options?.key
+  if (!options) return getSharedKeyboard(target);
+
+  const modifiers = options.modifiers;
+  const preventDefault = options.preventDefault ?? false;
+  const allowRepeat = options.allowRepeat ?? false;
+
+  const isSingleKey = typeof options.key === "string";
+  const keyList = options.key
     ? Array.isArray(options.key)
       ? options.key.map((k) => k.toLowerCase())
-      : [options.key.toLowerCase()]
+      : null
     : null;
-  const modifiers = options?.modifiers;
-  const preventDefault = options?.preventDefault ?? false;
+
+  const baseStream = isSingleKey
+    ? getSharedKeyboardForKey(target, options.key as string)
+    : getSharedKeyboard(target);
+
+  if (isSingleKey && !modifiers && !preventDefault && !allowRepeat) {
+    return baseStream;
+  }
 
   const matchesKey = (key: string): boolean => {
     if (!keyList) return true;
     return keyList.includes(key.toLowerCase());
   };
 
-  const matchesModifiers = (e: KeyboardEvent): boolean => {
+  const matchesModifiers = (value: KeyboardSignal["value"]): boolean => {
     if (!modifiers || modifiers.length === 0) return true;
     return modifiers.some((mod) => {
       switch (mod) {
         case "meta":
-          return e.metaKey;
+          return value.metaKey;
         case "ctrl":
-          return e.ctrlKey;
+          return value.ctrlKey;
         case "alt":
-          return e.altKey;
+          return value.altKey;
         case "shift":
-          return e.shiftKey;
+          return value.shiftKey;
         default:
           return false;
       }
     });
   };
 
-  const matches = (e: KeyboardEvent): boolean => {
-    return matchesKey(e.key) && matchesModifiers(e);
-  };
-
   return createStream<KeyboardSignal>((observer) => {
-    const handleKeyDown = (e: Event) => {
-      const event = e as KeyboardEvent;
-      if (!matches(event)) return;
-      if (preventDefault) event.preventDefault();
-      observer.next(createKeyboardSignalFromEvent(event, "down"));
-    };
-
-    const handleKeyUp = (e: Event) => {
-      const event = e as KeyboardEvent;
-      if (!matches(event)) return;
-      if (preventDefault) event.preventDefault();
-      observer.next(createKeyboardSignalFromEvent(event, "up"));
-    };
-
-    target.addEventListener("keydown", handleKeyDown);
-    target.addEventListener("keyup", handleKeyUp);
-
-    return () => {
-      target.removeEventListener("keydown", handleKeyDown);
-      target.removeEventListener("keyup", handleKeyUp);
-    };
+    return baseStream.subscribe({
+      next(signal) {
+        const { key, repeat } = signal.value;
+        if (!allowRepeat && repeat) return;
+        if (!matchesKey(key)) return;
+        if (!matchesModifiers(signal.value)) return;
+        if (preventDefault) signal.value.originalEvent.preventDefault();
+        observer.next(signal);
+      },
+      error: observer.error?.bind(observer),
+      complete: observer.complete?.bind(observer),
+    });
   });
 }

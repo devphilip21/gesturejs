@@ -2,77 +2,49 @@ import type { Signal } from "../../core/signal.js";
 import { createSignal } from "../../core/signal.js";
 import type { Stream } from "../../core/stream.js";
 import { createStream } from "../../core/stream.js";
-import { share } from "../../operators/share.js";
-import { keyboard, type ModifierKey } from "./keyboard.js";
+import type { ModifierKey } from "./keyboard.js";
 import type { KeyboardSignal } from "./keyboard-signal.js";
+import { getSharedKeyboard, getSharedKeyboardForKey } from "./shared.js";
 
-export interface HeldValue {
-  held: boolean;
+interface HeldValue {
+  opened: boolean;
 }
 
-export interface HeldSignal extends Signal<"held", HeldValue> {}
+export interface HeldSignal extends Signal<"keyboard-held", HeldValue> {}
 
-export const HELD_SIGNAL_KIND = "held" as const;
+export const HELD_SIGNAL_KIND = "keyboard-held" as const;
 
 export interface KeyboardHeldOptions {
   /**
    * The key to track. Case-insensitive.
-   * @example 'z', 'Enter', 'Escape'
+   * @example 'z', 'Space', 'Escape'
    */
   key: string;
 
   /**
    * Modifier keys that must also be held. Uses OR logic.
+   *
+   * ⚠️ WARNING: On macOS, OS-level modifiers (especially Meta/Command) can swallow
+   * keyup events. This is a known platform limitation, not a bug. For reliable
+   * "hold to activate" behavior, prefer using non-modifier keys (Space, Shift, etc.)
+   * as the primary key instead of relying on modifier combinations.
+   *
    * @example ['meta', 'ctrl'] - matches if metaKey OR ctrlKey is pressed
    */
   modifiers?: ModifierKey[];
 }
 
 /**
- * Cache for shared keyboard streams per EventTarget.
- * Using WeakMap ensures streams are garbage collected when targets are removed.
- */
-const sharedKeyboardStreams = new WeakMap<EventTarget, Stream<KeyboardSignal>>();
-
-function getSharedKeyboard(target: EventTarget): Stream<KeyboardSignal> {
-  let stream = sharedKeyboardStreams.get(target);
-  if (!stream) {
-    stream = share<KeyboardSignal>()(keyboard(target));
-    sharedKeyboardStreams.set(target, stream);
-  }
-  return stream;
-}
-
-/**
- * Creates a stream that tracks whether a specific key (and optionally modifiers) is being held down.
- *
- * Automatically shares the keyboard stream for the same EventTarget, so multiple
- * keyboardHeld calls on the same target reuse the same underlying event listeners.
- *
- * This function correctly handles the case where modifier keys are released before
- * the main key. It tracks the main key's down/up state independently and checks
- * modifier states from each keyboard event.
- *
- * @param target - EventTarget to listen for keyboard events (e.g., window, document, element)
- * @param options - Key and modifier configuration
- * @returns Stream that emits { held: true } when conditions are met, { held: false } otherwise
+ * Tracks whether a specific key (with optional modifiers) is being held down.
+ * Emits only when state changes.
  *
  * @example
  * ```typescript
- * // Track if Ctrl+Z or Cmd+Z is held
- * const isZoomModeHeld$ = keyboardHeld(window, {
- *   key: 'z',
- *   modifiers: ['meta', 'ctrl']
- * });
+ * // Prefer: use non-modifier key for reliable hold detection
+ * const spaceHeld$ = keyboardHeld(window, { key: 'Space' });
  *
- * // Multiple calls on same target share the keyboard stream
- * const isXHeld$ = keyboardHeld(window, { key: 'x' });
- *
- * // Use with when() operator
- * pipe(
- *   wheel(element),
- *   when(isZoomModeHeld$)
- * ).subscribe(...)
+ * // Caution: modifier combos may miss keyup on macOS
+ * const cmdZHeld$ = keyboardHeld(window, { key: 'z', modifiers: ['meta'] });
  * ```
  */
 export function keyboardHeld(
@@ -81,7 +53,24 @@ export function keyboardHeld(
 ): Stream<HeldSignal> {
   const { key, modifiers } = options;
   const keyLower = key.toLowerCase();
-  const source = getSharedKeyboard(target);
+  const hasModifiers = modifiers && modifiers.length > 0;
+
+  // With modifiers, use base stream to receive modifier keyup events
+  const source = hasModifiers ? getSharedKeyboard(target) : getSharedKeyboardForKey(target, key);
+
+  const modifierKeyNames = new Set<string>();
+  if (modifiers) {
+    for (const mod of modifiers) {
+      if (mod === "meta") modifierKeyNames.add("meta");
+      if (mod === "ctrl") modifierKeyNames.add("control");
+      if (mod === "alt") modifierKeyNames.add("alt");
+      if (mod === "shift") modifierKeyNames.add("shift");
+    }
+  }
+
+  const isModifierKey = (eventKey: string): boolean => {
+    return modifierKeyNames.has(eventKey.toLowerCase());
+  };
 
   const checkModifiers = (value: KeyboardSignal["value"]): boolean => {
     if (!modifiers || modifiers.length === 0) return true;
@@ -103,23 +92,35 @@ export function keyboardHeld(
 
   return createStream((observer) => {
     let keyHeld = false;
+    let lastEmittedHeld: boolean | undefined;
+
+    const emitIfChanged = (held: boolean) => {
+      if (held !== lastEmittedHeld) {
+        lastEmittedHeld = held;
+        observer.next(createSignal(HELD_SIGNAL_KIND, { opened: held }));
+      }
+    };
 
     return source.subscribe({
       next(signal) {
         try {
-          const { key: eventKey, phase } = signal.value;
+          const { key: eventKey, phase, repeat } = signal.value;
+          if (repeat) return;
 
-          // Update key state only for the target key
-          if (eventKey.toLowerCase() === keyLower) {
+          const eventKeyLower = eventKey.toLowerCase();
+          const isTargetKey = eventKeyLower === keyLower;
+          const isModifier = isModifierKey(eventKey);
+
+          if (isTargetKey) {
             keyHeld = phase === "down";
+          } else if (phase === "down" || (isModifier && phase === "up")) {
+            // Reset on any other keydown or modifier keyup (handles missing keyup on macOS)
+            keyHeld = false;
           }
 
-          // Check modifier state from current event
           const modifierHeld = checkModifiers(signal.value);
-
-          // Emit held: true only when both conditions are met
           const held = keyHeld && modifierHeld;
-          observer.next(createSignal(HELD_SIGNAL_KIND, { held }));
+          emitIfChanged(held);
         } catch (err) {
           observer.error?.(err);
         }

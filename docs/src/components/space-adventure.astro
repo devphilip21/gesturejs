@@ -9,9 +9,11 @@ import "./space-adventure.css";
 <div class="space-adventure">
   <div class="_demo-box" id="space-box">
     <canvas id="space-canvas"></canvas>
+    <strong id="space-zoom-mode" class="_zoom-mode">Zoom Mode</strong>
     <div class="_tip">
       <strong class="_tip-title">Tip.</strong>
-      Pinch, Wheel, or +/- to zoom.
+      Pinch or change slider to zoom.<br />
+      In Desktop, use 'z' + '+/-' or 'wheel' to zoom.
     </div>
   </div>
   <div class="_demo-controls">
@@ -817,6 +819,12 @@ import type { DomEventSignal } from "../../../packages/cereb/dist/browser/dom-ev
 
     const pinch$ = pinch(box, { threshold: 10 });
     const sliderInput$ = domEvent(slider, "input");
+    const zoomMode$ = keyboardHeld(window, { key: "z" });
+    const zoomModeIndicator = document.getElementById("space-zoom-mode");
+
+    zoomMode$.subscribe((signal) => {
+      zoomModeIndicator?.classList.toggle("active", signal.value.opened);
+    });
 
     // Pinch Zoom
     pipe(
@@ -824,24 +832,24 @@ import type { DomEventSignal } from "../../../packages/cereb/dist/browser/dom-ev
       zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE })
     ).subscribe(render);
 
-    // 'CTRL' + 'z' + '+/-'
+
+    // 'z' + '+/-'
     pipe(
       keyboard(window, { key: ["+", "=", "-"], preventDefault: true }),
-      when(keyboardHeld(window, { key: "z", modifiers: ["meta", "ctrl"] })),
+      when(zoomMode$),
       extend<KeyboardSignal, ZoomInput>((signal) => ({
-        ratio: zoomManager.getScale() + (signal.value.key === "+" || signal.value.key === "=" ? 0.15 : -0.15),
-      })),
+          ratio: zoomManager.getScale() + (signal.value.key === "+" || signal.value.key === "=" ? 0.15 : -0.15),
+        })),
       zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE }),
     ).subscribe(render);
 
-    // 'CTRL' + 'wheel'
+    // 'z' + 'wheel'
     pipe(
-      wheel(box, { passive: false, preventDefault: true, modifiers: ["meta", "ctrl"] }),
-      extend<WheelSignal, ZoomInput>((signal) => {
-        return {
-          ratio: zoomManager.getScale() + (-signal.value.deltaY * 0.005),
-        };
-      }),
+      wheel(box, { passive: false, preventDefault: true }),
+      when(zoomMode$),
+      extend<WheelSignal, ZoomInput>((signal) => ({
+        ratio: zoomManager.getScale() + (-signal.value.deltaY * 0.005),
+      })),
       zoom({ minScale: MIN_SCALE, maxScale: MAX_SCALE }),
     ).subscribe(render);
 
