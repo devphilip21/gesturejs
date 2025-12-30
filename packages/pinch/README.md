@@ -5,7 +5,7 @@ Pinch gesture recognition for multi-touch interactions. Works seamlessly with [c
 ## Installation
 
 ```bash
-npm install cereb @cereb/pinch
+npm install --save cereb @cereb/pinch
 ```
 
 ## Quick Start
@@ -38,6 +38,10 @@ pinch(element)
     element.style.transform = `scale(${scale})`;
   });
 ```
+
+## Documentation
+
+For detailed documentation, examples, and guides, visit [cereb.dev/stream-api/pinch](https://cereb.dev/stream-api/pinch).
 
 ## API
 

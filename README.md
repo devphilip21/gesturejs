@@ -60,148 +60,41 @@ pinch(element)
   });
 ```
 
-## API overview
+## Documentation
 
-Full API docs are coming soon.
-In the meantime, check the source—it's well-typed and commented:
+### Stream API
 
-- [Stream Factories](https://github.com/devphilip21/cereb/tree/main/packages/cereb/src/browser)
-- [Operators](https://github.com/devphilip21/cereb/tree/main/packages/cereb/src/operators)
+Create streams from various input sources:
+
+| API | Description |
+|-----|-------------|
+| [pan](https://cereb.dev/stream-api/pan) | Pan gesture with velocity and direction |
+| [pinch](https://cereb.dev/stream-api/pinch) | Pinch gesture with distance and center |
+| [singlePointer](https://cereb.dev/stream-api/single-pointer) | Unified pointer (mouse/touch/pen) |
+| [multiPointer](https://cereb.dev/stream-api/multi-pointer) | Multi-touch tracking |
+| [keyboard](https://cereb.dev/stream-api/keyboard) | Keyboard events (keydown + keyup) |
+| [keydown](https://cereb.dev/stream-api/keydown) | Keydown events only |
+| [keyheld](https://cereb.dev/stream-api/keyheld) | Track if a key is held |
+| [wheel](https://cereb.dev/stream-api/wheel) | Wheel/scroll events |
+| [domEvent](https://cereb.dev/stream-api/dom-event) | Any DOM event |
+
+### Operator API
+
+Transform and compose streams with operators like `filter`, `map`, `merge`, `throttle`, `debounce`, and more.
+
+[See all operators →](https://cereb.dev/operator-api/compose)
 
 ## The Problems Cereb Solves
 
-### 1. Event-Driven Code Becomes Spaghetti
+- **Spaghetti Event Code** — Scattered handlers, shared mutable state, duplicated logic
+- **Lightweight Bundle** — ~77% smaller than Hammer.js (1.73 KB gzipped for pan gesture)
+- **Resource Efficiency** — Event listener reuse, single-responsibility operators
 
-Traditional event handlers create **scattered logic, side effects, and duplicated code** that's hard to maintain.
-See how this plays out in a multi-input zoom implementation:
-
-```typescript
-// Before: Scattered handlers, shared state, duplicated logic
-let currentScale = 1;
-let isZoomMode = false;
-let initialPinchDistance = 0;
-
-window.addEventListener('keydown', e => {
-  if (e.key === 'z') { isZoomMode = true; toggleZoomModeIndicator(true); }
-  if (isZoomMode && (e.key === '+' || e.key === '=' || e.key === '-')) {
-    e.preventDefault();
-    currentScale = Math.max(MIN, Math.min(MAX, currentScale + ...));
-    render(currentScale);  // min/max logic here
-  }
-});
-window.addEventListener('keyup', e => { /* isZoomMode = false ... */ });
-
-box.addEventListener('wheel', e => {
-  if (!isZoomMode) return;
-  currentScale = Math.max(MIN, Math.min(MAX, ...));  // duplicated
-  render(currentScale);
-}, { passive: false });
-
-// Pinch: touchstart/touchmove/touchend, track two fingers, calculate distance...
-box.addEventListener('touchstart', e => { /* ... */ });
-box.addEventListener('touchmove', e => {
-  // ... 10+ lines: distance calculation, ratio, min/max again
-});
-box.addEventListener('touchend', () => { /* cleanup */ });
-
-slider.addEventListener('input', e => { /* ... min/max again */ });
-// 8 handlers, 3+ shared states, min/max duplicated everywhere
-```
-
-<br>
-
-Cereb's solution:
-Model events as streams, and you get readable, reusable, extensible declarative pipelines.
-
-```typescript
-// After: Clear flow, no side effects, composable
-import { keydown, keyheld, wheel, domEvent } from "cereb";
-import { zoom as createZoom, when, extend, spy } from "cereb/operators";
-import { pinch } from "@cereb/pinch";
-
-const zoomMode$ = keyheld(window, { code: "KeyZ" });
-const zoom = (op) => createZoom({ minScale: 0.5, maxScale: 3.0, baseScale: getScale, ...op });
-
-// Pinch zoom - baseScale syncs with external state
-pinch(element)
-  .pipe(zoom())
-  .on(applyScale);
-
-// z + wheel zoom - ratio as multiplicative factor
-wheel(element, { passive: false })
-  .pipe(
-    when(zoomMode$),
-    spy((signal) => signal.value.originalEvent.preventDefault()),
-    extend((signal) => ({ ratio: Math.exp(-signal.value.deltaY * 0.005) })),
-    zoom(),
-  )
-  .on(applyScale);
-
-// z + '+/-' zoom - ratio as multiplier
-keydown(window, { code: ["Equal", "Minus"] })
-  .pipe(
-    when(zoomMode$),
-    spy((signal) => signal.value.originalEvent.preventDefault()),
-    extend((signal) => ({ ratio: signal.value.code === "Equal" ? 1.2 : 1 / 1.2 })),
-    zoom(),
-  )
-  .on(applyScale);
-
-// 'Slider Input' - sets absolute scale, so ratio is the target scale itself
-domEvent(slider, "input")
-  .pipe(
-    extend<DomEventSignal<Event>, ZoomInput>((signal) => {
-      const inputElement = signal.value.target as HTMLInputElement;
-      const value = Number(inputElement.value);
-      const logScale = logMin + (value / 100) * (logMax - logMin);
-      const scale = Math.exp(logScale);
-      return {
-        ratio: clamp(scale, MIN_SCALE, MAX_SCALE),
-      };
-    }),
-    zoom({ baseScale: 1.0 }),  // baseScale = 1.0 for absolute scale
-  ).on(render);
-```
-
-### 2. Lightweight Bundle Size
-
-Benchmark: Equivalent pan gesture implementation
-
-| | Minified | Gzipped |
-|--|----------|---------|
-| cereb + @cereb/pan | 4.58 KB | **1.73 KB** |
-| Hammer.js | 20.98 KB | 7.52 KB |
-
-**~77% smaller** than Hammer.js for equivalent pan gesture functionality.
-
-### 3. Performance & Resource Efficiency
-
-**1. Event Listener Reuse**
-
-```typescript
-// Before: Multiple addEventListener calls
-window.addEventListener('keydown', handler1);
-window.addEventListener('keydown', handler2);
-window.addEventListener('keydown', handler3);
-
-// After: Shared stream, single listener
-// addEventListener called once
-keyboard(window).on(handler1);
-keyboard(window).on(handler2);
-keyboard(window).on(handler3);
-```
-
-**2. Single Responsibility Operators**
-
-```typescript
-pan(element)                // Pan gesture recognition
-  .pipe(
-    offset({ target }),     // Element-relative coordinates
-    axisLock()              // Lock to horizontal/vertical
-  )
-```
+[See detailed examples →](https://cereb.dev/core-concepts/the-problem-solves)
 
 ## Contributing
+
+If you find Cereb useful, consider giving it a star — it helps others discover the project!
 
 Contributions are welcome! Please read our [Contributing Guide](./CONTRIBUTING.md) before submitting a Pull Request.
 

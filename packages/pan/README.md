@@ -40,6 +40,10 @@ pan(element, { threshold: 10 })
   });
 ```
 
+## Documentation
+
+For detailed documentation, examples, and guides, visit [cereb.dev/stream-api/pan](https://cereb.dev/stream-api/pan).
+
 ## API
 
 ### `pan(target, options?)`
