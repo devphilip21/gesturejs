@@ -1,4 +1,4 @@
-# Cereb
+# [Cereb](https://cereb.dev)
 
 **User input handling and orchestration** library,
 From low-level events (keyboard, wheel, pointer, touch, ...) to high-level gestures (pan, pinch, ...)

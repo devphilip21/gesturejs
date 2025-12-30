@@ -1,4 +1,4 @@
-# @cereb/pan
+# [@cereb/pan](https://cereb.dev/stream-api/pan)
 
 Pan gesture recognition for pointer interactions. Works seamlessly with [cereb](https://www.npmjs.com/package/cereb) reactive streams.
 

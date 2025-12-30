@@ -1,4 +1,4 @@
-# @cereb/pinch
+# [@cereb/pinch](https://cereb.dev/stream-api/pinch)
 
 Pinch gesture recognition for multi-touch interactions. Works seamlessly with [cereb](https://www.npmjs.com/package/cereb) reactive streams.
 
