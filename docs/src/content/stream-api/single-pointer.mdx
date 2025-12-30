@@ -1,0 +1,101 @@
+# singlePointer
+
+Unified pointer stream that normalizes mouse, touch, and pen inputs into a single interface. Tracks only the primary pointer, ignoring secondary touch points.
+
+```bash
+npm install cereb
+```
+
+## Basic Usage
+
+```typescript
+import { singlePointer } from "cereb";
+
+singlePointer(element).on((signal) => {
+  const { phase, x, y, pointerType } = signal.value;
+
+  if (phase === "start") {
+    console.log(`${pointerType} started at (${x}, ${y})`);
+  }
+});
+```
+
+## Signature
+
+```typescript
+function singlePointer(target: EventTarget, options?: SinglePointerOptions): Stream<SinglePointerSignal>
+```
+
+## Signal Value
+
+The `signal.value` contains:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `phase` | `"start" \| "move" \| "end" \| "cancel"` | Current pointer phase |
+| `x` | `number` | Current clientX |
+| `y` | `number` | Current clientY |
+| `pageX` | `number` | Current pageX |
+| `pageY` | `number` | Current pageY |
+| `pointerType` | `"mouse" \| "touch" \| "pen" \| "unknown"` | Input device type |
+| `button` | `"none" \| "primary" \| "secondary" \| ...` | Mouse button pressed |
+| `pressure` | `number` | Pressure value (0.0-1.0, default 0.5) |
+| `id` | `string` | Unique pointer identifier |
+
+## Phase Lifecycle
+
+```
+pointer down → "start" → "move"* → "end" or "cancel"
+```
+
+- **start**: Pointer pressed/touched
+- **move**: Pointer moving while pressed
+- **end**: Pointer released normally
+- **cancel**: Pointer interrupted (e.g., system event)
+
+## Primary Pointer Only
+
+`singlePointer` tracks only the primary pointer. When multiple fingers touch the screen, secondary touch points are ignored:
+
+```typescript
+// Even with multiple fingers, only the first touch is tracked
+singlePointer(canvas).on((signal) => {
+  // signal.value contains only primary pointer data
+  drawAt(signal.value.x, signal.value.y);
+});
+```
+
+This makes it ideal for drawing apps, drag interactions, and single-point gestures.
+
+## With Operators
+
+Combine with operators for gesture recognition:
+
+```typescript
+import { singlePointer } from "cereb";
+import { session, offset } from "cereb/operators";
+
+singlePointer(element)
+  .pipe(
+    session(),           // Group start → end as one session
+    offset({ target })   // Add element-relative coordinates
+  )
+  .on((signal) => {
+    const { offsetX, offsetY } = signal.value;
+    element.style.left = `${offsetX}px`;
+    element.style.top = `${offsetY}px`;
+  });
+```
+
+## Advanced: singlePointerRecognizer
+
+Use as an operator with custom event sources:
+
+```typescript
+import { pointerEvents } from "cereb";
+import { singlePointerRecognizer } from "cereb/pointer";
+
+pointerEvents(element)
+  .pipe(singlePointerRecognizer())
+  .on((signal) => { /* ... */ });
+```

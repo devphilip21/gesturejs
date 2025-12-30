@@ -1,0 +1,103 @@
+# multiPointer
+
+Multi-touch pointer stream that tracks multiple simultaneous pointers. Emits a snapshot of all active pointers whenever any pointer changes state.
+
+```bash
+npm install cereb
+```
+
+## Basic Usage
+
+```typescript
+import { multiPointer } from "cereb";
+
+multiPointer(element, { maxPointers: 2 }).on((signal) => {
+  const { phase, pointers, count } = signal.value;
+
+  if (count === 2) {
+    const [p1, p2] = pointers;
+    console.log(`Two fingers at (${p1.x}, ${p1.y}) and (${p2.x}, ${p2.y})`);
+  }
+});
+```
+
+## Signature
+
+```typescript
+function multiPointer(target: EventTarget, options?: MultiPointerOptions): Stream<MultiPointerSignal>
+```
+
+## Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `maxPointers` | `number` | `2` | Maximum pointers to track simultaneously |
+
+## Signal Value
+
+The `signal.value` contains:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `phase` | `"idle" \| "active" \| "ended"` | Session-level phase |
+| `pointers` | `readonly PointerInfo[]` | Array of all active pointers |
+| `count` | `number` | Number of active pointers |
+
+### PointerInfo
+
+Each pointer in the `pointers` array contains:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `id` | `string` | Unique pointer identifier |
+| `phase` | `"start" \| "move" \| "end" \| "cancel"` | Individual pointer phase |
+| `x` | `number` | Current clientX |
+| `y` | `number` | Current clientY |
+| `pageX` | `number` | Current pageX |
+| `pageY` | `number` | Current pageY |
+| `pointerType` | `"mouse" \| "touch" \| "pen" \| "unknown"` | Input device type |
+| `button` | `"none" \| "primary" \| "secondary" \| ...` | Mouse button pressed |
+| `pressure` | `number` | Pressure value (0.0-1.0) |
+
+## Phase Lifecycle
+
+```
+first pointer down → "active" → (pointers change) → last pointer up → "ended" → "idle"
+```
+
+- **idle**: No active pointers
+- **active**: One or more pointers are active
+- **ended**: All pointers have ended (transition state)
+
+## With Pinch Gesture
+
+`multiPointer` is the foundation for pinch gestures:
+
+```typescript
+import { multiPointer } from "cereb";
+import { multiPointerSession } from "cereb/operators";
+import { pinchRecognizer } from "@cereb/pinch";
+
+multiPointer(element, { maxPointers: 2 })
+  .pipe(
+    multiPointerSession(2),  // Wait for 2 pointers
+    pinchRecognizer()
+  )
+  .on((signal) => {
+    const { ratio, centerX, centerY } = signal.value;
+    // Handle pinch...
+  });
+```
+
+## Advanced: multiPointerFromPointer
+
+Use as an operator with custom event sources:
+
+```typescript
+import { pointerEvents } from "cereb";
+import { multiPointerFromPointer } from "cereb";
+
+pointerEvents(element)
+  .pipe(multiPointerFromPointer({ maxPointers: 3 }))
+  .on((signal) => { /* ... */ });
+```

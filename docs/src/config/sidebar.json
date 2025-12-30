@@ -34,8 +34,8 @@
           "slug": "core-concepts/key-models"
         },
         {
-          "label": "Why Cereb?",
-          "slug": "core-concepts/why-cereb"
+          "label": "The Problems Solves",
+          "slug": "core-concepts/the-problem-solves"
         }
       ]
     },
@@ -49,6 +49,14 @@
         {
           "label": "Pinch",
           "slug": "stream-api/pinch"
+        },
+        {
+          "label": "Single Pointer",
+          "slug": "stream-api/single-pointer"
+        },
+        {
+          "label": "Multi Pointer",
+          "slug": "stream-api/multi-pointer"
         }
       ]
     }

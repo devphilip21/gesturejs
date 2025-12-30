@@ -1,0 +1,18 @@
+---
+import DocsLayout from "@/layouts/docs-layout.astro";
+import Content from "@/content/stream-api/multi-pointer.mdx";
+
+const headings = [
+  { depth: 2, slug: "basic-usage", text: "Basic Usage" },
+  { depth: 2, slug: "signature", text: "Signature" },
+  { depth: 2, slug: "options", text: "Options" },
+  { depth: 2, slug: "signal-value", text: "Signal Value" },
+  { depth: 2, slug: "phase-lifecycle", text: "Phase Lifecycle" },
+  { depth: 2, slug: "with-pinch-gesture", text: "With Pinch Gesture" },
+  { depth: 2, slug: "advanced-multipointerfrompointer", text: "Advanced: multiPointerFromPointer" },
+];
+---
+
+<DocsLayout title="multiPointer" description="Multi-touch pointer stream for tracking multiple simultaneous pointers" headings={headings}>
+  <Content />
+</DocsLayout>

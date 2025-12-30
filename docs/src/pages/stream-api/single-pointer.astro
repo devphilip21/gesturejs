@@ -1,0 +1,18 @@
+---
+import DocsLayout from "@/layouts/docs-layout.astro";
+import Content from "@/content/stream-api/single-pointer.mdx";
+
+const headings = [
+  { depth: 2, slug: "basic-usage", text: "Basic Usage" },
+  { depth: 2, slug: "signature", text: "Signature" },
+  { depth: 2, slug: "signal-value", text: "Signal Value" },
+  { depth: 2, slug: "phase-lifecycle", text: "Phase Lifecycle" },
+  { depth: 2, slug: "primary-pointer-only", text: "Primary Pointer Only" },
+  { depth: 2, slug: "with-operators", text: "With Operators" },
+  { depth: 2, slug: "advanced-singlepointerrecognizer", text: "Advanced: singlePointerRecognizer" },
+];
+---
+
+<DocsLayout title="singlePointer" description="Unified pointer stream for mouse, touch, and pen inputs" headings={headings}>
+  <Content />
+</DocsLayout>
