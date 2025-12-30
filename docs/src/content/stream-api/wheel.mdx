@@ -1,0 +1,110 @@
+# `wheel`
+
+Wheel event stream for scroll and zoom interactions. Shares underlying listeners per EventTarget.
+
+```bash
+npm install cereb
+```
+
+## Basic Usage
+
+```typescript
+import { wheel } from "cereb";
+
+wheel(element).on((signal) => {
+  const { deltaX, deltaY, x, y } = signal.value;
+  console.log(`Scrolled ${deltaY}px at (${x}, ${y})`);
+});
+```
+
+## Signature
+
+```typescript
+function wheel(target: EventTarget, options?: WheelOptions): Stream<WheelSignal>
+```
+
+## Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `passive` | `boolean` | `true` | Use passive listener (set `false` to enable preventDefault) |
+| `modifiers` | `ModifierKey[]` | - | Filter by modifier keys (OR logic) |
+| `preventDefault` | `boolean` | `false` | Call preventDefault (requires `passive: false`) |
+
+## Signal Value
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `deltaX` | `number` | Horizontal scroll delta |
+| `deltaY` | `number` | Vertical scroll delta (positive = down/zoom out) |
+| `deltaZ` | `number` | Z-axis delta (rare, for 3D mice) |
+| `deltaMode` | `"pixel" \| "line" \| "page"` | Unit of delta values |
+| `x` | `number` | Client X (viewport-relative) |
+| `y` | `number` | Client Y (viewport-relative) |
+| `pageX` | `number` | Page X (document-relative) |
+| `pageY` | `number` | Page Y (document-relative) |
+| `altKey` | `boolean` | Alt key pressed |
+| `ctrlKey` | `boolean` | Ctrl key pressed |
+| `metaKey` | `boolean` | Meta (Cmd/Win) key pressed |
+| `shiftKey` | `boolean` | Shift key pressed |
+| `originalEvent` | `WheelEvent` | Original DOM event |
+
+## Examples
+
+### Basic Scroll Handling
+
+```typescript
+wheel(container).on((signal) => {
+  container.scrollTop += signal.value.deltaY;
+});
+```
+
+### Zoom with Modifier Key
+
+```typescript
+wheel(element, {
+  passive: false,
+  modifiers: ["meta", "ctrl"],
+  preventDefault: true
+}).on((signal) => {
+  // Zoom at cursor position
+  const { deltaY, x, y } = signal.value;
+  const factor = Math.exp(-deltaY * 0.005);
+  zoomAt(x, y, factor);
+});
+```
+
+### Zoom Mode with keyheld
+
+```typescript
+import { wheel, keyheld } from "cereb";
+import { when, extend } from "cereb/operators";
+
+const zoomMode$ = keyheld(window, { code: "KeyZ" })
+  .pipe(extend((signal) => ({ opened: signal.value.held })));
+
+wheel(element, { passive: false })
+  .pipe(
+    when(zoomMode$),
+    spy((signal) => signal.value.originalEvent.preventDefault())
+  )
+  .on((signal) => {
+    const factor = Math.exp(-signal.value.deltaY * 0.005);
+    setScale(scale * factor);
+  });
+```
+
+### Horizontal Scroll with Shift
+
+```typescript
+wheel(element).on((signal) => {
+  const { deltaY, shiftKey } = signal.value;
+
+  if (shiftKey) {
+    // Shift+wheel = horizontal scroll
+    element.scrollLeft += deltaY;
+  } else {
+    element.scrollTop += deltaY;
+  }
+});
+```

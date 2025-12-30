@@ -1,0 +1,81 @@
+# `keyboard`
+
+Keyboard event stream that emits both keydown and keyup events. Shares underlying listeners per EventTarget.
+
+```bash
+npm install cereb
+```
+
+## Basic Usage
+
+```typescript
+import { keyboard } from "cereb";
+
+keyboard(window).on((signal) => {
+  const { phase, code, key } = signal.value;
+  console.log(`${code} ${phase}`); // "KeyA down", "KeyA up"
+});
+```
+
+## Signature
+
+```typescript
+function keyboard(target: EventTarget, options?: KeyboardOptions): Stream<KeyboardSignal>
+```
+
+## Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `code` | `KeyCode \| KeyCode[]` | - | Filter by physical key code(s) |
+| `modifiers` | `ModifierKey[]` | - | Filter by modifier keys (OR logic) |
+| `preventDefault` | `boolean` | `true` | Call preventDefault on matching events |
+| `allowRepeat` | `boolean` | `false` | Allow repeated keydown events |
+
+## Signal Value
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `phase` | `"down" \| "up"` | Key event phase |
+| `key` | `string` | Logical key value (e.g., "+", "a", "Meta") |
+| `code` | `string` | Physical key code (e.g., "Equal", "KeyA") |
+| `repeat` | `boolean` | True if repeated from holding key |
+| `altKey` | `boolean` | Alt key pressed |
+| `ctrlKey` | `boolean` | Ctrl key pressed |
+| `metaKey` | `boolean` | Meta (Cmd/Win) key pressed |
+| `shiftKey` | `boolean` | Shift key pressed |
+| `originalEvent` | `KeyboardEvent` | Original DOM event |
+
+## Examples
+
+### Filter by Key Code
+
+```typescript
+// Single key
+keyboard(window, { code: "Escape" }).on(handleEscape);
+
+// Multiple keys (OR logic)
+keyboard(window, { code: ["ArrowUp", "ArrowDown"] }).on(handleArrows);
+```
+
+### Filter by Modifiers
+
+```typescript
+// Cmd+S (Mac) or Ctrl+S (Windows)
+keyboard(window, {
+  code: "KeyS",
+  modifiers: ["meta", "ctrl"]
+}).on(handleSave);
+```
+
+## Key Codes
+
+Key codes follow the [W3C UI Events Code specification](https://www.w3.org/TR/uievents-code/).
+
+Common codes:
+- Letters: `KeyA`, `KeyB`, ... `KeyZ`
+- Numbers: `Digit0`, `Digit1`, ... `Digit9`
+- Special: `Space`, `Enter`, `Escape`, `Tab`
+- Arrows: `ArrowUp`, `ArrowDown`, `ArrowLeft`, `ArrowRight`
+- Modifiers: `MetaLeft`, `ControlLeft`, `ShiftLeft`, `AltLeft`
+- Symbols: `Equal` (+), `Minus` (-), `BracketLeft`, `BracketRight`

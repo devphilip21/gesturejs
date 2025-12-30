@@ -1,0 +1,82 @@
+# `keyheld`
+
+Tracks whether a specific key is being held down. Emits only when the held state changes.
+
+```bash
+npm install cereb
+```
+
+## Basic Usage
+
+```typescript
+import { keyheld } from "cereb";
+
+keyheld(window, { code: "Space" }).on((signal) => {
+  if (signal.value.held) {
+    console.log("Space is held down");
+  } else {
+    console.log("Space was released");
+  }
+});
+```
+
+## Signature
+
+```typescript
+function keyheld(target: EventTarget, options: KeyheldOptions): Stream<KeyheldSignal>
+```
+
+## Options
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `code` | `KeyCode` | Physical key code to track (required) |
+
+## Signal Value
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `held` | `boolean` | Whether the key is currently held |
+
+## Examples
+
+### Toggle Mode While Key Held
+
+```typescript
+import { keyheld } from "cereb";
+
+const shiftHeld$ = keyheld(window, { code: "ShiftLeft" });
+
+shiftHeld$.on((signal) => {
+  canvas.style.cursor = signal.value.held ? "crosshair" : "default";
+});
+```
+
+### Zoom Mode with `when` Operator
+
+```typescript
+import { wheel, keyheld } from "cereb";
+import { when, extend } from "cereb/operators";
+
+// Create zoom mode signal (requires `opened` property for `when`)
+const zoomMode$ = keyheld(window, { code: "KeyZ" })
+  .pipe(extend((signal) => ({ opened: signal.value.held })));
+
+// Only handle wheel events when Z is held
+wheel(element)
+  .pipe(when(zoomMode$))
+  .on((signal) => {
+    const delta = signal.value.deltaY;
+    setScale(scale * Math.exp(-delta * 0.005));
+  });
+```
+
+### Sprint While Holding Shift
+
+```typescript
+const sprintMode$ = keyheld(window, { code: "ShiftLeft" });
+
+sprintMode$.on((signal) => {
+  player.speed = signal.value.held ? 10 : 5;
+});
+```

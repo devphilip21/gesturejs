@@ -43,20 +43,36 @@
       "label": "Stream API",
       "items": [
         {
-          "label": "Pan",
+          "label": "pan",
           "slug": "stream-api/pan"
         },
         {
-          "label": "Pinch",
+          "label": "pinch",
           "slug": "stream-api/pinch"
         },
         {
-          "label": "Single Pointer",
+          "label": "singlePointer",
           "slug": "stream-api/single-pointer"
         },
         {
-          "label": "Multi Pointer",
+          "label": "multiPointer",
           "slug": "stream-api/multi-pointer"
+        },
+        {
+          "label": "keyboard",
+          "slug": "stream-api/keyboard"
+        },
+        {
+          "label": "keydown",
+          "slug": "stream-api/keydown"
+        },
+        {
+          "label": "keyheld",
+          "slug": "stream-api/keyheld"
+        },
+        {
+          "label": "wheel",
+          "slug": "stream-api/wheel"
         }
       ]
     }
