@@ -1,6 +1,7 @@
 ---
 import SiteTitle from "./site-title.astro";
 import ThemeToggle from "@/components/shared/theme-toggle.astro";
+import Icon from "@/components/shared/icon.astro";
 
 ---
 
@@ -10,6 +11,15 @@ import ThemeToggle from "@/components/shared/theme-toggle.astro";
   </div>
   <div class="header-actions">
     <ThemeToggle />
+    <a
+      href="https://github.com/devphilip21/cereb"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="header-link"
+      aria-label="GitHub"
+    >
+      <Icon name="github" size="1.125rem" />
+    </a>
     <input id="nav-toggle" type="checkbox" class="hidden" />
     <label
       for="nav-toggle"
@@ -33,7 +43,7 @@ import ThemeToggle from "@/components/shared/theme-toggle.astro";
   .header {
     display: flex;
     width: 100%;
-    padding-left: var(--sl-nav-pad-x);
+    padding: 0 var(--sl-nav-pad-x);
     justify-content: space-between;
     align-items: center;
     height: var(--sl-header-height);
@@ -44,11 +54,29 @@ import ThemeToggle from "@/components/shared/theme-toggle.astro";
   .header-actions {
     display: flex;
     align-items: center;
-    gap: 0;
+    gap: 0.5rem;
+  }
+
+  .header-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border: 1.5px solid var(--sl-color-gray-3);
+    border-radius: 50%;
+    color: var(--sl-color-gray-2);
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .header-link:hover {
+    color: var(--sl-color-white);
+    border-color: var(--sl-color-gray-2);
   }
 
   .hamburger-menu {
     display: none;
+    margin-right: -0.5rem;
     align-items: center;
     justify-content: center;
     width: var(--sl-header-height);

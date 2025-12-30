@@ -34,24 +34,25 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: var(--sl-header-height);
-    height: var(--sl-header-height);
+    width: 2rem;
+    height: 2rem;
     padding: 0;
-    border: none;
-    border-radius: 0;
+    border: 1.5px solid var(--sl-color-gray-3);
+    border-radius: 50%;
     background: transparent;
     color: var(--sl-color-gray-2);
     cursor: pointer;
-    transition: background-color 0.2s, color 0.2s;
+    transition: color 0.2s, border-color 0.2s;
   }
 
   .toggle-button:hover {
     color: var(--sl-color-white);
+    border-color: var(--sl-color-gray-2);
   }
 
   .icon {
-    width: 1.375rem;
-    height: 1.375rem;
+    width: 1.125rem;
+    height: 1.125rem;
     transition: transform 0.3s ease, opacity 0.3s ease;
   }
 
