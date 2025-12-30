@@ -825,9 +825,9 @@ function initSpacePinchZoom() {
       when(zoomMode$),
       spy((signal) => signal.value.originalEvent.preventDefault()),
       extend<KeyboardSignal, ZoomInput>((signal) => ({
-        ratio: signal.value.code === "Equal" ? 1.2 : 1 / 1.2,
+        ratio: zoomManager.getScale() * (signal.value.code === "Equal" ? 1.2 : 1 / 1.2),
       })),
-      zoom(),
+      zoom({ baseScale: 1.0 }),
     )
     .on(render);
 
@@ -837,9 +837,9 @@ function initSpacePinchZoom() {
       when(zoomMode$),
       spy((signal) => signal.value.originalEvent.preventDefault()),
       extend<WheelSignal, ZoomInput>((signal) => ({
-        ratio: Math.exp(-signal.value.deltaY * 0.005),
+        ratio: zoomManager.getScale() * Math.exp(-signal.value.deltaY * 0.005),
       })),
-      zoom(),
+      zoom({ baseScale: 1.0 }),
     )
     .on(render);
 

@@ -24,31 +24,36 @@ const zoom = (options = {}) => createZoom({
   ...options
 });
 
-// Pinch Zoom
+// Pinch Zoom - phase-based session management (baseScale captured at start)
 pinch(box, { threshold: 10 })
-  .pipe(zoom())
-  .on(render);
-
-// 'z' + '+/-' (logarithmic zoom)
-keydown(window, { code: ["Equal", "Minus"] })
   .pipe(
-    when(zoomMode$),
     extend((signal) => ({
-      ratio: signal.value.code === "Equal" ? 1.2 : 1 / 1.2,
+      ratio: 1 + (signal.value.ratio - 1) * PINCH_SENSITIVITY,
     })),
     zoom(),
   )
   .on(render);
 
-// 'z' + 'wheel'
+// 'z' + '+/-' - ratio as absolute scale (current × factor)
+keydown(window, { code: ["Equal", "Minus"] })
+  .pipe(
+    when(zoomMode$),
+    extend((signal) => ({
+      ratio: zoomManager.getScale() * (signal.value.code === "Equal" ? 1.2 : 1 / 1.2),
+    })),
+    zoom({ baseScale: 1.0 }),
+  )
+  .on(render);
+
+// 'z' + 'wheel' - ratio as absolute scale (current × factor)
 wheel(box, { passive: false })
   .pipe(
     when(zoomMode$),
     spy((signal) => signal.value.originalEvent.preventDefault()),
     extend((signal) => ({
-      ratio: Math.exp(-signal.value.deltaY * 0.005),
+      ratio: zoomManager.getScale() * Math.exp(-signal.value.deltaY * 0.005),
     })),
-    zoom(),
+    zoom({ baseScale: 1.0 }),
   )
   .on(render);
 ```

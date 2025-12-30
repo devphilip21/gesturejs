@@ -127,28 +127,28 @@ import { pinch } from "@cereb/pinch";
 const zoomMode$ = keyheld(window, { code: "KeyZ" });
 const zoom = (op) => createZoom({ minScale: 0.5, maxScale: 3.0, baseScale: getScale, ...op });
 
-// Pinch zoom - baseScale syncs with external state
+// Pinch zoom - phase-based session: baseScale captured at start, reset at end
 pinch(element)
   .pipe(zoom())
   .on(applyScale);
 
-// z + wheel zoom - ratio as multiplicative factor
+// z + wheel zoom - ratio as absolute scale (current × factor)
 wheel(element, { passive: false })
   .pipe(
     when(zoomMode$),
     spy((signal) => signal.value.originalEvent.preventDefault()),
-    extend((signal) => ({ ratio: Math.exp(-signal.value.deltaY * 0.005) })),
-    zoom(),
+    extend((signal) => ({ ratio: getScale() * Math.exp(-signal.value.deltaY * 0.005) })),
+    zoom({ baseScale: 1.0 }),
   )
   .on(applyScale);
 
-// z + '+/-' zoom - ratio as multiplier
+// z + '+/-' zoom - ratio as absolute scale (current × factor)
 keydown(window, { code: ["Equal", "Minus"] })
   .pipe(
     when(zoomMode$),
     spy((signal) => signal.value.originalEvent.preventDefault()),
-    extend((signal) => ({ ratio: signal.value.code === "Equal" ? 1.2 : 1 / 1.2 })),
-    zoom(),
+    extend((signal) => ({ ratio: getScale() * (signal.value.code === "Equal" ? 1.2 : 1 / 1.2) })),
+    zoom({ baseScale: 1.0 }),
   )
   .on(applyScale);
 

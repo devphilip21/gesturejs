@@ -8,6 +8,17 @@ import { createStream } from "../core/stream.js";
  */
 export interface ZoomInput {
   ratio: number;
+
+  /**
+   * Optional phase for session-based zoom (e.g., pinch gestures).
+   *
+   * When provided:
+   * - 'start': Captures baseScale at session start
+   * - 'end' or 'cancel': Resets session state for next gesture
+   *
+   * When not provided, falls back to prevScale-based detection.
+   */
+  phase?: "start" | "change" | "end" | "cancel" | string;
 }
 
 export interface ZoomOptions {
@@ -126,11 +137,13 @@ export function zoom<T extends SignalWith<ZoomInput>>(
       const unsub = source.on({
         next(signal) {
           try {
-            const { ratio } = signal.value;
+            const { ratio, phase } = signal.value;
 
-            // Capture baseScale at session start (first event or after complete)
-            sessionBaseScale = resolveBaseScale();
-            if (prevScale === null) {
+            // Capture baseScale at session start
+            // - If phase is provided: capture on 'start'
+            // - If phase is not provided: capture on first event (prevScale === null)
+            if (phase === "start" || prevScale === null) {
+              sessionBaseScale = resolveBaseScale();
               prevScale = sessionBaseScale;
             }
 
@@ -145,6 +158,11 @@ export function zoom<T extends SignalWith<ZoomInput>>(
             value.deltaScale = deltaScale;
 
             observer.next(signal as unknown as OutputSignal);
+
+            // Reset session on end/cancel for next gesture
+            if (phase === "end" || phase === "cancel") {
+              prevScale = null;
+            }
           } catch (err) {
             observer.error?.(err);
           }
