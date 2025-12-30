@@ -1,0 +1,94 @@
+# pinch
+
+Pinch gesture recognition for two-finger zoom interactions. Tracks distance, ratio, velocity, and center point between two pointers.
+
+```bash
+npm install @cereb/pinch
+```
+
+## Basic Usage
+
+```typescript
+import { pinch } from "@cereb/pinch";
+
+pinch(element).on((signal) => {
+  const { phase, ratio, centerX, centerY } = signal.value;
+
+  if (phase === "change") {
+    element.style.transform = `scale(${ratio})`;
+  }
+});
+```
+
+## Signature
+
+```typescript
+function pinch(target: EventTarget, options?: PinchOptions): Stream<PinchSignal>
+```
+
+## Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `threshold` | `number` | `0` | Minimum distance change (px) before gesture starts |
+
+## Signal Value
+
+The `signal.value` contains:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `phase` | `"start" \| "change" \| "end" \| "cancel"` | Current gesture phase |
+| `initialDistance` | `number` | Distance between pointers at start (px) |
+| `distance` | `number` | Current distance between pointers (px) |
+| `ratio` | `number` | Current distance / initial distance |
+| `deltaDistance` | `number` | Distance change since last event (px) |
+| `velocity` | `number` | Distance change velocity (px/ms) |
+| `centerX` | `number` | Center X between pointers (clientX) |
+| `centerY` | `number` | Center Y between pointers (clientY) |
+| `pageCenterX` | `number` | Center X between pointers (pageX) |
+| `pageCenterY` | `number` | Center Y between pointers (pageY) |
+
+## Phase Lifecycle
+
+```
+two pointers down → (threshold met) → "start" → "change"* → "end" or "cancel"
+```
+
+- **start**: Emitted once when threshold is met
+- **change**: Emitted repeatedly during pinch
+- **end**: One pointer released normally
+- **cancel**: Gesture interrupted (e.g., system event)
+
+## With Zoom Operator
+
+Combine with the `zoom` operator for bounded scale calculations:
+
+```typescript
+import { pinch } from "@cereb/pinch";
+import { zoom } from "cereb/operators";
+
+pinch(element)
+  .pipe(zoom({ minScale: 0.5, maxScale: 3.0 }))
+  .on((signal) => {
+    const { scale, centerX, centerY } = signal.value;
+    element.style.transform = `scale(${scale})`;
+  });
+```
+
+## Advanced: pinchRecognizer
+
+Use as an operator with custom pointer sources:
+
+```typescript
+import { multiPointer } from "cereb";
+import { multiPointerSession } from "cereb/operators";
+import { pinchRecognizer } from "@cereb/pinch";
+
+multiPointer(element, { maxPointers: 2 })
+  .pipe(
+    multiPointerSession(2),
+    pinchRecognizer({ threshold: 10 })
+  )
+  .on((signal) => { /* ... */ });
+```

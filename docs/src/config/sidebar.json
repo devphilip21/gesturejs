@@ -45,6 +45,10 @@
         {
           "label": "Pan",
           "slug": "stream-api/pan"
+        },
+        {
+          "label": "Pinch",
+          "slug": "stream-api/pinch"
         }
       ]
     }

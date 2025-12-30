@@ -1,0 +1,18 @@
+---
+import DocsLayout from "@/layouts/docs-layout.astro";
+import Content from "@/content/stream-api/pinch.mdx";
+
+const headings = [
+  { depth: 2, slug: "basic-usage", text: "Basic Usage" },
+  { depth: 2, slug: "signature", text: "Signature" },
+  { depth: 2, slug: "options", text: "Options" },
+  { depth: 2, slug: "signal-value", text: "Signal Value" },
+  { depth: 2, slug: "phase-lifecycle", text: "Phase Lifecycle" },
+  { depth: 2, slug: "with-zoom-operator", text: "With Zoom Operator" },
+  { depth: 2, slug: "advanced-pinchrecognizer", text: "Advanced: pinchRecognizer" },
+];
+---
+
+<DocsLayout title="pinch" description="Pinch gesture recognition for two-finger zoom interactions" headings={headings}>
+  <Content />
+</DocsLayout>
