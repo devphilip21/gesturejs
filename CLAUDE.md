@@ -130,6 +130,7 @@ docs(pan): update velocity documentation
 ```
 
 ### Commit Behavior
+- **Always ask for human approval before executing any git commit**. Never commit directly without explicit user confirmation.
 - Only consider files that are already staged for commit
 - Do not ask about adding unstaged or untracked files
 - Use `git status` to identify staged files and base commit messages only on those files
