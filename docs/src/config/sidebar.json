@@ -17,11 +17,11 @@
       "label": "Examples",
       "items": [
         {
-          "label": "[pen] Signature Pad",
+          "label": "[pen] Ex. Signature Pad",
           "slug": "examples/signature-pad"
         },
         {
-          "label": "[sparkles] Space Adventure",
+          "label": "[sparkles] Ex. Space Adventure",
           "slug": "examples/space-adventure"
         }
       ]
@@ -30,12 +30,25 @@
       "label": "Core Concepts",
       "items": [
         {
-          "label": "Key Models",
+          "label": "[] Key Models",
           "slug": "core-concepts/key-models"
+        },
+        {
+          "label": "Creating Operators",
+          "slug": "core-concepts/creating-operators"
         },
         {
           "label": "The Problems Solves",
           "slug": "core-concepts/the-problem-solves"
+        }
+      ]
+    },
+    {
+      "label": "Resources",
+      "items": [
+        {
+          "label": "Developing with AI",
+          "slug": "resources/developing-with-ai"
         }
       ]
     },

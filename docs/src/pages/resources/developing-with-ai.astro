@@ -1,0 +1,13 @@
+---
+import DocsLayout from "@/layouts/docs-layout.astro";
+import Content from "@/content/resources/developing-with-ai.mdx";
+
+const headings = [
+  { depth: 2, slug: "cursor", text: "Cursor" },
+  { depth: 2, slug: "claude-code", text: "Claude Code" },
+];
+---
+
+<DocsLayout title="Developing with AI" description="Use AI coding assistants effectively with Cereb documentation" headings={headings}>
+  <Content />
+</DocsLayout>

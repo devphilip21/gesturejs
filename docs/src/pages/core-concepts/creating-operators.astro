@@ -1,0 +1,16 @@
+---
+import DocsLayout from "@/layouts/docs-layout.astro";
+import Content from "@/content/core-concepts/creating-operators.mdx";
+
+const headings = [
+  { depth: 2, slug: "basic-structure", text: "Basic Structure" },
+  { depth: 2, slug: "side-effect-operators", text: "Side-Effect Operators" },
+  { depth: 2, slug: "value-extending-operators", text: "Value-Extending Operators" },
+  { depth: 2, slug: "flow-control-operators", text: "Flow-Control Operators" },
+  { depth: 2, slug: "key-points", text: "Key Points" },
+];
+---
+
+<DocsLayout title="Creating Operators" description="Learn how to create custom operators in Cereb" headings={headings}>
+  <Content />
+</DocsLayout>

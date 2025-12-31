@@ -1,0 +1,34 @@
+# Developing with AI
+
+Cereb provides AI-optimized documentation for coding assistants.
+
+| File | URL | Size |
+|------|-----|------|
+| `llms.txt` | [cereb.dev/llms.txt](https://cereb.dev/llms.txt) | ~3KB (index) |
+| `llms-full.txt` | [cereb.dev/llms-full.txt](https://cereb.dev/llms-full.txt) | ~14KB (full docs) |
+
+## Cursor
+
+### Option 1: Register as @Docs (Recommended)
+
+1. **Settings > Cursor Settings > Indexing & Docs**
+2. Click **Add Doc** → Enter `https://cereb.dev`
+3. Use `@Cereb` in chat
+
+```
+@Cereb implement pinch zoom with scale limits
+```
+
+### Option 2: Fetch on demand
+
+```
+@Web fetch https://cereb.dev/llms-full.txt and implement pan gesture
+```
+
+## Claude Code
+
+Ask Claude to fetch the documentation:
+
+```
+Fetch https://cereb.dev/llms-full.txt then implement pinch zoom
+```

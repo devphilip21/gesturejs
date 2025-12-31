@@ -1,0 +1,700 @@
+# Cereb - Complete Documentation for AI
+
+> Lightweight reactive stream library for user input modeling and orchestration.
+> From low-level events (touch, pointer, keyboard, wheel) to high-level gestures (pan, pinch)—all through composable stream pipelines.
+
+---
+
+## Overview
+
+Cereb provides a unified abstraction for handling pointer/touch/mouse events through an Observable-based pattern, enabling composable gesture recognition pipelines.
+
+### Key Benefits
+- **Unified Input**: Mouse, touch, pen normalized into single API
+- **Composable**: Build pipelines with operators like filter, map, throttle
+- **Lightweight**: ~1.7KB gzipped for core + pan gesture (77% smaller than Hammer.js)
+- **Type-safe**: Full TypeScript support with inference
+
+### Package Structure
+
+| Package | NPM | Description |
+|---------|-----|-------------|
+| `cereb` | cereb | Core: Stream primitives, operators |
+| `@cereb/pan` | @cereb/pan | Pan/drag/swipe gesture |
+| `@cereb/pinch` | @cereb/pinch | Pinch/zoom gesture |
+
+### Installation
+
+```bash
+npm install cereb
+npm install @cereb/pan    # optional
+npm install @cereb/pinch  # optional
+```
+
+---
+
+## Core Concepts
+
+### Signal
+
+An immutable data object representing a discrete event.
+
+```typescript
+interface Signal<K extends string, V> {
+  readonly kind: K;           // Type discriminator (e.g., "single-pointer", "pan")
+  readonly value: V;          // Event payload
+  readonly deviceId: string;  // Unique device identifier
+  readonly createdAt: number; // Timestamp (performance.now())
+}
+```
+
+Signals are readonly by design—prevents side-effects, enables safe composition.
+
+### Stream
+
+An observable sequence of Signals with built-in flow control.
+
+```typescript
+interface Stream<T extends Signal> {
+  on(observer: (value: T) => void): Unsubscribe;
+  pipe(...operators: Operator[]): Stream;
+  block(): void;
+  unblock(): void;
+  readonly isBlocked: boolean;
+}
+```
+
+- **Lazy**: No work until `on()` is called
+- **Unicast by default**: Each subscription creates its own source. Use `share()` for multicast.
+
+### Operator
+
+A function that transforms one Stream into another.
+
+```typescript
+type Operator<T extends Signal, R extends Signal> = (source: Stream<T>) => Stream<R>;
+```
+
+---
+
+## Creating Custom Operators
+
+### Basic Structure
+
+```typescript
+import { createStream } from "cereb";
+import type { Signal, Operator } from "cereb";
+
+function myOperator<T extends Signal>(): Operator<T, T> {
+  return (source) =>
+    createStream((observer) => {
+      return source.on({
+        next(signal) {
+          observer.next(signal);
+        },
+        error: observer.error?.bind(observer),
+        complete: observer.complete?.bind(observer),
+      });
+    });
+}
+```
+
+### Side-Effect Operators (like spy)
+
+```typescript
+function log<T extends Signal>(label: string): Operator<T, T> {
+  return (source) =>
+    createStream((observer) => {
+      return source.on({
+        next(signal) {
+          console.log(label, signal.value);
+          observer.next(signal);
+        },
+        error: observer.error?.bind(observer),
+        complete: observer.complete?.bind(observer),
+      });
+    });
+}
+```
+
+### Value-Extending Operators (like extend)
+
+```typescript
+function addTimestamp<T extends Signal>(): Operator<T, T> {
+  return (source) =>
+    createStream((observer) => {
+      return source.on({
+        next(signal) {
+          (signal.value as any).timestamp = Date.now();
+          observer.next(signal);
+        },
+        error: observer.error?.bind(observer),
+        complete: observer.complete?.bind(observer),
+      });
+    });
+}
+```
+
+### Flow-Control Operators (like when, merge)
+
+```typescript
+function gate<T extends Signal>(
+  controller: Stream<Signal<string, { active: boolean }>>
+): Operator<T, T> {
+  return (source) =>
+    createStream((observer) => {
+      let isActive = false;
+
+      const controllerUnsub = controller.on({
+        next(signal) { isActive = signal.value.active; },
+      });
+
+      const sourceUnsub = source.on({
+        next(signal) {
+          if (isActive) observer.next(signal);
+        },
+        error: observer.error?.bind(observer),
+        complete: observer.complete?.bind(observer),
+      });
+
+      return () => {
+        controllerUnsub();
+        sourceUnsub();
+      };
+    });
+}
+```
+
+---
+
+## Stream API Reference
+
+### singlePointer
+
+Unified pointer stream. Normalizes mouse, touch, pen into single interface. Tracks only primary pointer.
+
+```typescript
+function singlePointer(target: EventTarget, options?: SinglePointerOptions): Stream<SinglePointerSignal>
+```
+
+**Signal Value:**
+- `phase`: "start" | "move" | "end" | "cancel"
+- `x`, `y`: clientX/Y
+- `pageX`, `pageY`: pageX/Y
+- `pointerType`: "mouse" | "touch" | "pen" | "unknown"
+- `button`: "none" | "primary" | "secondary" | ...
+- `pressure`: 0.0-1.0
+
+```typescript
+import { singlePointer } from "cereb";
+
+singlePointer(element).on((signal) => {
+  const { phase, x, y, pointerType } = signal.value;
+});
+```
+
+### multiPointer
+
+Multi-touch stream. Tracks multiple simultaneous pointers.
+
+```typescript
+function multiPointer(target: EventTarget, options?: { maxPointers?: number }): Stream<MultiPointerSignal>
+```
+
+**Signal Value:**
+- `phase`: "idle" | "active" | "ended"
+- `pointers`: readonly PointerInfo[] (each has id, phase, x, y, etc.)
+- `count`: number of active pointers
+
+```typescript
+import { multiPointer } from "cereb";
+
+multiPointer(element, { maxPointers: 2 }).on((signal) => {
+  if (signal.value.count === 2) {
+    const [p1, p2] = signal.value.pointers;
+  }
+});
+```
+
+### pan (from @cereb/pan)
+
+Pan gesture recognition with velocity, direction, distance tracking.
+
+```typescript
+function pan(target: EventTarget, options?: { threshold?: number; direction?: "horizontal" | "vertical" | "all" }): Stream<PanSignal>
+```
+
+**Signal Value:**
+- `phase`: "start" | "move" | "end" | "cancel"
+- `deltaX`, `deltaY`: displacement from start (px)
+- `distance`: cumulative distance (px)
+- `direction`: "up" | "down" | "left" | "right" | "none"
+- `velocityX`, `velocityY`: px/ms
+- `x`, `y`, `pageX`, `pageY`
+
+```typescript
+import { pan } from "@cereb/pan";
+
+pan(element).on((signal) => {
+  const { phase, deltaX, deltaY } = signal.value;
+  if (phase === "move") {
+    element.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+  }
+});
+```
+
+**axisLock operator:**
+```typescript
+import { pan } from "@cereb/pan";
+import { axisLock } from "@cereb/pan/operators";
+
+pan(element).pipe(axisLock()).on(handlePan);
+```
+
+### pinch (from @cereb/pinch)
+
+Two-finger pinch gesture with distance, ratio, velocity, center tracking.
+
+```typescript
+function pinch(target: EventTarget, options?: { threshold?: number }): Stream<PinchSignal>
+```
+
+**Signal Value:**
+- `phase`: "start" | "change" | "end" | "cancel"
+- `initialDistance`: distance at start (px)
+- `distance`: current distance (px)
+- `ratio`: distance / initialDistance
+- `deltaDistance`: change since last event (px)
+- `velocity`: px/ms
+- `centerX`, `centerY`: center between pointers
+
+```typescript
+import { pinch } from "@cereb/pinch";
+
+pinch(element).on((signal) => {
+  const { phase, ratio, centerX, centerY } = signal.value;
+  if (phase === "change") {
+    element.style.transform = `scale(${ratio})`;
+  }
+});
+```
+
+### keyboard
+
+Both keydown and keyup events.
+
+```typescript
+function keyboard(target: EventTarget, options?: {
+  code?: KeyCode | KeyCode[];
+  modifiers?: ModifierKey[];
+  preventDefault?: boolean;
+  allowRepeat?: boolean;
+}): Stream<KeyboardSignal>
+```
+
+**Signal Value:**
+- `phase`: "down" | "up"
+- `key`: logical key value
+- `code`: physical key code (e.g., "KeyA", "Equal")
+- `repeat`: boolean
+- `altKey`, `ctrlKey`, `metaKey`, `shiftKey`: boolean
+- `originalEvent`: KeyboardEvent
+
+```typescript
+import { keyboard } from "cereb";
+
+keyboard(window, { code: ["Equal", "Minus"] }).on((signal) => {
+  // + or - pressed
+});
+```
+
+### keydown
+
+Only keydown events. Same options and signal as keyboard.
+
+```typescript
+import { keydown } from "cereb";
+
+keydown(window, { code: "Escape" }).on(handleEscape);
+```
+
+### keyheld
+
+Track if a key is held down. Emits only on state change.
+
+```typescript
+function keyheld(target: EventTarget, options: { code: KeyCode }): Stream<KeyheldSignal>
+```
+
+**Signal Value:**
+- `held`: boolean
+
+```typescript
+import { keyheld } from "cereb";
+
+keyheld(window, { code: "Space" }).on((signal) => {
+  if (signal.value.held) {
+    console.log("Space held");
+  }
+});
+```
+
+### wheel
+
+Wheel/scroll events.
+
+```typescript
+function wheel(target: EventTarget, options?: {
+  passive?: boolean;
+  modifiers?: ModifierKey[];
+  preventDefault?: boolean;
+}): Stream<WheelSignal>
+```
+
+**Signal Value:**
+- `deltaX`, `deltaY`, `deltaZ`
+- `deltaMode`: "pixel" | "line" | "page"
+- `x`, `y`, `pageX`, `pageY`
+- `altKey`, `ctrlKey`, `metaKey`, `shiftKey`
+- `originalEvent`: WheelEvent
+
+```typescript
+import { wheel } from "cereb";
+
+wheel(element, { passive: false }).on((signal) => {
+  const { deltaY, x, y } = signal.value;
+});
+```
+
+### domEvent
+
+Low-level DOM event wrapper with full TypeScript inference.
+
+```typescript
+function domEvent<E extends Event>(target: EventTarget, eventName: string, options?: AddEventListenerOptions): Stream<DomEventSignal<E>>
+```
+
+```typescript
+import { domEvent } from "cereb";
+
+domEvent(window, "resize").on((signal) => {
+  // signal.value is UIEvent
+});
+
+domEvent(element, "click").on((signal) => {
+  // signal.value is MouseEvent
+});
+```
+
+**Helper functions:**
+- `pointerEvents(target)` - pointerdown/move/up/cancel merged
+- `mouseEvents(target)` - mousedown/move/up merged
+- `touchEvents(target)` - touchstart/move/end/cancel merged
+
+---
+
+## Operator API Reference
+
+All operators imported from `cereb/operators`.
+
+### filter
+
+Filter signals by predicate.
+
+```typescript
+function filter<T extends Signal>(predicate: (signal: T) => boolean): Operator<T, T>
+```
+
+```typescript
+pan(element)
+  .pipe(filter((s) => s.value.phase !== "cancel"))
+  .on(handlePan);
+```
+
+### map
+
+Transform each signal.
+
+```typescript
+function map<T extends Signal, R extends Signal>(transform: (signal: T) => R): Operator<T, R>
+```
+
+### extend
+
+Add properties to signal value. Most common way to extend signals.
+
+```typescript
+function extend<T extends Signal, A extends object>(extender: (signal: T) => A): Operator<T, ExtendSignalValue<T, A>>
+```
+
+```typescript
+wheel(element)
+  .pipe(extend((s) => ({ ratio: Math.exp(-s.value.deltaY * 0.005) })))
+  .on((s) => setScale(scale * s.value.ratio));
+```
+
+### session / singlePointerSession / multiPointerSession
+
+Filter signals to active sessions only.
+
+```typescript
+function session<T extends Signal>(options: { start: (s: T) => boolean; end: (s: T) => boolean }): Operator<T, T>
+function singlePointerSession(): Operator<SinglePointerSignal, SinglePointerSignal>
+function multiPointerSession(requiredCount: number): Operator<MultiPointerSignal, MultiPointerSignal>
+```
+
+```typescript
+singlePointer(element)
+  .pipe(singlePointerSession())
+  .on(draw); // Only from start to end/cancel
+```
+
+### offset
+
+Add element-relative coordinates (offsetX, offsetY).
+
+```typescript
+function offset<T extends SignalWith<{ x: number; y: number }>>(options: {
+  target: Element;
+  recalculate$?: Stream<Signal>;
+}): Operator<T, T & { offsetX: number; offsetY: number }>
+```
+
+```typescript
+singlePointer(canvas)
+  .pipe(offset({ target: canvas }))
+  .on((s) => draw(s.value.offsetX, s.value.offsetY));
+```
+
+### zoom
+
+Calculate bounded scale from ratio input.
+
+```typescript
+function zoom<T extends SignalWith<{ ratio: number }>>(options?: {
+  minScale?: number;
+  maxScale?: number;
+  baseScale?: number | (() => number);
+  mode?: "multiply" | "add";
+}): Operator<T, T & { scale: number; deltaScale: number }>
+```
+
+```typescript
+pinch(element)
+  .pipe(zoom({ minScale: 0.5, maxScale: 3.0 }))
+  .on((s) => element.style.transform = `scale(${s.value.scale})`);
+```
+
+### when
+
+Gate signals based on another stream's state.
+
+```typescript
+function when<T extends Signal>(gate: Stream<Signal<string, { opened: boolean }>>): Operator<T, T>
+```
+
+```typescript
+const zoomMode$ = keyheld(window, { code: "KeyZ" })
+  .pipe(extend((s) => ({ opened: s.value.held })));
+
+wheel(element)
+  .pipe(when(zoomMode$))
+  .on(handleZoomWheel);
+```
+
+### throttle / throttleLast
+
+Rate limiting.
+
+```typescript
+function throttle<T extends Signal>(ms: number): Operator<T, T>  // Emit first, ignore rest
+function throttleLast<T extends Signal>(ms: number): Operator<T, T>  // Collect, emit last
+```
+
+```typescript
+singlePointer(element)
+  .pipe(throttle(16))  // ~60fps
+  .on(updatePosition);
+```
+
+### debounce
+
+Wait for silence before emitting.
+
+```typescript
+function debounce<T extends Signal>(ms: number): Operator<T, T>
+```
+
+```typescript
+keyboard(window)
+  .pipe(debounce(300))
+  .on(() => performSearch());
+```
+
+### spy / tap
+
+Execute side effect without modifying stream.
+
+```typescript
+function spy<T extends Signal>(fn: (signal: T) => void): Operator<T, T>
+```
+
+```typescript
+wheel(element, { passive: false })
+  .pipe(spy((s) => s.value.originalEvent.preventDefault()))
+  .on(handleWheel);
+```
+
+### share / shareReplay
+
+Multicast to multiple subscribers.
+
+```typescript
+function share<T extends Signal>(): Operator<T, T>
+function shareReplay<T extends Signal>(bufferSize?: number): Operator<T, T>
+```
+
+```typescript
+const keyboard$ = keyboard(window).pipe(share());
+keyboard$.on(handler1);
+keyboard$.on(handler2);  // Same underlying listener
+```
+
+### merge / mergeWith
+
+Combine multiple streams.
+
+```typescript
+function merge<T extends Signal>(...sources: Stream<T>[]): Stream<T>
+function mergeWith<T extends Signal, R extends Signal>(other: Stream<R>): Operator<T, T | R>
+```
+
+```typescript
+merge(pinchZoom$, wheelZoom$, keyboardZoom$).on(applyScale);
+```
+
+### compose
+
+Combine operators into reusable pipeline.
+
+```typescript
+function compose<T, A, B>(op1: Operator<T, A>, op2: Operator<A, B>): Operator<T, B>
+```
+
+```typescript
+const drawingPipeline = compose(
+  singlePointerSession(),
+  offset({ target: canvas })
+);
+
+singlePointer(canvas).pipe(drawingPipeline).on(draw);
+```
+
+### reduce
+
+Accumulate state across signals.
+
+```typescript
+function reduce<T extends Signal, A extends object>(
+  reducer: (acc: A, signal: T) => A,
+  seed?: A
+): Operator<T, ExtendSignalValue<T, A>>
+```
+
+```typescript
+singlePointer(element)
+  .pipe(reduce((acc, s) => ({ count: acc.count + 1 }), { count: 0 }))
+  .on((s) => console.log(s.value.count));
+```
+
+---
+
+## Common Patterns
+
+### Multi-input Zoom
+
+```typescript
+import { wheel, keyheld, keydown } from "cereb";
+import { when, extend, spy, zoom } from "cereb/operators";
+import { pinch } from "@cereb/pinch";
+
+let currentScale = 1;
+const zoomOp = () => zoom({ minScale: 0.5, maxScale: 3.0, baseScale: () => currentScale });
+
+const zoomMode$ = keyheld(window, { code: "KeyZ" })
+  .pipe(extend((s) => ({ opened: s.value.held })));
+
+// Pinch zoom
+pinch(element).pipe(zoomOp()).on(apply);
+
+// Z + wheel zoom
+wheel(element, { passive: false })
+  .pipe(
+    when(zoomMode$),
+    spy((s) => s.value.originalEvent.preventDefault()),
+    extend((s) => ({ ratio: Math.exp(-s.value.deltaY * 0.005) })),
+    zoomOp()
+  )
+  .on(apply);
+
+// Z + +/- keyboard zoom
+keydown(window, { code: ["Equal", "Minus"] })
+  .pipe(
+    when(zoomMode$),
+    extend((s) => ({ ratio: s.value.code === "Equal" ? 1.2 : 1 / 1.2 })),
+    zoomOp()
+  )
+  .on(apply);
+
+function apply(signal) {
+  currentScale = signal.value.scale;
+  element.style.transform = `scale(${currentScale})`;
+}
+```
+
+### Drawing Application
+
+```typescript
+import { singlePointer } from "cereb";
+import { singlePointerSession, offset } from "cereb/operators";
+
+singlePointer(canvas)
+  .pipe(
+    singlePointerSession(),
+    offset({ target: canvas })
+  )
+  .on((signal) => {
+    const { phase, offsetX, offsetY } = signal.value;
+    if (phase === "start") {
+      ctx.beginPath();
+      ctx.moveTo(offsetX, offsetY);
+    } else if (phase === "move") {
+      ctx.lineTo(offsetX, offsetY);
+      ctx.stroke();
+    }
+  });
+```
+
+### Drag with Constraints
+
+```typescript
+import { pan } from "@cereb/pan";
+import { offset, filter } from "cereb/operators";
+
+pan(container)
+  .pipe(
+    offset({ target: container }),
+    filter((s) => s.value.offsetX >= 0 && s.value.offsetX <= maxX)
+  )
+  .on((signal) => {
+    draggable.style.left = `${signal.value.offsetX}px`;
+  });
+```
+
+---
+
+## Links
+
+- GitHub: https://github.com/niceplugin/cereb
+- Documentation: https://cereb.dev
+- npm: https://www.npmjs.com/package/cereb

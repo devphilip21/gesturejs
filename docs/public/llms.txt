@@ -1,0 +1,63 @@
+# Cereb
+
+> Lightweight reactive stream library for user input modeling and orchestration.
+> Mouse, touch, pen—unified into composable stream pipelines.
+
+## Packages
+
+- cereb: Core library with stream primitives and operators
+- @cereb/pan: Pan/drag/swipe gesture recognition
+- @cereb/pinch: Pinch/zoom gesture recognition
+
+## Getting Started
+
+- [Quick Start](https://cereb.dev/getting-started/quick-start): Installation and first gesture
+
+## Core Concepts
+
+- [Key Models](https://cereb.dev/core-concepts/key-models): Signal, Stream, Operator fundamentals
+- [Creating Operators](https://cereb.dev/core-concepts/creating-operators): Build custom operators
+- [The Problems Solved](https://cereb.dev/core-concepts/the-problem-solves): Why use Cereb
+
+## Stream API
+
+- [singlePointer](https://cereb.dev/stream-api/single-pointer): Unified pointer input (mouse/touch/pen)
+- [multiPointer](https://cereb.dev/stream-api/multi-pointer): Multi-touch tracking
+- [pan](https://cereb.dev/stream-api/pan): Pan gesture with velocity/direction
+- [pinch](https://cereb.dev/stream-api/pinch): Two-finger pinch/zoom
+- [keyboard](https://cereb.dev/stream-api/keyboard): Keyboard events
+- [keydown](https://cereb.dev/stream-api/keydown): Keydown only
+- [keyheld](https://cereb.dev/stream-api/keyheld): Key hold state tracking
+- [wheel](https://cereb.dev/stream-api/wheel): Scroll wheel events
+- [domEvent](https://cereb.dev/stream-api/dom-event): Low-level DOM event wrapper
+
+## Operator API
+
+- [filter](https://cereb.dev/operator-api/filter): Filter by predicate
+- [map](https://cereb.dev/operator-api/map): Transform signals
+- [extend](https://cereb.dev/operator-api/extend): Add properties to signal value
+- [session](https://cereb.dev/operator-api/session): Group start-to-end as session
+- [offset](https://cereb.dev/operator-api/offset): Element-relative coordinates
+- [zoom](https://cereb.dev/operator-api/zoom): Bounded scale calculation
+- [when](https://cereb.dev/operator-api/when): Gate by another stream's state
+- [throttle](https://cereb.dev/operator-api/throttle): Rate limiting
+- [debounce](https://cereb.dev/operator-api/debounce): Wait for silence
+- [spy](https://cereb.dev/operator-api/spy): Side effects (also: tap)
+- [share](https://cereb.dev/operator-api/share): Multicast to subscribers
+- [merge](https://cereb.dev/operator-api/merge): Combine streams
+- [compose](https://cereb.dev/operator-api/compose): Reusable operator pipelines
+- [reduce](https://cereb.dev/operator-api/reduce): Accumulate state
+
+## Examples
+
+- [Signature Pad](https://cereb.dev/examples/signature-pad): Drawing with pointer tracking
+- [Space Adventure](https://cereb.dev/examples/space-adventure): Interactive game demo
+
+## Full Documentation
+
+- [llms-full.txt](https://cereb.dev/llms-full.txt): Complete documentation in single file (AI-optimized)
+
+## Links
+
+- GitHub: https://github.com/niceplugin/cereb
+- npm: https://www.npmjs.com/package/cereb
