@@ -1,7 +1,9 @@
 export { compose } from "./compose.js";
 export { debounce } from "./debounce.js";
+export { exhaustMap } from "./exhaust-map.js";
 export { extend } from "./extend.js";
 export { filter } from "./filter.js";
+export { flatMap, mergeMap } from "./flat-map.js";
 export { map } from "./map.js";
 export { merge, mergeWith } from "./merge.js";
 export { offset } from "./offset.js";
@@ -9,6 +11,7 @@ export { reduce } from "./reduce.js";
 export { multiPointerSession, session, singlePointerSession } from "./session.js";
 export { share, shareReplay } from "./share.js";
 export { spy, tap } from "./spy.js";
+export { switchMap } from "./switch-map.js";
 export { throttle, throttleLast } from "./throttle.js";
 export { when } from "./when.js";
 export type { ZoomInput, ZoomOptions, ZoomValue } from "./zoom.js";
