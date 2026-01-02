@@ -1,0 +1,90 @@
+# `exhaustMap`
+
+Maps each signal to a Stream, ignoring new signals while an inner stream is active.
+
+## Signature
+
+```typescript
+function exhaustMap<T extends Signal, R extends Signal>(
+  project: (signal: T, index: number) => Stream<R>
+): Operator<T, R>
+```
+
+## Example
+
+```typescript
+import { domEvent } from "cereb";
+import { exhaustMap } from "cereb/operators";
+
+domEvent(submitButton, "click")
+  .pipe(
+    exhaustMap(() => submitForm())
+  )
+  .on((result) => {
+    showConfirmation(result.value);
+  });
+```
+
+## How It Works
+
+When a signal arrives and no inner stream is active, `exhaustMap` creates and subscribes to a new inner stream. While that inner stream is active, all incoming signals are ignored. Once the inner stream completes, the next signal will be processed.
+
+```
+Source:   ──a────b────c────d──▶
+              \   ✕    ✕    \
+Inner:         ─A1─A2─▶       ─D1─▶
+
+Output:   ────A1─A2─────────D1─▶
+```
+
+## Use Cases
+
+### Prevent Double Submission
+
+Ignore additional clicks while form is being submitted:
+
+```typescript
+domEvent(submitButton, "click")
+  .pipe(
+    exhaustMap(() => submitFormToServer())
+  )
+  .on((response) => {
+    if (response.value.success) {
+      showSuccess();
+    }
+  });
+```
+
+### Drag Session Locking
+
+Process only one drag session at a time:
+
+```typescript
+singlePointer(element)
+  .pipe(
+    session(),
+    exhaustMap((signal) => handleDragSession(signal))
+  )
+  .on((result) => {
+    applyTransform(result.value);
+  });
+```
+
+### Rate-Limited Operations
+
+Process expensive operations one at a time:
+
+```typescript
+keyboard(window)
+  .pipe(
+    filter((s) => s.value.key === "Enter"),
+    exhaustMap(() => performExpensiveCalculation())
+  )
+  .on((result) => {
+    displayResult(result.value);
+  });
+```
+
+## Note
+
+Use `exhaustMap` when you want to complete the current operation before handling new signals. For canceling previous operations, use `switchMap`. For concurrent operations, use `flatMap`.

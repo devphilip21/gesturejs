@@ -1,0 +1,93 @@
+# Higher-Order Operators
+
+Higher-order operators transform streams where each signal creates a new "inner stream". They control how these inner streams are managed over time.
+
+## The Problem
+
+Consider a search input that fetches results on each keystroke:
+
+```typescript
+keyboard(searchInput)
+  .pipe(
+    map((signal) => fetchResults(signal.value.key)) // Returns a Stream, not a value!
+  )
+```
+
+This produces a `Stream<Stream<Results>>`—a stream of streams. Higher-order operators flatten this into a single stream while controlling concurrency.
+
+## Comparison
+
+| Operator | Behavior | New Signal Arrives While Active |
+|----------|----------|--------------------------------|
+| `flatMap` | Run all concurrently | Subscribe to new stream alongside existing |
+| `switchMap` | Switch to latest | Cancel previous, subscribe to new |
+| `exhaustMap` | Ignore until done | Ignore new signal completely |
+
+## Visual Comparison
+
+Given source signals `a`, `b`, `c` arriving in sequence:
+
+```
+Source:     ──a──────b──────c──▶
+
+flatMap:    ────A1─A2─B1─A3─C1─B2─C2─▶   (all run together)
+
+switchMap:  ────A1─────────C1─C2─▶       (only latest completes)
+
+exhaustMap: ────A1─A2─A3─────D1─▶        (ignores b, c while a runs)
+```
+
+## Decision Guide
+
+Choose based on what should happen when a new signal arrives while processing:
+
+```
+New signal arrives while inner stream is active
+                    │
+    ┌───────────────┼───────────────┐
+    ▼               ▼               ▼
+ Run both?      Cancel old?     Ignore new?
+    │               │               │
+    ▼               ▼               ▼
+ flatMap        switchMap      exhaustMap
+```
+
+### Use `flatMap` when:
+- Order doesn't matter
+- All operations should complete
+- Example: Playing multiple sounds, logging events
+
+### Use `switchMap` when:
+- Only the latest result matters
+- Previous operations are obsolete
+- Example: Search autocomplete, preview on hover
+
+### Use `exhaustMap` when:
+- Current operation must complete first
+- Duplicate requests should be prevented
+- Example: Form submission, drag session
+
+## Example: Same Scenario, Different Operators
+
+Fetching user details on hover:
+
+```typescript
+// flatMap: All hovers trigger fetches (may show stale data)
+hover$.pipe(flatMap((s) => fetchUser(s.value.userId)))
+
+// switchMap: Only shows latest hover's user (recommended)
+hover$.pipe(switchMap((s) => fetchUser(s.value.userId)))
+
+// exhaustMap: Ignores hovers until current fetch completes
+hover$.pipe(exhaustMap((s) => fetchUser(s.value.userId)))
+```
+
+## Relation to Monad
+
+These operators implement the "bind" operation from monad theory, enabling composition of effectful computations. `flatMap` satisfies the three monad laws:
+
+1. **Left Identity**: `pure(a).flatMap(f) === f(a)`
+2. **Right Identity**: `m.flatMap(pure) === m`
+3. **Associativity**: `m.flatMap(f).flatMap(g) === m.flatMap(x => f(x).flatMap(g))`
+
+This mathematical foundation ensures predictable composition behavior.

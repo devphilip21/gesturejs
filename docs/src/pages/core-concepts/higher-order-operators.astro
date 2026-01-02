@@ -1,0 +1,17 @@
+---
+import DocsLayout from "@/layouts/docs-layout.astro";
+import Content from "@/content/core-concepts/higher-order-operators.mdx";
+
+const headings = [
+  { depth: 2, slug: "the-problem", text: "The Problem" },
+  { depth: 2, slug: "comparison", text: "Comparison" },
+  { depth: 2, slug: "visual-comparison", text: "Visual Comparison" },
+  { depth: 2, slug: "decision-guide", text: "Decision Guide" },
+  { depth: 2, slug: "example-same-scenario-different-operators", text: "Example: Same Scenario" },
+  { depth: 2, slug: "relation-to-monad", text: "Relation to Monad" },
+];
+---
+
+<DocsLayout title="Higher-Order Operators" description="Understanding flatMap, switchMap, and exhaustMap" headings={headings}>
+  <Content />
+</DocsLayout>

@@ -1,0 +1,86 @@
+# `switchMap`
+
+Maps each signal to a Stream and switches to the new inner stream, canceling the previous one.
+
+## Signature
+
+```typescript
+function switchMap<T extends Signal, R extends Signal>(
+  project: (signal: T, index: number) => Stream<R>
+): Operator<T, R>
+```
+
+## Example
+
+```typescript
+import { singlePointer } from "cereb";
+import { switchMap } from "cereb/operators";
+
+singlePointer(element)
+  .pipe(
+    switchMap((signal) => fetchSuggestions(signal.value.x))
+  )
+  .on((result) => {
+    showSuggestions(result.value);
+  });
+```
+
+## How It Works
+
+When a signal arrives, `switchMap` unsubscribes from any active inner stream before subscribing to the new one. Only the most recent inner stream is active at any time, automatically preventing race conditions.
+
+```
+Source:   ──a──────b──────c──▶
+              \        ✕       \
+Inner:         ─A1─A2─╳  ─B1─╳  ─C1─C2─▶
+
+Output:   ────A1─────────────C1─C2─▶
+```
+
+## Use Cases
+
+### Search Autocomplete
+
+Only show results for the latest search query:
+
+```typescript
+keyboard(searchInput)
+  .pipe(
+    debounce(300),
+    switchMap((signal) => searchAPI(signal.value.key))
+  )
+  .on((results) => {
+    renderDropdown(results.value);
+  });
+```
+
+### Latest Selection Preview
+
+When user hovers over items, show preview for the current item only:
+
+```typescript
+singlePointer(listElement)
+  .pipe(
+    switchMap((signal) => fetchPreview(getItemAt(signal.value.x, signal.value.y)))
+  )
+  .on((preview) => {
+    showPreview(preview.value);
+  });
+```
+
+### Cancel Previous Animations
+
+Start new animation, canceling any in-progress one:
+
+```typescript
+keyboard(window)
+  .pipe(
+    filter((s) => s.value.key === "ArrowRight"),
+    switchMap(() => animateSlide("next"))
+  )
+  .on(() => {});
+```
+
+## Note
+
+Use `switchMap` when you only care about the latest operation. For concurrent operations, use `flatMap`. To ignore new signals until current completes, use `exhaustMap`.

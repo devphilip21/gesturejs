@@ -1,0 +1,74 @@
+# `flatMap`
+
+Maps each signal to a Stream and flattens all inner streams concurrently.
+
+## Signature
+
+```typescript
+function flatMap<T extends Signal, R extends Signal>(
+  project: (signal: T, index: number) => Stream<R>
+): Operator<T, R>
+```
+
+Also exported as `mergeMap`.
+
+## Example
+
+```typescript
+import { singlePointer } from "cereb";
+import { flatMap, session } from "cereb/operators";
+
+singlePointer(element)
+  .pipe(
+    session(),
+    flatMap((signal) => fetchRelatedData(signal.value.x, signal.value.y))
+  )
+  .on((result) => {
+    console.log(result.value);
+  });
+```
+
+## How It Works
+
+When a signal arrives, `flatMap` creates a new inner stream and subscribes to it immediately—without canceling any existing inner streams. All inner streams run concurrently, and their signals are merged into the output stream.
+
+```
+Source:   ──a──────b──────c──▶
+              \        \        \
+Inner:         ─A1─A2─▶  ─B1─▶   ─C1─C2─▶
+
+Output:   ────A1─A2──B1───C1─C2─▶
+```
+
+## Use Cases
+
+### Parallel Data Fetching
+
+Fetch data for each pointer session without waiting for previous requests:
+
+```typescript
+singlePointer(element)
+  .pipe(
+    session(),
+    flatMap((signal) => fetchLocationData(signal.value.x, signal.value.y))
+  )
+  .on((data) => {
+    renderMarker(data.value);
+  });
+```
+
+### Concurrent Sound Effects
+
+Play multiple sounds simultaneously:
+
+```typescript
+keyboard(window)
+  .pipe(
+    flatMap((signal) => playSound(signal.value.key))
+  )
+  .on(() => {});
+```
+
+## Note
+
+If you need to cancel previous operations when new signals arrive, use `switchMap` instead. If you need to ignore new signals until the current operation completes, use `exhaustMap`.

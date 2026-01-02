@@ -1,0 +1,16 @@
+---
+import DocsLayout from "@/layouts/docs-layout.astro";
+import Content from "@/content/operator-api/flat-map.mdx";
+
+const headings = [
+  { depth: 2, slug: "signature", text: "Signature" },
+  { depth: 2, slug: "example", text: "Example" },
+  { depth: 2, slug: "how-it-works", text: "How It Works" },
+  { depth: 2, slug: "use-cases", text: "Use Cases" },
+  { depth: 2, slug: "note", text: "Note" },
+];
+---
+
+<DocsLayout title="flatMap" description="Flatten inner streams concurrently" headings={headings}>
+  <Content />
+</DocsLayout>

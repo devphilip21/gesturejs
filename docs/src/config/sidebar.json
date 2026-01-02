@@ -42,6 +42,10 @@
           "slug": "core-concepts/creating-operators"
         },
         {
+          "label": "Higher-Order Operators",
+          "slug": "core-concepts/higher-order-operators"
+        },
+        {
           "label": "The Problems Solves",
           "slug": "core-concepts/the-problem-solves"
         }
@@ -100,12 +104,20 @@
           "slug": "operator-api/debounce"
         },
         {
+          "label": "exhaustMap",
+          "slug": "operator-api/exhaust-map"
+        },
+        {
           "label": "extend",
           "slug": "operator-api/extend"
         },
         {
           "label": "filter",
           "slug": "operator-api/filter"
+        },
+        {
+          "label": "flatMap",
+          "slug": "operator-api/flat-map"
         },
         {
           "label": "map",
@@ -134,6 +146,10 @@
         {
           "label": "spy",
           "slug": "operator-api/spy"
+        },
+        {
+          "label": "switchMap",
+          "slug": "operator-api/switch-map"
         },
         {
           "label": "throttle",
