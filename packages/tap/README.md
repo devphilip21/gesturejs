@@ -101,18 +101,20 @@ singlePointer(element)
 ### `createTapRecognizer(options?)`
 
 Low-level API for imperative usage or custom integrations.
+Accepts any signal that satisfies `TapSourceSignal` interface.
 
 ```typescript
-import { createTapRecognizer } from "@cereb/tap";
+import { createTapRecognizer, type TapSourceSignal } from "@cereb/tap";
 
 const recognizer = createTapRecognizer({ durationThreshold: 300 });
 
-singlePointerStream.on((signal) => {
+// Works with any source that provides the required properties
+function handlePointerEvent(signal: TapSourceSignal) {
   const tapEvent = recognizer.process(signal);
   if (tapEvent?.value.phase === "end") {
     console.log(`Tap ${tapEvent.value.tapCount}!`);
   }
-});
+}
 ```
 
 ## TapValue

@@ -1,22 +1,26 @@
-import type { Operator, SinglePointerSignal, Stream } from "cereb";
+import type { Operator, Signal, Stream } from "cereb";
 import { createStream, singlePointer } from "cereb";
 import type { PanSignal } from "./pan-signal.js";
-import type { PanOptions } from "./pan-types.js";
+import type { PanOptions, PanSourceValue } from "./pan-types.js";
 import { createPanRecognizer } from "./recognizer.js";
 
 /**
- * Operator that transforms SinglePointer events into PanEvent events.
+ * Operator that transforms pointer events into PanSignal events.
+ *
+ * Accepts any Signal whose value satisfies PanSourceValue interface.
  *
  * Use this when you need to compose with other operators or use a custom pointer source.
  *
  * @example
  * ```typescript
  * singlePointer(element)
- *   .pipe(singlePointerToPan({ threshold: 10 }), withVelocity())
- *   .on(pan => console.log(pan.deltaX, pan.velocityX));
+ *   .pipe(panRecognizer({ threshold: 10 }))
+ *   .on(pan => console.log(pan.value.deltaX, pan.value.velocityX));
  * ```
  */
-export function panRecognizer(options: PanOptions = {}): Operator<SinglePointerSignal, PanSignal> {
+export function panRecognizer<T extends Signal<string, PanSourceValue>>(
+  options: PanOptions = {},
+): Operator<T, PanSignal> {
   return (source) =>
     createStream((observer) => {
       const recognizer = createPanRecognizer(options);

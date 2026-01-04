@@ -1,6 +1,6 @@
-import type { Signal, SinglePointerType } from "cereb";
+import type { Signal } from "cereb";
 import { createSignal } from "cereb";
-import type { TapPhase } from "./tap-types.js";
+import type { TapPhase, TapSourcePointerType } from "./tap-types.js";
 
 /**
  * Tap gesture value emitted during tap lifecycle (start, end, cancel).
@@ -29,7 +29,7 @@ export interface TapValue {
   duration: number;
 
   /** Type of pointer that performed the tap */
-  pointerType: SinglePointerType;
+  pointerType: TapSourcePointerType;
 }
 
 export interface TapSignal<T = {}> extends Signal<"tap", TapValue & T> {}

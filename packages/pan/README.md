@@ -81,18 +81,20 @@ singlePointer(element)
 ### `createPanRecognizer(options?)`
 
 Low-level API for imperative usage or custom integrations.
+Accepts any signal that satisfies `PanSourceSignal` interface.
 
 ```typescript
-import { createPanRecognizer } from "@cereb/pan";
+import { createPanRecognizer, type PanSourceSignal } from "@cereb/pan";
 
 const recognizer = createPanRecognizer({ threshold: 10 });
 
-singlePointerStream.on((signal) => {
+// Works with any source that provides the required properties
+function handlePointerEvent(signal: PanSourceSignal) {
   const panEvent = recognizer.process(signal);
   if (panEvent) {
     console.log(panEvent.value.deltaX, panEvent.value.velocityX);
   }
-});
+}
 ```
 
 ## PanValue
