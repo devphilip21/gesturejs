@@ -1,35 +1,37 @@
-import type { SinglePointerSignal } from "cereb";
 import { calculateDistance } from "./geometry.js";
 import { createInitialTapState, resetCurrentTap, resetTapState, type TapState } from "./state.js";
 import { createTapSignal, type TapSignal } from "./tap-signal.js";
-import type { TapOptions, TapPhase } from "./tap-types.js";
+import type { TapOptions, TapPhase, TapSourceSignal } from "./tap-types.js";
 
 const DEFAULT_MOVEMENT_THRESHOLD = 10;
 const DEFAULT_DURATION_THRESHOLD = 500;
 
 /**
- * Stateful processor that transforms SinglePointer events into TapSignal.
+ * Stateful processor that transforms pointer events into TapSignal.
  * Supports multi-tap detection (double-tap, triple-tap, etc.)
+ *
+ * Accepts any signal that satisfies TapSourceSignal interface,
+ * allowing integration with various input sources beyond SinglePointer.
  */
 export interface TapRecognizer {
-  process(pointer: SinglePointerSignal): TapSignal | null;
+  process(signal: TapSourceSignal): TapSignal | null;
   readonly isActive: boolean;
   reset(): void;
   dispose(): void;
 }
 
 /**
- * Creates a tap gesture recognizer that processes SinglePointer events.
+ * Creates a tap gesture recognizer that processes pointer events.
  *
  * The recognizer maintains internal state and can be used:
  * - Imperatively via process() method
- * - With any event source (not just Observable streams)
+ * - With any event source that satisfies TapSourceSignal interface
  *
  * @example
  * ```typescript
  * const recognizer = createTapRecognizer({ durationThreshold: 300 });
  *
- * singlePointerStream.on((signal) => {
+ * pointerStream.on((signal) => {
  *   const tapEvent = recognizer.process(signal);
  *   if (tapEvent?.value.phase === "end") {
  *     console.log(`Tap ${tapEvent.value.tapCount}!`);
@@ -49,11 +51,11 @@ export function createTapRecognizer(options: TapOptions = {}): TapRecognizer {
   const state: TapState = createInitialTapState();
 
   function createTapSignalFromState(
-    pointerSignal: SinglePointerSignal,
+    signal: TapSourceSignal,
     phase: TapPhase,
     tapCount: number,
   ): TapSignal {
-    const duration = pointerSignal.createdAt - state.startTimestamp;
+    const duration = signal.createdAt - state.startTimestamp;
 
     return createTapSignal({
       phase,
@@ -63,7 +65,7 @@ export function createTapRecognizer(options: TapOptions = {}): TapRecognizer {
       pageY: state.startPageY,
       tapCount,
       duration: Math.max(0, duration),
-      pointerType: pointerSignal.value.pointerType,
+      pointerType: signal.value.pointerType,
     });
   }
 
@@ -89,7 +91,7 @@ export function createTapRecognizer(options: TapOptions = {}): TapRecognizer {
     return true;
   }
 
-  function handleStart(signal: SinglePointerSignal): TapSignal {
+  function handleStart(signal: TapSourceSignal): TapSignal {
     const { x, y, pageX, pageY, pointerType } = signal.value;
 
     const continuesMultiTap = shouldIncrementTapCount(x, y, signal.createdAt);
@@ -113,7 +115,7 @@ export function createTapRecognizer(options: TapOptions = {}): TapRecognizer {
     return createTapSignalFromState(signal, "start", state.currentTapCount);
   }
 
-  function handleMove(signal: SinglePointerSignal): TapSignal | null {
+  function handleMove(signal: TapSourceSignal): TapSignal | null {
     if (!state.isActive || state.isCancelled) return null;
 
     const { x, y } = signal.value;
@@ -137,7 +139,7 @@ export function createTapRecognizer(options: TapOptions = {}): TapRecognizer {
     return null;
   }
 
-  function handleEnd(signal: SinglePointerSignal): TapSignal | null {
+  function handleEnd(signal: TapSourceSignal): TapSignal | null {
     if (!state.isActive) return null;
 
     if (state.isCancelled) {
@@ -165,7 +167,7 @@ export function createTapRecognizer(options: TapOptions = {}): TapRecognizer {
     return result;
   }
 
-  function handleCancel(signal: SinglePointerSignal): TapSignal | null {
+  function handleCancel(signal: TapSourceSignal): TapSignal | null {
     if (!state.isActive) return null;
 
     state.lastTapEndTimestamp = 0;
@@ -178,7 +180,7 @@ export function createTapRecognizer(options: TapOptions = {}): TapRecognizer {
   }
 
   return {
-    process(signal: SinglePointerSignal): TapSignal | null {
+    process(signal: TapSourceSignal): TapSignal | null {
       switch (signal.value.phase) {
         case "start":
           return handleStart(signal);

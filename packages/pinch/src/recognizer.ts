@@ -1,18 +1,25 @@
-import type { MultiPointerSignal, PointerInfo } from "cereb";
 import { getCenter, getPageCenter, getPointerDistance } from "./geometry.js";
 import { createPinchSignal, type PinchSignal } from "./pinch-signal.js";
-import type { PinchOptions, PinchPhase } from "./pinch-types.js";
+import type {
+  PinchOptions,
+  PinchPhase,
+  PinchSourcePointer,
+  PinchSourceSignal,
+} from "./pinch-types.js";
 import { createInitialPinchState, type PinchState, resetPinchState } from "./state.js";
 
 const DEFAULT_THRESHOLD = 0;
 const MIN_INITIAL_DISTANCE = 1;
 
 /**
- * Stateful processor that transforms MultiPointer signals into PinchSignal.
+ * Stateful processor that transforms multi-pointer signals into PinchSignal.
  * Can be used imperatively or integrated into custom pipelines.
+ *
+ * Accepts any signal that satisfies PinchSourceSignal interface,
+ * allowing integration with various input sources beyond MultiPointer.
  */
 export interface PinchRecognizer {
-  process(signal: MultiPointerSignal): PinchSignal | null;
+  process(signal: PinchSourceSignal): PinchSignal | null;
   readonly isActive: boolean;
   readonly thresholdMet: boolean;
   reset(): void;
@@ -29,10 +36,10 @@ function isThresholdMet(
 }
 
 function findTrackedPointers(
-  pointers: readonly PointerInfo[],
+  pointers: readonly PinchSourcePointer[],
   id1: string,
   id2: string,
-): [PointerInfo, PointerInfo] | null {
+): [PinchSourcePointer, PinchSourcePointer] | null {
   const p1 = pointers.find((p) => p.id === id1);
   const p2 = pointers.find((p) => p.id === id2);
   if (!p1 || !p2) return null;
@@ -40,7 +47,7 @@ function findTrackedPointers(
 }
 
 function hasTrackedPointerEnded(
-  pointers: readonly PointerInfo[],
+  pointers: readonly PinchSourcePointer[],
   id1: string,
   id2: string,
 ): { ended: boolean; cancelled: boolean } {
@@ -71,18 +78,18 @@ function calculateVelocity(
 }
 
 /**
- * Creates a pinch gesture recognizer that processes MultiPointer signals.
+ * Creates a pinch gesture recognizer that processes multi-pointer signals.
  *
  * The recognizer maintains internal state and can be used:
  * - Imperatively via process() method
- * - With any event source (not just Observable streams)
+ * - With any event source that satisfies PinchSourceSignal interface
  * - In Web Workers or other non-DOM contexts
  *
  * @example
  * ```typescript
  * const recognizer = createPinchRecognizer({ threshold: 10 });
  *
- * multiPointerStream.subscribe((signal) => {
+ * multiPointerStream.on((signal) => {
  *   const pinchEvent = recognizer.process(signal);
  *   if (pinchEvent) {
  *     console.log(pinchEvent.value.distance, pinchEvent.value.velocity);
@@ -96,8 +103,8 @@ export function createPinchRecognizer(options: PinchOptions = {}): PinchRecogniz
   const state: PinchState = createInitialPinchState();
 
   function createPinchSignalFromPointers(
-    p1: PointerInfo,
-    p2: PointerInfo,
+    p1: PinchSourcePointer,
+    p2: PinchSourcePointer,
     phase: PinchPhase,
     timestamp: number,
   ): PinchSignal {
@@ -129,7 +136,11 @@ export function createPinchRecognizer(options: PinchOptions = {}): PinchRecogniz
     });
   }
 
-  function handleSessionStart(signal: MultiPointerSignal, p1: PointerInfo, p2: PointerInfo): null {
+  function handleSessionStart(
+    signal: PinchSourceSignal,
+    p1: PinchSourcePointer,
+    p2: PinchSourcePointer,
+  ): null {
     const distance = getPointerDistance(p1, p2);
     const initialDistance = Math.max(distance, MIN_INITIAL_DISTANCE);
 
@@ -147,9 +158,9 @@ export function createPinchRecognizer(options: PinchOptions = {}): PinchRecogniz
   }
 
   function handleMove(
-    signal: MultiPointerSignal,
-    p1: PointerInfo,
-    p2: PointerInfo,
+    signal: PinchSourceSignal,
+    p1: PinchSourcePointer,
+    p2: PinchSourcePointer,
   ): PinchSignal | null {
     if (!state.isActive) return null;
 
@@ -167,9 +178,9 @@ export function createPinchRecognizer(options: PinchOptions = {}): PinchRecogniz
   }
 
   function handleEnd(
-    signal: MultiPointerSignal,
-    p1: PointerInfo,
-    p2: PointerInfo,
+    signal: PinchSourceSignal,
+    p1: PinchSourcePointer,
+    p2: PinchSourcePointer,
     isCancelled: boolean,
   ): PinchSignal | null {
     if (!state.isActive) return null;
@@ -189,7 +200,7 @@ export function createPinchRecognizer(options: PinchOptions = {}): PinchRecogniz
   }
 
   return {
-    process(signal: MultiPointerSignal): PinchSignal | null {
+    process(signal: PinchSourceSignal): PinchSignal | null {
       const pointers = signal.value.pointers;
 
       const workingPointers = pointers.filter((p) => p.phase === "start" || p.phase === "move");

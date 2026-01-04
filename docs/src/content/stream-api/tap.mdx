@@ -138,3 +138,39 @@ singlePointer(element)
     console.log(`Tap ${signal.value.tapCount}!`);
   });
 ```
+
+## Advanced: createTapRecognizer
+
+Low-level API for imperative usage or custom integrations.
+The recognizer accepts any signal that satisfies `TapSourceSignal` interface.
+
+```typescript
+import { createTapRecognizer, type TapSourceSignal } from "@cereb/tap";
+
+const recognizer = createTapRecognizer({ durationThreshold: 300 });
+
+// Works with any source that provides the required properties
+function handlePointerEvent(signal: TapSourceSignal) {
+  const tapEvent = recognizer.process(signal);
+  if (tapEvent?.value.phase === "end") {
+    console.log(`Tap ${tapEvent.value.tapCount}!`);
+  }
+}
+```
+
+### TapSourceSignal Interface
+
+```typescript
+interface TapSourceSignal {
+  value: {
+    phase: "start" | "move" | "end" | "cancel";
+    x: number;
+    y: number;
+    pageX: number;
+    pageY: number;
+    pointerType: "touch" | "mouse" | "pen" | "unknown";
+  };
+  createdAt: number;
+  deviceId: string;
+}
+```

@@ -1,12 +1,14 @@
-import type { Operator, SinglePointerSignal, Stream } from "cereb";
+import type { Operator, Signal, Stream } from "cereb";
 import { createStream, singlePointer } from "cereb";
 import { createTapRecognizer } from "./recognizer.js";
 import type { TapSignal } from "./tap-signal.js";
-import type { TapOptions } from "./tap-types.js";
+import type { TapOptions, TapSourceValue } from "./tap-types.js";
 
 /**
- * Operator that transforms SinglePointer events into TapSignal events.
+ * Operator that transforms pointer events into TapSignal events.
  * Emits "start", "end", and "cancel" phases for full tap lifecycle visibility.
+ *
+ * Accepts any Signal whose value satisfies TapSourceValue interface.
  *
  * Use this when you need to:
  * - Show visual feedback on tap start
@@ -26,7 +28,9 @@ import type { TapOptions } from "./tap-types.js";
  *   });
  * ```
  */
-export function tapRecognizer(options: TapOptions = {}): Operator<SinglePointerSignal, TapSignal> {
+export function tapRecognizer<T extends Signal<string, TapSourceValue>>(
+  options: TapOptions = {},
+): Operator<T, TapSignal> {
   return (source) =>
     createStream((observer) => {
       const recognizer = createTapRecognizer(options);
@@ -55,6 +59,8 @@ export function tapRecognizer(options: TapOptions = {}): Operator<SinglePointerS
  * Operator that only emits successful tap events (phase === "end").
  * Filters out "start" and "cancel" phases for simpler tap handling.
  *
+ * Accepts any Signal whose value satisfies TapSourceValue interface.
+ *
  * @example
  * ```typescript
  * singlePointer(element)
@@ -66,7 +72,9 @@ export function tapRecognizer(options: TapOptions = {}): Operator<SinglePointerS
  *   });
  * ```
  */
-export function tapEndOnly(options: TapOptions = {}): Operator<SinglePointerSignal, TapSignal> {
+export function tapEndOnly<T extends Signal<string, TapSourceValue>>(
+  options: TapOptions = {},
+): Operator<T, TapSignal> {
   return (source) =>
     createStream((observer) => {
       const recognizer = createTapRecognizer(options);

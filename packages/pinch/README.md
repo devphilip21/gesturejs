@@ -82,18 +82,20 @@ multiPointer(element, { maxPointers: 2 })
 ### `createPinchRecognizer(options?)`
 
 Low-level API for imperative usage or custom integrations.
+Accepts any signal that satisfies `PinchSourceSignal` interface.
 
 ```typescript
-import { createPinchRecognizer } from "@cereb/pinch";
+import { createPinchRecognizer, type PinchSourceSignal } from "@cereb/pinch";
 
 const recognizer = createPinchRecognizer({ threshold: 10 });
 
-multiPointerStream.on((signal) => {
+// Works with any source that provides the required properties
+function handleMultiPointerEvent(signal: PinchSourceSignal) {
   const pinchEvent = recognizer.process(signal);
   if (pinchEvent) {
     console.log(pinchEvent.value.distance);
   }
-});
+}
 ```
 
 ## PinchValue

@@ -1,7 +1,6 @@
-import type { SinglePointerSignal } from "cereb";
 import { calculateDistance, getDirection } from "./geometry.js";
 import { createPanSignal, type PanSignal } from "./pan-signal.js";
-import type { PanDirectionMode, PanOptions, PanPhase } from "./pan-types.js";
+import type { PanDirectionMode, PanOptions, PanPhase, PanSourceSignal } from "./pan-types.js";
 import { createInitialPanState, type PanState, resetPanState } from "./state.js";
 
 const DEFAULT_THRESHOLD = 10;
@@ -27,11 +26,14 @@ function calculateVelocity(
 }
 
 /**
- * Stateful processor that transforms SinglePointer events into PanSignal.
+ * Stateful processor that transforms pointer events into PanSignal.
  * Can be used imperatively or integrated into custom pipelines.
+ *
+ * Accepts any signal that satisfies PanSourceSignal interface,
+ * allowing integration with various input sources beyond SinglePointer.
  */
 export interface PanRecognizer {
-  process(pointer: SinglePointerSignal): PanSignal | null;
+  process(signal: PanSourceSignal): PanSignal | null;
   readonly isActive: boolean;
   readonly thresholdMet: boolean;
   reset(): void;
@@ -55,18 +57,18 @@ function isThresholdMet(
 }
 
 /**
- * Creates a pan gesture recognizer that processes SinglePointer events.
+ * Creates a pan gesture recognizer that processes pointer events.
  *
  * The recognizer maintains internal state and can be used:
  * - Imperatively via process() method
- * - With any event source (not just Observable streams)
+ * - With any event source that satisfies PanSourceSignal interface
  * - In Web Workers or other non-DOM contexts
  *
  * @example
  * ```typescript
  * const recognizer = createPanRecognizer({ threshold: 10 });
  *
- * singlePointerStream.subscribe((signal) => {
+ * pointerStream.on((signal) => {
  *   const panEvent = recognizer.process(signal);
  *   if (panEvent) {
  *     console.log(panEvent.value.deltaX, panEvent.value.velocityX);
@@ -78,17 +80,14 @@ export function createPanRecognizer(options: PanOptions = {}): PanRecognizer {
   const { threshold = DEFAULT_THRESHOLD, direction = "all" } = options;
   const state: PanState = createInitialPanState();
 
-  function createPanSignalFromPointer(
-    pointerSignal: SinglePointerSignal,
-    phase: PanPhase,
-  ): PanSignal {
-    const deltaX = pointerSignal.value.x - state.startX;
-    const deltaY = pointerSignal.value.y - state.startY;
+  function createPanSignalFromSource(signal: PanSourceSignal, phase: PanPhase): PanSignal {
+    const deltaX = signal.value.x - state.startX;
+    const deltaY = signal.value.y - state.startY;
 
     const { velocityX, velocityY } = calculateVelocity(
-      pointerSignal.value.x,
-      pointerSignal.value.y,
-      pointerSignal.createdAt,
+      signal.value.x,
+      signal.value.y,
+      signal.createdAt,
       state.prevX,
       state.prevY,
       state.prevTimestamp,
@@ -102,14 +101,14 @@ export function createPanRecognizer(options: PanOptions = {}): PanRecognizer {
       direction: getDirection(deltaX, deltaY),
       velocityX,
       velocityY,
-      x: pointerSignal.value.x,
-      y: pointerSignal.value.y,
-      pageX: pointerSignal.value.pageX,
-      pageY: pointerSignal.value.pageY,
+      x: signal.value.x,
+      y: signal.value.y,
+      pageX: signal.value.pageX,
+      pageY: signal.value.pageY,
     });
   }
 
-  function handleStart(signal: SinglePointerSignal): null {
+  function handleStart(signal: PanSourceSignal): null {
     state.isActive = true;
     state.thresholdMet = false;
     state.startX = signal.value.x;
@@ -123,7 +122,7 @@ export function createPanRecognizer(options: PanOptions = {}): PanRecognizer {
     return null;
   }
 
-  function handleMove(signal: SinglePointerSignal): PanSignal | null {
+  function handleMove(signal: PanSourceSignal): PanSignal | null {
     if (!state.isActive) return null;
 
     const deltaX = signal.value.x - state.startX;
@@ -142,10 +141,10 @@ export function createPanRecognizer(options: PanOptions = {}): PanRecognizer {
     if (!state.thresholdMet) {
       if (isThresholdMet(deltaX, deltaY, threshold, direction)) {
         state.thresholdMet = true;
-        result = createPanSignalFromPointer(signal, "start");
+        result = createPanSignalFromSource(signal, "start");
       }
     } else {
-      result = createPanSignalFromPointer(signal, "move");
+      result = createPanSignalFromSource(signal, "move");
     }
 
     state.prevX = signal.value.x;
@@ -155,25 +154,25 @@ export function createPanRecognizer(options: PanOptions = {}): PanRecognizer {
     return result;
   }
 
-  function handleEnd(signal: SinglePointerSignal): PanSignal | null {
+  function handleEnd(signal: PanSourceSignal): PanSignal | null {
     if (!state.isActive) return null;
 
     let result: PanSignal | null = null;
 
     if (state.thresholdMet) {
-      result = createPanSignalFromPointer(signal, "end");
+      result = createPanSignalFromSource(signal, "end");
     }
 
     resetPanState(state);
     return result;
   }
 
-  function handleCancel(signal: SinglePointerSignal): PanSignal | null {
+  function handleCancel(signal: PanSourceSignal): PanSignal | null {
     if (!state.isActive) return null;
 
     let result: PanSignal | null = null;
     if (state.thresholdMet) {
-      result = createPanSignalFromPointer(signal, "cancel");
+      result = createPanSignalFromSource(signal, "cancel");
     }
 
     resetPanState(state);
@@ -181,7 +180,7 @@ export function createPanRecognizer(options: PanOptions = {}): PanRecognizer {
   }
 
   return {
-    process(signal: SinglePointerSignal): PanSignal | null {
+    process(signal: PanSourceSignal): PanSignal | null {
       switch (signal.value.phase) {
         case "start":
           return handleStart(signal);

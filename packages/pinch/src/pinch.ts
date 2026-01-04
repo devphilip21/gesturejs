@@ -1,12 +1,14 @@
-import type { MultiPointerSignal, Operator, Stream } from "cereb";
+import type { Operator, Signal, Stream } from "cereb";
 import { createStream, multiPointer } from "cereb";
 import { multiPointerSession } from "cereb/operators";
 import type { PinchSignal } from "./pinch-signal.js";
-import type { PinchOptions } from "./pinch-types.js";
+import type { PinchOptions, PinchSourceValue } from "./pinch-types.js";
 import { createPinchRecognizer } from "./recognizer.js";
 
 /**
- * Operator that transforms MultiPointer signals into PinchSignal events.
+ * Operator that transforms multi-pointer signals into PinchSignal events.
+ *
+ * Accepts any Signal whose value satisfies PinchSourceValue interface.
  *
  * Use this when composing with other operators or using a custom pointer source.
  *
@@ -15,15 +17,15 @@ import { createPinchRecognizer } from "./recognizer.js";
  * multiPointer(element, { maxPointers: 2 })
  *   .pipe(
  *     multiPointerSession(2),
- *     pinchRecognizer({ threshold: { ratio: 0.05 } }),
+ *     pinchRecognizer({ threshold: 10 }),
  *     zoom({ minScale: 0.5, maxScale: 3.0 }),
  *   )
  *   .on(pinch => console.log(pinch.value.distance, pinch.value.scale));
  * ```
  */
-export function pinchRecognizer(
+export function pinchRecognizer<T extends Signal<string, PinchSourceValue>>(
   options: PinchOptions = {},
-): Operator<MultiPointerSignal, PinchSignal> {
+): Operator<T, PinchSignal> {
   return (source) =>
     createStream((observer) => {
       const recognizer = createPinchRecognizer(options);

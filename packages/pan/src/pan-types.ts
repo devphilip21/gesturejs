@@ -4,6 +4,33 @@ export type PanDirection = "up" | "down" | "left" | "right" | "none";
 
 export type PanDirectionMode = "horizontal" | "vertical" | "all";
 
+/**
+ * Pointer phase values that PanRecognizer can process.
+ */
+export type PanSourcePhase = "start" | "move" | "end" | "cancel";
+
+/**
+ * Value interface that PanRecognizer requires from input signals.
+ * Any signal whose value satisfies this interface can be processed.
+ */
+export interface PanSourceValue {
+  readonly phase: PanSourcePhase;
+  readonly x: number;
+  readonly y: number;
+  readonly pageX: number;
+  readonly pageY: number;
+}
+
+/**
+ * Minimal signal interface that PanRecognizer requires.
+ * Decoupled from SinglePointerSignal to allow any compatible source.
+ */
+export interface PanSourceSignal {
+  readonly value: PanSourceValue;
+  readonly createdAt: number;
+  readonly deviceId: string;
+}
+
 export interface PanOptions {
   /**
    * Minimum movement required before pan gesture is recognized.
