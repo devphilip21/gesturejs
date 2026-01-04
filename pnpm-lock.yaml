@@ -66,6 +66,9 @@ importers:
       '@cereb/pinch':
         specifier: workspace:^
         version: link:../packages/pinch
+      '@cereb/tap':
+        specifier: workspace:^
+        version: link:../packages/tap
       '@tailwindcss/vite':
         specifier: ^4.1.17
         version: 4.1.18(vite@7.3.0(@types/node@24.10.4)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.2))
@@ -167,6 +170,28 @@ importers:
         version: 2.1.9(@types/node@24.10.4)(jsdom@25.0.1)(lightningcss@1.30.2)
 
   packages/pinch:
+    dependencies:
+      cereb:
+        specifier: workspace:^
+        version: link:../cereb
+    devDependencies:
+      '@cereb/builder':
+        specifier: workspace:^
+        version: link:../../internal/builder
+      '@vitest/coverage-v8':
+        specifier: '*'
+        version: 2.1.9(vitest@2.1.9(@types/node@24.10.4)(jsdom@25.0.1)(lightningcss@1.30.2))
+      jsdom:
+        specifier: '*'
+        version: 25.0.1
+      vite:
+        specifier: '*'
+        version: 7.3.0(@types/node@24.10.4)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.2)
+      vitest:
+        specifier: '*'
+        version: 2.1.9(@types/node@24.10.4)(jsdom@25.0.1)(lightningcss@1.30.2)
+
+  packages/tap:
     dependencies:
       cereb:
         specifier: workspace:^

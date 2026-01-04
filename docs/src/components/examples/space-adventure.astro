@@ -12,7 +12,7 @@ import "./space-adventure.css";
     <strong id="space-zoom-mode" class="_zoom-mode">Zoom Mode</strong>
     <div class="_tip">
       <strong class="_tip-title">Tip.</strong>
-      Pinch or change slider to zoom.<br />
+      Pinch, double tap, or change slider to zoom.<br />
       In Desktop, use 'z' + '+/-' or 'wheel' to zoom.
     </div>
   </div>
@@ -42,8 +42,9 @@ import "./space-adventure.css";
 
 <script>
 import { wheel, keydown, keyheld, type KeyboardSignal, type WheelSignal, domEvent, type KeyboardValue, type Signal } from "cereb";
-import { zoom as createZoom, extend, when, spy, type ZoomInput, type ZoomOptions } from "cereb/operators";
+import { zoom as createZoom, extend, when, spy, filter, type ZoomInput, type ZoomOptions } from "cereb/operators";
 import { pinch } from "@cereb/pinch";
+import { tap, type TapSignal } from "@cereb/tap";
 
 interface Star {
   x: number;
@@ -816,6 +817,22 @@ function initSpacePinchZoom() {
         ratio: 1 + (signal.value.ratio - 1) * PINCH_SENSITIVITY,
       })),
       zoom(),
+    )
+    .on(render);
+
+  // Double Tap Zoom
+  const DOUBLE_TAP_ZOOM_MULTIPLIER = 2.5;
+  tap(box, { chainIntervalThreshold: 300 })
+    .pipe(
+      filter((signal) => signal.value.tapCount === 2),
+      extend<TapSignal, ZoomInput>(() => {
+        const currentScale = zoomManager.getScale();
+        const isNearMax = currentScale >= MAX_SCALE * 0.9;
+        return {
+          ratio: isNearMax ? 1 : Math.min(currentScale * DOUBLE_TAP_ZOOM_MULTIPLIER, MAX_SCALE),
+        };
+      }),
+      zoom({ baseScale: 1.0 }),
     )
     .on(render);
 
