@@ -1,0 +1,61 @@
+{
+  "name": "@cereb/tap",
+  "description": "Tap gesture recognition with multi-tap support, designed for reactive streams.",
+  "version": "0.1.0",
+  "license": "MIT",
+  "author": "devphilip21 <philip21.dev@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/devphilip21/cereb.git",
+    "directory": "packages/tap"
+  },
+  "homepage": "https://cereb.dev/stream-api/tap",
+  "bugs": {
+    "url": "https://github.com/devphilip21/cereb/issues"
+  },
+  "keywords": [
+    "tap",
+    "click",
+    "gesture",
+    "touch",
+    "pointer",
+    "double-tap",
+    "cereb"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "builder build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "cereb": "workspace:^"
+  },
+  "peerDependencies": {
+    "cereb": "workspace:^"
+  },
+  "devDependencies": {
+    "@cereb/builder": "workspace:^",
+    "@vitest/coverage-v8": "*",
+    "jsdom": "*",
+    "vite": "*",
+    "vitest": "*"
+  }
+}
