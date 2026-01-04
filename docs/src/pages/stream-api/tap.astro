@@ -1,0 +1,20 @@
+---
+import DocsLayout from "@/layouts/docs-layout.astro";
+import Content from "@/content/stream-api/tap.mdx";
+
+const headings = [
+  { depth: 2, slug: "basic-usage", text: "Basic Usage" },
+  { depth: 2, slug: "signature", text: "Signature" },
+  { depth: 2, slug: "options", text: "Options" },
+  { depth: 2, slug: "signal-value", text: "Signal Value" },
+  { depth: 2, slug: "phase-lifecycle", text: "Phase Lifecycle" },
+  { depth: 2, slug: "multi-tap-chaining", text: "Multi-Tap Chaining" },
+  { depth: 2, slug: "with-visual-feedback", text: "With Visual Feedback" },
+  { depth: 2, slug: "advanced-taprecognizer", text: "Advanced: tapRecognizer" },
+  { depth: 2, slug: "advanced-tapendonly", text: "Advanced: tapEndOnly" },
+];
+---
+
+<DocsLayout title="tap" description="Tap gesture recognition with multi-tap support" headings={headings}>
+  <Content />
+</DocsLayout>

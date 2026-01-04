@@ -1,0 +1,140 @@
+# `tap`
+
+Tap gesture recognition with multi-tap support. Detects single, double, triple taps and beyond with configurable timing and distance thresholds.
+
+```bash
+npm install --save @cereb/tap
+```
+
+## Basic Usage
+
+```typescript
+import { tap } from "@cereb/tap";
+
+tap(element).on((signal) => {
+  const { tapCount, x, y } = signal.value;
+
+  if (tapCount === 1) {
+    console.log("Single tap");
+  } else if (tapCount === 2) {
+    console.log("Double tap - zoom in!");
+  }
+});
+```
+
+## Signature
+
+```typescript
+function tap(target: EventTarget, options?: TapOptions): Stream<TapSignal>
+```
+
+## Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `movementThreshold` | `number` | `10` | Max movement (px) allowed during tap |
+| `durationThreshold` | `number` | `500` | Max duration (ms) for a valid tap |
+| `chainMovementThreshold` | `number` | `movementThreshold` | Max distance between consecutive taps |
+| `chainIntervalThreshold` | `number` | `durationThreshold / 2` | Max interval (ms) between consecutive taps |
+
+### Multi-Tap Configuration
+
+```typescript
+// Fast double-tap detection
+tap(element, {
+  durationThreshold: 300,
+  chainIntervalThreshold: 250
+})
+
+// Strict tap positioning
+tap(element, {
+  movementThreshold: 5,
+  chainMovementThreshold: 20
+})
+```
+
+## Signal Value
+
+The `signal.value` contains:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `phase` | `"start" \| "end" \| "cancel"` | Current gesture phase |
+| `x` | `number` | Tap X position (clientX) |
+| `y` | `number` | Tap Y position (clientY) |
+| `pageX` | `number` | Tap X position (pageX) |
+| `pageY` | `number` | Tap Y position (pageY) |
+| `tapCount` | `number` | Consecutive tap count (1, 2, 3, ...) |
+| `duration` | `number` | How long pointer was pressed (ms) |
+| `pointerType` | `"mouse" \| "touch" \| "pen" \| "unknown"` | Input device type |
+
+## Phase Lifecycle
+
+```
+pointer down → "start" → pointer up (within thresholds) → "end"
+                       → moved too far / held too long → "cancel"
+```
+
+- **start**: Pointer pressed down
+- **end**: Valid tap completed (tapCount incremented if chained)
+- **cancel**: Tap invalidated (moved too far or held too long)
+
+## Multi-Tap Chaining
+
+Taps are chained when:
+1. Time between taps is less than `chainIntervalThreshold`
+2. Distance between tap positions is less than `chainMovementThreshold`
+
+```
+tap → 200ms → tap → 200ms → tap = tapCount: 3 (triple tap)
+tap → 500ms → tap                = tapCount: 1 (chain reset)
+```
+
+## With Visual Feedback
+
+Use `tapRecognizer` for full lifecycle handling:
+
+```typescript
+import { singlePointer } from "cereb";
+import { tapRecognizer } from "@cereb/tap";
+
+singlePointer(element)
+  .pipe(tapRecognizer())
+  .on((signal) => {
+    const { phase } = signal.value;
+
+    if (phase === "start") {
+      element.classList.add("pressed");
+    } else {
+      element.classList.remove("pressed");
+    }
+  });
+```
+
+## Advanced: tapRecognizer
+
+Use as an operator with custom pointer sources:
+
+```typescript
+import { singlePointer } from "cereb";
+import { tapRecognizer } from "@cereb/tap";
+
+singlePointer(element)
+  .pipe(tapRecognizer({ durationThreshold: 300 }))
+  .on((signal) => { /* ... */ });
+```
+
+## Advanced: tapEndOnly
+
+Only emits successful taps (filters out start/cancel):
+
+```typescript
+import { singlePointer } from "cereb";
+import { tapEndOnly } from "@cereb/tap";
+
+singlePointer(element)
+  .pipe(tapEndOnly())
+  .on((signal) => {
+    console.log(`Tap ${signal.value.tapCount}!`);
+  });
+```

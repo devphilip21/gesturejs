@@ -59,6 +59,10 @@
           "slug": "stream-api/pinch"
         },
         {
+          "label": "tap",
+          "slug": "stream-api/tap"
+        },
+        {
           "label": "singlePointer",
           "slug": "stream-api/single-pointer"
         },
