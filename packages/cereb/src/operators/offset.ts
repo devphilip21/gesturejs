@@ -1,6 +1,7 @@
 import type { ExtendSignalValue, Signal, SignalWith } from "../core/signal.js";
 import type { Operator, Stream } from "../core/stream.js";
 import { createStream } from "../core/stream.js";
+import type { Vector } from "../geometry/types.js";
 
 export interface OffsetOptions {
   target: Element;
@@ -22,13 +23,11 @@ export interface OffsetOptions {
 }
 
 export interface PointerValue {
-  x: number;
-  y: number;
+  cursor: readonly [number, number];
 }
 
 export interface OffsetValue {
-  offsetX: number;
-  offsetY: number;
+  offset: Vector;
 }
 
 type OffsetInputValue = PointerValue & Partial<OffsetValue>;
@@ -42,8 +41,7 @@ function applyOffset<T extends SignalWith<OffsetInputValue>>(
   signal: T,
   rect: DOMRect,
 ): asserts signal is T & ExtendSignalValue<T, OffsetValue> {
-  signal.value.offsetX = signal.value.x - rect.left;
-  signal.value.offsetY = signal.value.y - rect.top;
+  signal.value.offset = [signal.value.cursor[0] - rect.left, signal.value.cursor[1] - rect.top];
 }
 
 /**

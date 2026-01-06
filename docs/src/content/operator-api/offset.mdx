@@ -1,14 +1,14 @@
 # `offset`
 
-Adds element-relative coordinates (`offsetX`, `offsetY`) to pointer signals.
+Adds element-relative coordinates (`offset`) to pointer signals.
 
 ## Signature
 
 ```typescript
-function offset<T extends SignalWith<{ x: number; y: number }>>(options: {
+function offset<T extends SignalWith<{ cursor: [number, number] }>>(options: {
   target: Element;
   recalculate$?: Stream<Signal>;
-}): Operator<T, T & { offsetX: number; offsetY: number }>
+}): Operator<T, T & { offset: [number, number] }>
 ```
 
 ## Options
@@ -28,7 +28,8 @@ singlePointer(canvas)
   .pipe(offset({ target: canvas }))
   .on((signal) => {
     // Draw at element-relative position
-    draw(signal.value.offsetX, signal.value.offsetY);
+    const [ox, oy] = signal.value.offset;
+    draw(ox, oy);
   });
 ```
 
@@ -59,7 +60,8 @@ singlePointer(canvas)
     offset({ target: canvas })
   )
   .on((signal) => {
-    ctx.lineTo(signal.value.offsetX, signal.value.offsetY);
+    const [ox, oy] = signal.value.offset;
+    ctx.lineTo(ox, oy);
     ctx.stroke();
   });
 ```
@@ -70,7 +72,8 @@ singlePointer(canvas)
 pan(container)
   .pipe(offset({ target: container }))
   .on((signal) => {
-    draggable.style.left = `${signal.value.offsetX}px`;
-    draggable.style.top = `${signal.value.offsetY}px`;
+    const [ox, oy] = signal.value.offset;
+    draggable.style.left = `${ox}px`;
+    draggable.style.top = `${oy}px`;
   });
 ```

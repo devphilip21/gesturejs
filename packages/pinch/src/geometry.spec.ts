@@ -8,14 +8,17 @@ import {
   getPointerDistance,
 } from "./geometry.js";
 
-function createPointerInfo(overrides: Partial<PointerInfo> = {}): PointerInfo {
+function createPointerInfo(
+  overrides: Partial<Omit<PointerInfo, "cursor" | "pageCursor">> & {
+    cursor?: [number, number];
+    pageCursor?: [number, number];
+  } = {},
+): PointerInfo {
   return {
     id: "touch-1",
     phase: "move",
-    x: 0,
-    y: 0,
-    pageX: 0,
-    pageY: 0,
+    cursor: [0, 0],
+    pageCursor: [0, 0],
     pointerType: "touch",
     button: "none",
     pressure: 0.5,
@@ -47,8 +50,8 @@ describe("calculateDistance", () => {
 
 describe("getPointerDistance", () => {
   it("should calculate distance between two PointerInfo objects", () => {
-    const p1 = createPointerInfo({ x: 0, y: 0 });
-    const p2 = createPointerInfo({ x: 3, y: 4 });
+    const p1 = createPointerInfo({ cursor: [0, 0] });
+    const p2 = createPointerInfo({ cursor: [3, 4] });
 
     expect(getPointerDistance(p1, p2)).toBe(5);
   });
@@ -56,32 +59,32 @@ describe("getPointerDistance", () => {
 
 describe("getCenter", () => {
   it("should calculate center point between two pointers", () => {
-    const p1 = createPointerInfo({ x: 0, y: 0 });
-    const p2 = createPointerInfo({ x: 100, y: 100 });
+    const p1 = createPointerInfo({ cursor: [0, 0] });
+    const p2 = createPointerInfo({ cursor: [100, 100] });
 
     const center = getCenter(p1, p2);
-    expect(center.centerX).toBe(50);
-    expect(center.centerY).toBe(50);
+    expect(center[0]).toBe(50);
+    expect(center[1]).toBe(50);
   });
 
   it("should handle pointers at same position", () => {
-    const p1 = createPointerInfo({ x: 50, y: 50 });
-    const p2 = createPointerInfo({ x: 50, y: 50 });
+    const p1 = createPointerInfo({ cursor: [50, 50] });
+    const p2 = createPointerInfo({ cursor: [50, 50] });
 
     const center = getCenter(p1, p2);
-    expect(center.centerX).toBe(50);
-    expect(center.centerY).toBe(50);
+    expect(center[0]).toBe(50);
+    expect(center[1]).toBe(50);
   });
 });
 
 describe("getPageCenter", () => {
   it("should calculate page center between two pointers", () => {
-    const p1 = createPointerInfo({ pageX: 0, pageY: 0 });
-    const p2 = createPointerInfo({ pageX: 200, pageY: 200 });
+    const p1 = createPointerInfo({ pageCursor: [0, 0] });
+    const p2 = createPointerInfo({ pageCursor: [200, 200] });
 
-    const center = getPageCenter(p1, p2);
-    expect(center.pageCenterX).toBe(100);
-    expect(center.pageCenterY).toBe(100);
+    const pageCenter = getPageCenter(p1, p2);
+    expect(pageCenter[0]).toBe(100);
+    expect(pageCenter[1]).toBe(100);
   });
 });
 

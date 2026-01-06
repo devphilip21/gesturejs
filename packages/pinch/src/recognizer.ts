@@ -116,8 +116,8 @@ export function createPinchRecognizer(options: PinchOptions = {}): PinchRecogniz
       timestamp,
       state.prevTimestamp,
     );
-    const { centerX, centerY } = getCenter(p1, p2);
-    const { pageCenterX, pageCenterY } = getPageCenter(p1, p2);
+    const center = getCenter(p1, p2);
+    const pageCenter = getPageCenter(p1, p2);
 
     state.prevDistance = distance;
     state.prevTimestamp = timestamp;
@@ -129,10 +129,8 @@ export function createPinchRecognizer(options: PinchOptions = {}): PinchRecogniz
       ratio: distance / state.initialDistance,
       deltaDistance,
       velocity,
-      centerX,
-      centerY,
-      pageCenterX,
-      pageCenterY,
+      center,
+      pageCenter,
     });
   }
 

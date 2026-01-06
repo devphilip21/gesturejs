@@ -22,8 +22,8 @@ singlePointer(element)
     reduce(
       (acc, signal) => ({
         count: acc.count + 1,
-        totalDistance: acc.totalDistance + Math.abs(signal.value.x - acc.lastX),
-        lastX: signal.value.x
+        totalDistance: acc.totalDistance + Math.abs(signal.value.cursor[0] - acc.lastX),
+        lastX: signal.value.cursor[0]
       }),
       { count: 0, totalDistance: 0, lastX: 0 }
     )
@@ -46,8 +46,8 @@ pan(element)
   .pipe(
     reduce(
       (acc, s) => ({
-        cumulativeX: acc.cumulativeX + Math.abs(s.value.deltaX),
-        cumulativeY: acc.cumulativeY + Math.abs(s.value.deltaY)
+        cumulativeX: acc.cumulativeX + Math.abs(s.value.delta[0]),
+        cumulativeY: acc.cumulativeY + Math.abs(s.value.delta[1])
       }),
       { cumulativeX: 0, cumulativeY: 0 }
     )

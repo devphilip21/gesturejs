@@ -14,7 +14,8 @@ npm install --save cereb @cereb/tap
 import { tap } from "@cereb/tap";
 
 tap(element).on((signal) => {
-  const { tapCount, x, y } = signal.value;
+  const { tapCount, cursor } = signal.value;
+  const [x, y] = cursor;
 
   if (tapCount === 2) {
     console.log(`Double tap at (${x}, ${y})`);
@@ -122,10 +123,8 @@ function handlePointerEvent(signal: TapSourceSignal) {
 | Property | Type | Description |
 |----------|------|-------------|
 | `phase` | `"start" \| "end" \| "cancel"` | Current gesture phase |
-| `x` | `number` | Tap X position (client) |
-| `y` | `number` | Tap Y position (client) |
-| `pageX` | `number` | Tap X position (page) |
-| `pageY` | `number` | Tap Y position (page) |
+| `cursor` | `[number, number]` | Tap position (client coordinates) |
+| `pageCursor` | `[number, number]` | Tap position (page coordinates) |
 | `tapCount` | `number` | Consecutive tap count (1=single, 2=double, etc.) |
 | `duration` | `number` | How long the pointer was pressed (ms) |
 | `pointerType` | `"mouse" \| "touch" \| "pen" \| "unknown"` | Type of pointer |

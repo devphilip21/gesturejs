@@ -1,5 +1,6 @@
 import type { Signal } from "cereb";
 import { createSignal } from "cereb";
+import type { Point, Vector } from "cereb/geometry";
 import type { PanDirection, PanPhase } from "./pan-types.js";
 
 /**
@@ -9,30 +10,21 @@ import type { PanDirection, PanPhase } from "./pan-types.js";
 export interface PanValue {
   phase: PanPhase;
 
-  /** X displacement from start point */
-  deltaX: number;
-  /** Y displacement from start point */
-  deltaY: number;
+  /** Current position [x, y] (client coordinates) */
+  cursor: Point;
+  /** Current position [pageX, pageY] (page coordinates) */
+  pageCursor: Point;
+
+  /** Displacement from start [deltaX, deltaY] */
+  delta: Vector;
+  /** Velocity [vx, vy] in pixels per millisecond */
+  velocity: Vector;
 
   /** Total cumulative distance traveled */
   distance: number;
 
   /** Current movement direction */
   direction: PanDirection;
-
-  /** X velocity in pixels per millisecond */
-  velocityX: number;
-  /** Y velocity in pixels per millisecond */
-  velocityY: number;
-
-  /** Current clientX */
-  x: number;
-  /** Current clientY */
-  y: number;
-  /** Current pageX */
-  pageX: number;
-  /** Current pageY */
-  pageY: number;
 }
 
 export interface PanSignal<T = {}> extends Signal<"pan", PanValue & T> {}
@@ -42,16 +34,12 @@ export const PAN_SIGNAL_KIND = "pan" as const;
 export function createDefaultPanValue(): PanValue {
   return {
     phase: "unknown",
-    deltaX: 0,
-    deltaY: 0,
+    cursor: [0, 0],
+    pageCursor: [0, 0],
+    delta: [0, 0],
+    velocity: [0, 0],
     distance: 0,
     direction: "none",
-    velocityX: 0,
-    velocityY: 0,
-    x: 0,
-    y: 0,
-    pageX: 0,
-    pageY: 0,
   };
 }
 

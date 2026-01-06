@@ -1,5 +1,6 @@
 import type { Signal } from "cereb";
 import { createSignal } from "cereb";
+import type { Point } from "cereb/geometry";
 import type { TapPhase, TapSourcePointerType } from "./tap-types.js";
 
 /**
@@ -9,15 +10,11 @@ import type { TapPhase, TapSourcePointerType } from "./tap-types.js";
 export interface TapValue {
   phase: TapPhase;
 
-  /** Tap position X (client coordinates) */
-  x: number;
-  /** Tap position Y (client coordinates) */
-  y: number;
+  /** Tap position (client coordinates) */
+  cursor: Point;
 
-  /** Tap position X (page coordinates) */
-  pageX: number;
-  /** Tap position Y (page coordinates) */
-  pageY: number;
+  /** Tap position (page coordinates) */
+  pageCursor: Point;
 
   /**
    * Number of consecutive taps (1=single, 2=double, 3=triple, etc.)
@@ -39,10 +36,8 @@ export const TAP_SIGNAL_KIND = "tap" as const;
 export function createDefaultTapValue(): TapValue {
   return {
     phase: "end",
-    x: 0,
-    y: 0,
-    pageX: 0,
-    pageY: 0,
+    cursor: [0, 0],
+    pageCursor: [0, 0],
     tapCount: 1,
     duration: 0,
     pointerType: "unknown",

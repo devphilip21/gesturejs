@@ -1,4 +1,5 @@
 import { createSignal, type Signal } from "../../core/signal.js";
+import type { Point } from "../../geometry/types.js";
 import type {
   SinglePointerButton,
   SinglePointerPhase,
@@ -36,10 +37,8 @@ export type MultiPointerPhase = "idle" | "active" | "ended";
 export interface PointerInfo {
   id: string;
   phase: SinglePointerPhase;
-  x: number;
-  y: number;
-  pageX: number;
-  pageY: number;
+  cursor: Point;
+  pageCursor: Point;
   pointerType: SinglePointerType;
   button: SinglePointerButton;
   /** 0.0 ~ 1.0, default 0.5 if unsupported */
@@ -54,10 +53,8 @@ export function createDefaultPointerInfo(): PointerInfo {
   return {
     id: "",
     phase: "move",
-    x: 0,
-    y: 0,
-    pageX: 0,
-    pageY: 0,
+    cursor: [0, 0],
+    pageCursor: [0, 0],
     pointerType: "unknown",
     button: "none",
     pressure: 0.5,

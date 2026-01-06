@@ -48,10 +48,8 @@ export function createPointerRecognizer(
     const v = signal.value as DeepMutable<SinglePointer>;
     v.id = `${e.pointerType}-${e.pointerId}`;
     v.phase = phase;
-    v.x = e.clientX;
-    v.y = e.clientY;
-    v.pageX = e.pageX;
-    v.pageY = e.pageY;
+    v.cursor = [e.clientX, e.clientY];
+    v.pageCursor = [e.pageX, e.pageY];
     v.pointerType = normalizePointerType(e.pointerType);
     v.button = button;
     v.pressure = e.pressure;

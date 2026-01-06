@@ -15,10 +15,8 @@ export type PanSourcePhase = "start" | "move" | "end" | "cancel";
  */
 export interface PanSourceValue {
   readonly phase: PanSourcePhase;
-  readonly x: number;
-  readonly y: number;
-  readonly pageX: number;
-  readonly pageY: number;
+  readonly cursor: readonly [number, number];
+  readonly pageCursor: readonly [number, number];
 }
 
 /**

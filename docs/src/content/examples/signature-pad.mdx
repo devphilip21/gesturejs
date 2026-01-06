@@ -21,16 +21,17 @@ singlePointer(window)
     // Treat start → end as one session (signals outside the session are ignored).
     singlePointerSession(),
 
-    // `singlePointer(window)` yields window-relative x/y.
-    // Compute canvas-relative coordinates and add `offsetX`/`offsetY`.
+    // `singlePointer(window)` yields window-relative cursor.
+    // Compute canvas-relative coordinates and add `offset`.
     offset({ target: canvas }),
   ).on((signal) => {
     // Read values from the signal and draw.
-    const { phase, offsetX, offsetY, pointerType } = signal.value;
+    const { phase, offset, pointerType } = signal.value;
+    const [ox, oy] = offset;
 
     drawSignature({
-      x: offsetX,
-      y: offsetY,
+      x: ox,
+      y: oy,
       phase,
       pointerType,
     });

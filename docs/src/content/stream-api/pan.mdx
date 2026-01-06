@@ -12,10 +12,11 @@ npm install --save @cereb/pan
 import { pan } from "@cereb/pan";
 
 pan(element).on((signal) => {
-  const { phase, deltaX, deltaY } = signal.value;
+  const { phase, delta } = signal.value;
+  const [dx, dy] = delta;
 
   if (phase === "move") {
-    element.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+    element.style.transform = `translate(${dx}px, ${dy}px)`;
   }
 });
 ```
@@ -53,16 +54,12 @@ The `signal.value` contains:
 | Property | Type | Description |
 |----------|------|-------------|
 | `phase` | `"start" \| "move" \| "end" \| "cancel"` | Current gesture phase |
-| `deltaX` | `number` | X displacement from start (px) |
-| `deltaY` | `number` | Y displacement from start (px) |
+| `cursor` | `[number, number]` | Current position [x, y] (client) |
+| `pageCursor` | `[number, number]` | Current position [pageX, pageY] (page) |
+| `delta` | `[number, number]` | Displacement from start [deltaX, deltaY] |
+| `velocity` | `[number, number]` | Velocity [vx, vy] (px/ms) |
 | `distance` | `number` | Total cumulative distance (px) |
 | `direction` | `"up" \| "down" \| "left" \| "right" \| "none"` | Current movement direction |
-| `velocityX` | `number` | X velocity (px/ms) |
-| `velocityY` | `number` | Y velocity (px/ms) |
-| `x` | `number` | Current clientX |
-| `y` | `number` | Current clientY |
-| `pageX` | `number` | Current pageX |
-| `pageY` | `number` | Current pageY |
 
 ## Phase Lifecycle
 
@@ -88,8 +85,9 @@ import { axisLock } from "@cereb/pan/operators";
 pan(element)
   .pipe(axisLock())
   .on((signal) => {
-    // One of deltaX/deltaY will be 0 after axis is determined
-    element.style.transform = `translate(${signal.value.deltaX}px, ${signal.value.deltaY}px)`;
+    const [dx, dy] = signal.value.delta;
+    // One of dx/dy will be 0 after axis is determined
+    element.style.transform = `translate(${dx}px, ${dy}px)`;
   });
 ```
 

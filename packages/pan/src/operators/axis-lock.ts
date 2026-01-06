@@ -19,18 +19,15 @@ export interface AxisLockOptions {
  * After the axis is determined based on initial movement direction,
  * values for the opposite axis are zeroed out.
  *
- * Preserves any extensions (like velocity) added via withVelocity() or other operators.
- *
  * @example
  * ```typescript
- * pipe(
- *   singlePointer(element),
- *   singlePointerToPan({ threshold: 10 }),
- *   axisLock()
- * ).on(event => {
- *   // After axis is determined, one of deltaX/deltaY will always be 0
- *   element.style.transform = `translate(${event.deltaX}px, ${event.deltaY}px)`;
- * });
+ * pan(element, { threshold: 10 })
+ *   .pipe(axisLock())
+ *   .on((signal) => {
+ *     const [dx, dy] = signal.value.delta;
+ *     // After axis is determined, one of dx/dy will always be 0
+ *     element.style.transform = `translate(${dx}px, ${dy}px)`;
+ *   });
  * ```
  */
 export function axisLock(options: AxisLockOptions = {}): Operator<PanSignal, PanSignal> {
@@ -42,8 +39,9 @@ export function axisLock(options: AxisLockOptions = {}): Operator<PanSignal, Pan
       let lockDetermined = false;
 
       function determineAxis(signal: PanSignal): LockedAxis {
-        const absX = Math.abs(signal.value.deltaX);
-        const absY = Math.abs(signal.value.deltaY);
+        const [deltaX, deltaY] = signal.value.delta;
+        const absX = Math.abs(deltaX);
+        const absY = Math.abs(deltaY);
 
         if (absX <= lockThreshold && absY <= lockThreshold) {
           return null; // Not enough movement to determine
@@ -53,23 +51,20 @@ export function axisLock(options: AxisLockOptions = {}): Operator<PanSignal, Pan
       }
 
       function applyAxisLock(signal: PanSignal): void {
+        const [deltaX, deltaY] = signal.value.delta;
+        const [vx, vy] = signal.value.velocity;
+
         if (lockedAxis === "horizontal") {
-          signal.value.deltaY = 0;
-          if ("velocityY" in signal.value) {
-            (signal.value as { velocityY: number }).velocityY = 0;
-          }
+          signal.value.delta = [deltaX, 0];
+          signal.value.velocity = [vx, 0];
           if (signal.value.direction === "up" || signal.value.direction === "down") {
-            signal.value.direction =
-              signal.value.deltaX > 0 ? "right" : signal.value.deltaX < 0 ? "left" : "none";
+            signal.value.direction = deltaX > 0 ? "right" : deltaX < 0 ? "left" : "none";
           }
         } else if (lockedAxis === "vertical") {
-          signal.value.deltaX = 0;
-          if ("velocityX" in signal.value) {
-            (signal.value as { velocityX: number }).velocityX = 0;
-          }
+          signal.value.delta = [0, deltaY];
+          signal.value.velocity = [0, vy];
           if (signal.value.direction === "left" || signal.value.direction === "right") {
-            signal.value.direction =
-              signal.value.deltaY > 0 ? "down" : signal.value.deltaY < 0 ? "up" : "none";
+            signal.value.direction = deltaY > 0 ? "down" : deltaY < 0 ? "up" : "none";
           }
         }
       }

@@ -11,10 +11,8 @@ function createMockPointerSignal(x: number, y: number): SinglePointerSignal {
   return createSinglePointerSignal({
     id: "mouse-1",
     phase: "move",
-    x,
-    y,
-    pageX: x,
-    pageY: y,
+    cursor: [x, y],
+    pageCursor: [x, y],
     pointerType: "mouse",
     button: "none",
     pressure: 0.5,
@@ -43,11 +41,11 @@ function createMockElement(rect: Partial<DOMRect> = {}): {
 }
 
 describe("offset operator", () => {
-  it("should calculate offsetX and offsetY relative to target element", () => {
+  it("should calculate offset relative to target element", () => {
     const { element } = createMockElement({ top: 100, left: 50 });
     const op = offset<SinglePointerSignal>({ target: element });
 
-    const values: Array<{ offsetX: number; offsetY: number }> = [];
+    const values: Array<{ offset: [number, number] }> = [];
 
     const source = createStream<SinglePointerSignal>((observer) => {
       observer.next(createMockPointerSignal(150, 200));
@@ -55,10 +53,10 @@ describe("offset operator", () => {
     });
 
     source.pipe(op).on((v: OffsetPointerSignal) => {
-      values.push({ offsetX: v.value.offsetX, offsetY: v.value.offsetY });
+      values.push({ offset: v.value.offset as [number, number] });
     });
 
-    expect(values[0]).toEqual({ offsetX: 100, offsetY: 100 });
+    expect(values[0]).toEqual({ offset: [100, 100] });
   });
 
   it("should preserve original signal properties", () => {
@@ -71,8 +69,8 @@ describe("offset operator", () => {
     });
 
     source.pipe(op).on((v: OffsetPointerSignal) => {
-      expect(v.value.x).toBe(150);
-      expect(v.value.y).toBe(200);
+      expect(v.value.cursor[0]).toBe(150);
+      expect(v.value.cursor[1]).toBe(200);
       expect(v.kind).toBe("single-pointer");
     });
   });

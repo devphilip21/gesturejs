@@ -58,6 +58,11 @@
       "types": "./dist/single-pointer/pointer.d.ts",
       "import": "./dist/single-pointer/pointer.js",
       "require": "./dist/single-pointer/pointer.cjs"
+    },
+    "./geometry": {
+      "types": "./dist/geometry/index.d.ts",
+      "import": "./dist/geometry/index.js",
+      "require": "./dist/geometry/index.cjs"
     }
   },
   "files": [

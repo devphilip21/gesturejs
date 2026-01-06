@@ -19,7 +19,8 @@ singlePointer(canvas)
   // Listen to stream events
   .on((signal) => {
     // Receive signals from the stream
-    const { phase, x, y } = signal.value;
+    const { phase, cursor } = signal.value;
+    const [x, y] = cursor;
     switch (phase){
       case "move":
         element.style.transform = `translate(${x}px, ${y}px)`;

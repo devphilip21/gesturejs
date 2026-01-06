@@ -38,10 +38,8 @@ export function createMouseRecognizer(
     const v = signal.value as DeepMutable<SinglePointer>;
     v.id = "";
     v.phase = phase;
-    v.x = e.clientX;
-    v.y = e.clientY;
-    v.pageX = e.pageX;
-    v.pageY = e.pageY;
+    v.cursor = [e.clientX, e.clientY];
+    v.pageCursor = [e.pageX, e.pageY];
     v.pointerType = "mouse";
     v.button = button;
     v.pressure = phase === "move" && e.buttons === 0 ? 0 : 0.5;

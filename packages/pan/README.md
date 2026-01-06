@@ -14,7 +14,9 @@ npm install --save cereb @cereb/pan
 import { pan } from "@cereb/pan";
 
 pan(element).on((signal) => {
-  const { phase, deltaX, deltaY, velocityX, velocityY } = signal.value;
+  const { phase, delta, velocity } = signal.value;
+  const [deltaX, deltaY] = delta;
+  const [velocityX, velocityY] = velocity;
 
   if (phase === "move") {
     console.log(`Delta: (${deltaX}, ${deltaY}), Velocity: (${velocityX}, ${velocityY})`);
@@ -33,7 +35,7 @@ import { axisLock } from "@cereb/pan/operators";
 pan(element, { threshold: 10 })
   .pipe(axisLock())
   .on((signal) => {
-    const { deltaX, deltaY } = signal.value;
+    const [deltaX, deltaY] = signal.value.delta;
 
     // One of deltaX/deltaY will always be 0 after axis is determined
     element.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
@@ -92,7 +94,9 @@ const recognizer = createPanRecognizer({ threshold: 10 });
 function handlePointerEvent(signal: PanSourceSignal) {
   const panEvent = recognizer.process(signal);
   if (panEvent) {
-    console.log(panEvent.value.deltaX, panEvent.value.velocityX);
+    const [deltaX] = panEvent.value.delta;
+    const [velocityX] = panEvent.value.velocity;
+    console.log(deltaX, velocityX);
   }
 }
 ```
@@ -102,16 +106,12 @@ function handlePointerEvent(signal: PanSourceSignal) {
 | Property | Type | Description |
 |----------|------|-------------|
 | `phase` | `"start" \| "move" \| "end" \| "cancel"` | Current gesture phase |
-| `deltaX` | `number` | X displacement from start point |
-| `deltaY` | `number` | Y displacement from start point |
+| `cursor` | `[number, number]` | Current position (client coordinates) |
+| `pageCursor` | `[number, number]` | Current position (page coordinates) |
+| `delta` | `[number, number]` | Displacement from start point `[deltaX, deltaY]` |
+| `velocity` | `[number, number]` | Velocity (px/ms) `[velocityX, velocityY]` |
 | `distance` | `number` | Total cumulative distance traveled |
 | `direction` | `"up" \| "down" \| "left" \| "right" \| "none"` | Current movement direction |
-| `velocityX` | `number` | X velocity (px/ms) |
-| `velocityY` | `number` | Y velocity (px/ms) |
-| `x` | `number` | Current X position (client) |
-| `y` | `number` | Current Y position (client) |
-| `pageX` | `number` | Current X position (page) |
-| `pageY` | `number` | Current Y position (page) |
 
 ## Contributing
 

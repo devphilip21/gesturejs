@@ -33,10 +33,8 @@ export function createTouchRecognizer(
 
     const v = signal.value as DeepMutable<SinglePointer>;
     v.phase = phase;
-    v.x = touch.clientX;
-    v.y = touch.clientY;
-    v.pageX = touch.pageX;
-    v.pageY = touch.pageY;
+    v.cursor = [touch.clientX, touch.clientY];
+    v.pageCursor = [touch.pageX, touch.pageY];
     v.pointerType = "touch";
     v.button = "none";
     v.pressure = touch.force || 0.5;

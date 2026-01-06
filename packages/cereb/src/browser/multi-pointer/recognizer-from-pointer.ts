@@ -108,10 +108,8 @@ function createPointerInfo(e: PointerEvent, phase: SinglePointerPhase): PointerI
   return {
     id: `${e.pointerType}-${e.pointerId}`,
     phase,
-    x: e.clientX,
-    y: e.clientY,
-    pageX: e.pageX,
-    pageY: e.pageY,
+    cursor: [e.clientX, e.clientY],
+    pageCursor: [e.pageX, e.pageY],
     pointerType: normalizePointerType(e.pointerType),
     button,
     pressure: e.pressure,

@@ -87,10 +87,10 @@ describe("multiPointerFromPointer", () => {
 
     const lastSnapshot = values[2].value;
     expect(lastSnapshot.count).toBe(2);
-    expect(lastSnapshot.pointers[0].x).toBe(15);
-    expect(lastSnapshot.pointers[0].y).toBe(25);
-    expect(lastSnapshot.pointers[1].x).toBe(100);
-    expect(lastSnapshot.pointers[1].y).toBe(200);
+    expect(lastSnapshot.pointers[0].cursor[0]).toBe(15);
+    expect(lastSnapshot.pointers[0].cursor[1]).toBe(25);
+    expect(lastSnapshot.pointers[1].cursor[0]).toBe(100);
+    expect(lastSnapshot.pointers[1].cursor[1]).toBe(200);
   });
 
   it("should correctly handle pointer end and removal", () => {

@@ -1,3 +1,5 @@
+import type { Point } from "cereb/geometry";
+
 /**
  * Internal state for tap gesture tracking.
  * Tracks both current tap attempt and history for multi-tap detection.
@@ -6,13 +8,10 @@ export interface TapState {
   /** Whether a tap attempt is currently in progress */
   isActive: boolean;
 
-  /** Start position X */
-  startX: number;
-  /** Start position Y */
-  startY: number;
-  /** Page coordinates at start */
-  startPageX: number;
-  startPageY: number;
+  /** Start position (client coordinates) */
+  startCursor: Point;
+  /** Start position (page coordinates) */
+  startPageCursor: Point;
   /** Timestamp when tap started */
   startTimestamp: number;
   /** Device identifier */
@@ -22,9 +21,8 @@ export interface TapState {
 
   /** Timestamp of last successful tap end */
   lastTapEndTimestamp: number;
-  /** Position of last successful tap */
-  lastTapX: number;
-  lastTapY: number;
+  /** Position of last successful tap (client coordinates) */
+  lastTapCursor: Point;
   /** Current consecutive tap count */
   currentTapCount: number;
 
@@ -35,16 +33,13 @@ export interface TapState {
 export function createInitialTapState(): TapState {
   return {
     isActive: false,
-    startX: 0,
-    startY: 0,
-    startPageX: 0,
-    startPageY: 0,
+    startCursor: [0, 0],
+    startPageCursor: [0, 0],
     startTimestamp: 0,
     deviceId: "",
     pointerType: "unknown",
     lastTapEndTimestamp: 0,
-    lastTapX: 0,
-    lastTapY: 0,
+    lastTapCursor: [0, 0],
     currentTapCount: 0,
     isCancelled: false,
   };
@@ -52,10 +47,8 @@ export function createInitialTapState(): TapState {
 
 export function resetCurrentTap(state: TapState): void {
   state.isActive = false;
-  state.startX = 0;
-  state.startY = 0;
-  state.startPageX = 0;
-  state.startPageY = 0;
+  state.startCursor = [0, 0];
+  state.startPageCursor = [0, 0];
   state.startTimestamp = 0;
   state.deviceId = "";
   state.pointerType = "unknown";
@@ -65,7 +58,6 @@ export function resetCurrentTap(state: TapState): void {
 export function resetTapState(state: TapState): void {
   resetCurrentTap(state);
   state.lastTapEndTimestamp = 0;
-  state.lastTapX = 0;
-  state.lastTapY = 0;
+  state.lastTapCursor = [0, 0];
   state.currentTapCount = 0;
 }

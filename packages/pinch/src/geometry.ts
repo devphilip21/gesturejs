@@ -1,3 +1,4 @@
+import type { Point } from "cereb/geometry";
 import type { PinchSourcePointer } from "./pinch-types.js";
 
 /**
@@ -13,33 +14,21 @@ export function calculateDistance(x1: number, y1: number, x2: number, y2: number
  * Calculate distance between two pointers.
  */
 export function getPointerDistance(p1: PinchSourcePointer, p2: PinchSourcePointer): number {
-  return calculateDistance(p1.x, p1.y, p2.x, p2.y);
+  return calculateDistance(p1.cursor[0], p1.cursor[1], p2.cursor[0], p2.cursor[1]);
 }
 
 /**
  * Calculate center point between two pointers (client coordinates).
  */
-export function getCenter(
-  p1: PinchSourcePointer,
-  p2: PinchSourcePointer,
-): { centerX: number; centerY: number } {
-  return {
-    centerX: (p1.x + p2.x) / 2,
-    centerY: (p1.y + p2.y) / 2,
-  };
+export function getCenter(p1: PinchSourcePointer, p2: PinchSourcePointer): Point {
+  return [(p1.cursor[0] + p2.cursor[0]) / 2, (p1.cursor[1] + p2.cursor[1]) / 2];
 }
 
 /**
  * Calculate center point between two pointers (page coordinates).
  */
-export function getPageCenter(
-  p1: PinchSourcePointer,
-  p2: PinchSourcePointer,
-): { pageCenterX: number; pageCenterY: number } {
-  return {
-    pageCenterX: (p1.pageX + p2.pageX) / 2,
-    pageCenterY: (p1.pageY + p2.pageY) / 2,
-  };
+export function getPageCenter(p1: PinchSourcePointer, p2: PinchSourcePointer): Point {
+  return [(p1.pageCursor[0] + p2.pageCursor[0]) / 2, (p1.pageCursor[1] + p2.pageCursor[1]) / 2];
 }
 
 /**

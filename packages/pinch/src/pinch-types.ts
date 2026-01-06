@@ -12,10 +12,8 @@ export type PinchSourcePhase = "start" | "move" | "end" | "cancel";
 export interface PinchSourcePointer {
   readonly id: string;
   readonly phase: PinchSourcePhase;
-  readonly x: number;
-  readonly y: number;
-  readonly pageX: number;
-  readonly pageY: number;
+  readonly cursor: readonly [number, number];
+  readonly pageCursor: readonly [number, number];
 }
 
 /**

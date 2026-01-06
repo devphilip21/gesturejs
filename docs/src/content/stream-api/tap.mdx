@@ -12,7 +12,8 @@ npm install --save @cereb/tap
 import { tap } from "@cereb/tap";
 
 tap(element).on((signal) => {
-  const { tapCount, x, y } = signal.value;
+  const { tapCount, cursor } = signal.value;
+  const [x, y] = cursor;
 
   if (tapCount === 1) {
     console.log("Single tap");
@@ -60,10 +61,8 @@ The `signal.value` contains:
 | Property | Type | Description |
 |----------|------|-------------|
 | `phase` | `"start" \| "end" \| "cancel"` | Current gesture phase |
-| `x` | `number` | Tap X position (clientX) |
-| `y` | `number` | Tap Y position (clientY) |
-| `pageX` | `number` | Tap X position (pageX) |
-| `pageY` | `number` | Tap Y position (pageY) |
+| `cursor` | `[number, number]` | Tap position (client coordinates) |
+| `pageCursor` | `[number, number]` | Tap position (page coordinates) |
 | `tapCount` | `number` | Consecutive tap count (1, 2, 3, ...) |
 | `duration` | `number` | How long pointer was pressed (ms) |
 | `pointerType` | `"mouse" \| "touch" \| "pen" \| "unknown"` | Input device type |
@@ -164,10 +163,8 @@ function handlePointerEvent(signal: TapSourceSignal) {
 interface TapSourceSignal {
   value: {
     phase: "start" | "move" | "end" | "cancel";
-    x: number;
-    y: number;
-    pageX: number;
-    pageY: number;
+    cursor: readonly [number, number];
+    pageCursor: readonly [number, number];
     pointerType: "touch" | "mouse" | "pen" | "unknown";
   };
   createdAt: number;

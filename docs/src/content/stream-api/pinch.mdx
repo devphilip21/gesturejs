@@ -12,7 +12,8 @@ npm install --save @cereb/pinch
 import { pinch } from "@cereb/pinch";
 
 pinch(element).on((signal) => {
-  const { phase, ratio, centerX, centerY } = signal.value;
+  const { phase, ratio, center } = signal.value;
+  const [cx, cy] = center;
 
   if (phase === "change") {
     element.style.transform = `scale(${ratio})`;
@@ -44,10 +45,8 @@ The `signal.value` contains:
 | `ratio` | `number` | Current distance / initial distance |
 | `deltaDistance` | `number` | Distance change since last event (px) |
 | `velocity` | `number` | Distance change velocity (px/ms) |
-| `centerX` | `number` | Center X between pointers (clientX) |
-| `centerY` | `number` | Center Y between pointers (clientY) |
-| `pageCenterX` | `number` | Center X between pointers (pageX) |
-| `pageCenterY` | `number` | Center Y between pointers (pageY) |
+| `center` | `[number, number]` | Center between pointers [x, y] (client) |
+| `pageCenter` | `[number, number]` | Center between pointers [pageX, pageY] (page) |
 
 ## Phase Lifecycle
 
@@ -71,7 +70,8 @@ import { zoom } from "cereb/operators";
 pinch(element)
   .pipe(zoom({ minScale: 0.5, maxScale: 3.0 }))
   .on((signal) => {
-    const { scale, centerX, centerY } = signal.value;
+    const { scale, center } = signal.value;
+    const [cx, cy] = center;
     element.style.transform = `scale(${scale})`;
   });
 ```

@@ -17,10 +17,8 @@ export type TapSourcePointerType = "touch" | "mouse" | "pen" | "unknown";
  */
 export interface TapSourceValue {
   readonly phase: TapSourcePhase;
-  readonly x: number;
-  readonly y: number;
-  readonly pageX: number;
-  readonly pageY: number;
+  readonly cursor: readonly [number, number];
+  readonly pageCursor: readonly [number, number];
   readonly pointerType: TapSourcePointerType;
 }
 

@@ -12,10 +12,8 @@ function createMockPointerSignal(
     kind: "single-pointer",
     value: {
       phase,
-      x,
-      y,
-      pageX: x,
-      pageY: y,
+      cursor: [x, y],
+      pageCursor: [x, y],
       pointerType: "mouse",
       button: "primary",
       pressure: 0.5,
@@ -36,8 +34,8 @@ describe("createTapRecognizer", () => {
       expect(result).not.toBeNull();
       expect(result?.value.phase).toBe("start");
       expect(result?.value.tapCount).toBe(1);
-      expect(result?.value.x).toBe(100);
-      expect(result?.value.y).toBe(100);
+      expect(result?.value.cursor[0]).toBe(100);
+      expect(result?.value.cursor[1]).toBe(100);
     });
 
     it("should emit end phase on pointer end within thresholds", () => {

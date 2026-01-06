@@ -14,10 +14,11 @@ npm install --save cereb @cereb/pinch
 import { pinch } from "@cereb/pinch";
 
 pinch(element).on((signal) => {
-  const { phase, distance, velocity, centerX, centerY } = signal.value;
+  const { phase, distance, velocity, center } = signal.value;
+  const [centerX, centerY] = center;
 
   if (phase === "change") {
-    console.log(`Distance: ${distance}px, Velocity: ${velocity}px/ms`);
+    console.log(`Distance: ${distance}px, Velocity: ${velocity}px/ms, Center: (${centerX}, ${centerY})`);
   }
 });
 ```
@@ -105,12 +106,11 @@ function handleMultiPointerEvent(signal: PinchSourceSignal) {
 | `phase` | `"start" \| "change" \| "end" \| "cancel"` | Current gesture phase |
 | `initialDistance` | `number` | Distance between pointers at gesture start |
 | `distance` | `number` | Current distance between pointers |
+| `ratio` | `number` | Current distance / initial distance |
 | `deltaDistance` | `number` | Distance change since last event |
 | `velocity` | `number` | Velocity of distance change (px/ms) |
-| `centerX` | `number` | Center X between pointers (client) |
-| `centerY` | `number` | Center Y between pointers (client) |
-| `pageCenterX` | `number` | Center X between pointers (page) |
-| `pageCenterY` | `number` | Center Y between pointers (page) |
+| `center` | `[number, number]` | Center point between pointers (client coordinates) |
+| `pageCenter` | `[number, number]` | Center point between pointers (page coordinates) |
 
 ## Contributing
 

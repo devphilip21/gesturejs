@@ -22,7 +22,8 @@ import { spy } from "cereb/operators";
 singlePointer(element)
   .pipe(
     spy((signal) => {
-      console.log(signal.value.x, signal.value.y);
+      const [x, y] = signal.value.cursor;
+      console.log(x, y);
     })
   )
   .on(handlePointer);
@@ -34,7 +35,7 @@ singlePointer(element)
 
 ```typescript
 pan(element)
-  .pipe(spy((s) => console.log("Pan:", s.value.phase, s.value.deltaX)))
+  .pipe(spy((s) => console.log("Pan:", s.value.phase, s.value.delta[0])))
   .on(handlePan);
 ```
 

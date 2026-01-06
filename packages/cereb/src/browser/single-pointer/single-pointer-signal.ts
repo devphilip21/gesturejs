@@ -1,4 +1,5 @@
 import { createSignal, type Signal } from "../../core/signal.js";
+import type { Point } from "../../geometry/types.js";
 import type { SinglePointerButton, SinglePointerPhase, SinglePointerType } from "./types.js";
 
 export interface SinglePointerSignal extends Signal<"single-pointer", SinglePointer> {}
@@ -11,10 +12,8 @@ export const SINGLE_POINTER_SIGNAL_KIND = "single-pointer" as const;
  */
 export interface SinglePointer {
   phase: SinglePointerPhase;
-  x: number;
-  y: number;
-  pageX: number;
-  pageY: number;
+  cursor: Point;
+  pageCursor: Point;
   pointerType: SinglePointerType;
   button: SinglePointerButton;
   /** 0.0 ~ 1.0, default 0.5 if unsupported */
@@ -30,10 +29,8 @@ export function createDefaultSinglePointerSignal(): SinglePointerSignal {
   return createSinglePointerSignal({
     id: "",
     phase: "move",
-    x: 0,
-    y: 0,
-    pageX: 0,
-    pageY: 0,
+    cursor: [0, 0],
+    pageCursor: [0, 0],
     pointerType: "unknown",
     button: "none",
     pressure: 0.5,

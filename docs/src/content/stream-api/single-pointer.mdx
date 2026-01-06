@@ -12,7 +12,8 @@ npm install --save cereb
 import { singlePointer } from "cereb";
 
 singlePointer(element).on((signal) => {
-  const { phase, x, y, pointerType } = signal.value;
+  const { phase, cursor, pointerType } = signal.value;
+  const [x, y] = cursor;
 
   if (phase === "start") {
     console.log(`${pointerType} started at (${x}, ${y})`);
@@ -33,10 +34,8 @@ The `signal.value` contains:
 | Property | Type | Description |
 |----------|------|-------------|
 | `phase` | `"start" \| "move" \| "end" \| "cancel"` | Current pointer phase |
-| `x` | `number` | Current clientX |
-| `y` | `number` | Current clientY |
-| `pageX` | `number` | Current pageX |
-| `pageY` | `number` | Current pageY |
+| `cursor` | `[number, number]` | Current position [x, y] (client) |
+| `pageCursor` | `[number, number]` | Current position [pageX, pageY] (page) |
 | `pointerType` | `"mouse" \| "touch" \| "pen" \| "unknown"` | Input device type |
 | `button` | `"none" \| "primary" \| "secondary" \| ...` | Mouse button pressed |
 | `pressure` | `number` | Pressure value (0.0-1.0, default 0.5) |
@@ -61,7 +60,8 @@ pointer down → "start" → "move"* → "end" or "cancel"
 // Even with multiple fingers, only the first touch is tracked
 singlePointer(canvas).on((signal) => {
   // signal.value contains only primary pointer data
-  drawAt(signal.value.x, signal.value.y);
+  const [x, y] = signal.value.cursor;
+  drawAt(x, y);
 });
 ```
 
@@ -81,7 +81,7 @@ singlePointer(element)
     offset({ target })   // Add element-relative coordinates
   )
   .on((signal) => {
-    const { offsetX, offsetY } = signal.value;
+    const [offsetX, offsetY] = signal.value.offset;
     element.style.left = `${offsetX}px`;
     element.style.top = `${offsetY}px`;
   });

@@ -63,7 +63,8 @@ wheel(element)
 singlePointer(element)
   .pipe(throttle(16))
   .on((s) => {
-    element.style.transform = `translate(${s.value.x}px, ${s.value.y}px)`;
+    const [x, y] = s.value.cursor;
+    element.style.transform = `translate(${x}px, ${y}px)`;
   });
 ```
 
@@ -74,6 +75,7 @@ singlePointer(element)
 singlePointer(element)
   .pipe(throttleLast(100))
   .on((s) => {
-    socket.emit("position", { x: s.value.x, y: s.value.y });
+    const [x, y] = s.value.cursor;
+    socket.emit("position", { x, y });
   });
 ```

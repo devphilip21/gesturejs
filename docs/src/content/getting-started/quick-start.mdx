@@ -139,10 +139,11 @@ Nothing happens until you subscribe. Call `.on()` to start receiving signals:
 
 ```typescript
 stream.on((signal) => {
-  const { phase, scale, centerX, centerY } = signal.value;
+  const { phase, scale, center } = signal.value;
+  const [cx, cy] = center;
 
   if (phase === "change") {
-    applyZoom(scale, centerX, centerY);
+    applyZoom(scale, cx, cy);
   }
 });
 ```

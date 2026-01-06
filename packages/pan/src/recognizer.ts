@@ -1,3 +1,4 @@
+import type { Vector } from "cereb/geometry";
 import { calculateDistance, getDirection } from "./geometry.js";
 import { createPanSignal, type PanSignal } from "./pan-signal.js";
 import type { PanDirectionMode, PanOptions, PanPhase, PanSourceSignal } from "./pan-types.js";
@@ -12,17 +13,14 @@ function calculateVelocity(
   prevX: number,
   prevY: number,
   prevTimestamp: number,
-): { velocityX: number; velocityY: number } {
+): Vector {
   const timeDelta = currentTimestamp - prevTimestamp;
 
   if (timeDelta <= 0) {
-    return { velocityX: 0, velocityY: 0 };
+    return [0, 0];
   }
 
-  return {
-    velocityX: (currentX - prevX) / timeDelta,
-    velocityY: (currentY - prevY) / timeDelta,
-  };
+  return [(currentX - prevX) / timeDelta, (currentY - prevY) / timeDelta];
 }
 
 /**
@@ -81,12 +79,13 @@ export function createPanRecognizer(options: PanOptions = {}): PanRecognizer {
   const state: PanState = createInitialPanState();
 
   function createPanSignalFromSource(signal: PanSourceSignal, phase: PanPhase): PanSignal {
-    const deltaX = signal.value.x - state.startX;
-    const deltaY = signal.value.y - state.startY;
+    const [x, y] = signal.value.cursor;
+    const deltaX = x - state.startX;
+    const deltaY = y - state.startY;
 
-    const { velocityX, velocityY } = calculateVelocity(
-      signal.value.x,
-      signal.value.y,
+    const velocity = calculateVelocity(
+      x,
+      y,
       signal.createdAt,
       state.prevX,
       state.prevY,
@@ -95,27 +94,24 @@ export function createPanRecognizer(options: PanOptions = {}): PanRecognizer {
 
     return createPanSignal({
       phase,
-      deltaX,
-      deltaY,
+      cursor: [x, y],
+      pageCursor: [...signal.value.pageCursor],
+      delta: [deltaX, deltaY],
+      velocity,
       distance: state.totalDistance,
       direction: getDirection(deltaX, deltaY),
-      velocityX,
-      velocityY,
-      x: signal.value.x,
-      y: signal.value.y,
-      pageX: signal.value.pageX,
-      pageY: signal.value.pageY,
     });
   }
 
   function handleStart(signal: PanSourceSignal): null {
+    const [x, y] = signal.value.cursor;
     state.isActive = true;
     state.thresholdMet = false;
-    state.startX = signal.value.x;
-    state.startY = signal.value.y;
+    state.startX = x;
+    state.startY = y;
     state.startTimestamp = signal.createdAt;
-    state.prevX = signal.value.x;
-    state.prevY = signal.value.y;
+    state.prevX = x;
+    state.prevY = y;
     state.prevTimestamp = signal.createdAt;
     state.totalDistance = 0;
     state.deviceId = signal.deviceId;
@@ -125,15 +121,11 @@ export function createPanRecognizer(options: PanOptions = {}): PanRecognizer {
   function handleMove(signal: PanSourceSignal): PanSignal | null {
     if (!state.isActive) return null;
 
-    const deltaX = signal.value.x - state.startX;
-    const deltaY = signal.value.y - state.startY;
+    const [x, y] = signal.value.cursor;
+    const deltaX = x - state.startX;
+    const deltaY = y - state.startY;
 
-    const segmentDistance = calculateDistance(
-      state.prevX,
-      state.prevY,
-      signal.value.x,
-      signal.value.y,
-    );
+    const segmentDistance = calculateDistance(state.prevX, state.prevY, x, y);
     state.totalDistance += segmentDistance;
 
     let result: PanSignal | null = null;
@@ -147,8 +139,8 @@ export function createPanRecognizer(options: PanOptions = {}): PanRecognizer {
       result = createPanSignalFromSource(signal, "move");
     }
 
-    state.prevX = signal.value.x;
-    state.prevY = signal.value.y;
+    state.prevX = x;
+    state.prevY = y;
     state.prevTimestamp = signal.createdAt;
 
     return result;

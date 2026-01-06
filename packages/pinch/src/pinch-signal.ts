@@ -1,5 +1,6 @@
 import type { Signal } from "cereb";
 import { createSignal } from "cereb";
+import type { Point } from "cereb/geometry";
 import type { PinchPhase } from "./pinch-types.js";
 
 /**
@@ -24,17 +25,11 @@ export interface PinchValue {
   /** Velocity of distance change (pixels per millisecond) */
   velocity: number;
 
-  /** Center X between two pointers (client coordinates) */
-  centerX: number;
+  /** Center between two pointers [x, y] (client coordinates) */
+  center: Point;
 
-  /** Center Y between two pointers (client coordinates) */
-  centerY: number;
-
-  /** Center X between two pointers (page coordinates) */
-  pageCenterX: number;
-
-  /** Center Y between two pointers (page coordinates) */
-  pageCenterY: number;
+  /** Center between two pointers [pageX, pageY] (page coordinates) */
+  pageCenter: Point;
 }
 
 export interface PinchSignal<T = {}> extends Signal<"pinch", PinchValue & T> {}
@@ -49,10 +44,8 @@ export function createDefaultPinchValue(): PinchValue {
     ratio: 0,
     deltaDistance: 0,
     velocity: 0,
-    centerX: 0,
-    centerY: 0,
-    pageCenterX: 0,
-    pageCenterY: 0,
+    center: [0, 0],
+    pageCenter: [0, 0],
   };
 }
 

@@ -59,10 +59,8 @@ export function createTapRecognizer(options: TapOptions = {}): TapRecognizer {
 
     return createTapSignal({
       phase,
-      x: state.startX,
-      y: state.startY,
-      pageX: state.startPageX,
-      pageY: state.startPageY,
+      cursor: [...state.startCursor] as [number, number],
+      pageCursor: [...state.startPageCursor] as [number, number],
       tapCount,
       duration: Math.max(0, duration),
       pointerType: signal.value.pointerType,
@@ -70,8 +68,7 @@ export function createTapRecognizer(options: TapOptions = {}): TapRecognizer {
   }
 
   function shouldIncrementTapCount(
-    currentX: number,
-    currentY: number,
+    currentCursor: readonly [number, number],
     currentTimestamp: number,
   ): boolean {
     if (state.lastTapEndTimestamp === 0) {
@@ -83,7 +80,12 @@ export function createTapRecognizer(options: TapOptions = {}): TapRecognizer {
       return false;
     }
 
-    const distance = calculateDistance(state.lastTapX, state.lastTapY, currentX, currentY);
+    const distance = calculateDistance(
+      state.lastTapCursor[0],
+      state.lastTapCursor[1],
+      currentCursor[0],
+      currentCursor[1],
+    );
     if (distance > chainMovementThreshold) {
       return false;
     }
@@ -92,15 +94,13 @@ export function createTapRecognizer(options: TapOptions = {}): TapRecognizer {
   }
 
   function handleStart(signal: TapSourceSignal): TapSignal {
-    const { x, y, pageX, pageY, pointerType } = signal.value;
+    const { cursor, pageCursor, pointerType } = signal.value;
 
-    const continuesMultiTap = shouldIncrementTapCount(x, y, signal.createdAt);
+    const continuesMultiTap = shouldIncrementTapCount(cursor, signal.createdAt);
 
     state.isActive = true;
-    state.startX = x;
-    state.startY = y;
-    state.startPageX = pageX;
-    state.startPageY = pageY;
+    state.startCursor = [cursor[0], cursor[1]];
+    state.startPageCursor = [pageCursor[0], pageCursor[1]];
     state.startTimestamp = signal.createdAt;
     state.deviceId = signal.deviceId;
     state.pointerType = pointerType;
@@ -118,9 +118,14 @@ export function createTapRecognizer(options: TapOptions = {}): TapRecognizer {
   function handleMove(signal: TapSourceSignal): TapSignal | null {
     if (!state.isActive || state.isCancelled) return null;
 
-    const { x, y } = signal.value;
+    const { cursor } = signal.value;
 
-    const movement = calculateDistance(state.startX, state.startY, x, y);
+    const movement = calculateDistance(
+      state.startCursor[0],
+      state.startCursor[1],
+      cursor[0],
+      cursor[1],
+    );
     if (movement > movementThreshold) {
       state.isCancelled = true;
       state.lastTapEndTimestamp = 0;
@@ -158,8 +163,7 @@ export function createTapRecognizer(options: TapOptions = {}): TapRecognizer {
 
     const tapCount = state.currentTapCount;
     state.lastTapEndTimestamp = signal.createdAt;
-    state.lastTapX = state.startX;
-    state.lastTapY = state.startY;
+    state.lastTapCursor = [state.startCursor[0], state.startCursor[1]];
 
     const result = createTapSignalFromState(signal, "end", tapCount);
     resetCurrentTap(state);
