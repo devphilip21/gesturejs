@@ -22,6 +22,7 @@ Cereb provides a unified abstraction for handling pointer/touch/mouse events thr
 | `cereb` | cereb | Core: Stream primitives, operators |
 | `@cereb/pan` | @cereb/pan | Pan/drag/swipe gesture |
 | `@cereb/pinch` | @cereb/pinch | Pinch/zoom gesture |
+| `@cereb/tap` | @cereb/tap | Tap gesture |
 
 ### Installation
 
@@ -29,6 +30,7 @@ Cereb provides a unified abstraction for handling pointer/touch/mouse events thr
 npm install cereb
 npm install @cereb/pan    # optional
 npm install @cereb/pinch  # optional
+npm install @cereb/tap    # optional
 ```
 
 ---
@@ -226,17 +228,19 @@ function pan(target: EventTarget, options?: { threshold?: number; direction?: "h
 
 **Signal Value:**
 - `phase`: "start" | "move" | "end" | "cancel"
-- `deltaX`, `deltaY`: displacement from start (px)
+- `delta`: [number, number] - displacement from start [deltaX, deltaY] (px)
+- `velocity`: [number, number] - [velocityX, velocityY] (px/ms)
+- `cursor`: [number, number] - current position (client coordinates)
+- `pageCursor`: [number, number] - current position (page coordinates)
 - `distance`: cumulative distance (px)
 - `direction`: "up" | "down" | "left" | "right" | "none"
-- `velocityX`, `velocityY`: px/ms
-- `x`, `y`, `pageX`, `pageY`
 
 ```typescript
 import { pan } from "@cereb/pan";
 
 pan(element).on((signal) => {
-  const { phase, deltaX, deltaY } = signal.value;
+  const { phase, delta } = signal.value;
+  const [deltaX, deltaY] = delta;
   if (phase === "move") {
     element.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
   }
@@ -266,15 +270,50 @@ function pinch(target: EventTarget, options?: { threshold?: number }): Stream<Pi
 - `ratio`: distance / initialDistance
 - `deltaDistance`: change since last event (px)
 - `velocity`: px/ms
-- `centerX`, `centerY`: center between pointers
+- `center`: [number, number] - center between pointers (client coordinates)
+- `pageCenter`: [number, number] - center between pointers (page coordinates)
 
 ```typescript
 import { pinch } from "@cereb/pinch";
 
 pinch(element).on((signal) => {
-  const { phase, ratio, centerX, centerY } = signal.value;
+  const { phase, ratio, center } = signal.value;
+  const [centerX, centerY] = center;
   if (phase === "change") {
     element.style.transform = `scale(${ratio})`;
+  }
+});
+```
+
+### tap (from @cereb/tap)
+
+Tap gesture recognition with multi-tap support.
+
+```typescript
+function tap(target: EventTarget, options?: {
+  movementThreshold?: number;
+  durationThreshold?: number;
+  chainMovementThreshold?: number;
+  chainIntervalThreshold?: number;
+}): Stream<TapSignal>
+```
+
+**Signal Value:**
+- `phase`: "start" | "end" | "cancel"
+- `cursor`: [number, number] - tap position (client coordinates)
+- `pageCursor`: [number, number] - tap position (page coordinates)
+- `tapCount`: number - consecutive tap count (1=single, 2=double, etc.)
+- `duration`: number - how long the pointer was pressed (ms)
+- `pointerType`: "mouse" | "touch" | "pen" | "unknown"
+
+```typescript
+import { tap } from "@cereb/tap";
+
+tap(element).on((signal) => {
+  const { tapCount, cursor } = signal.value;
+  const [x, y] = cursor;
+  if (tapCount === 2) {
+    console.log(`Double tap at (${x}, ${y})`);
   }
 });
 ```
@@ -695,6 +734,6 @@ pan(container)
 
 ## Links
 
-- GitHub: https://github.com/niceplugin/cereb
+- GitHub: https://github.com/devphilip21/cereb
 - Documentation: https://cereb.dev
 - npm: https://www.npmjs.com/package/cereb

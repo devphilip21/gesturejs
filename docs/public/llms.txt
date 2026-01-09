@@ -8,6 +8,7 @@
 - cereb: Core library with stream primitives and operators
 - @cereb/pan: Pan/drag/swipe gesture recognition
 - @cereb/pinch: Pinch/zoom gesture recognition
+- @cereb/tap: Tap gesture recognition
 
 ## Getting Started
 
@@ -25,6 +26,7 @@
 - [multiPointer](https://cereb.dev/stream-api/multi-pointer): Multi-touch tracking
 - [pan](https://cereb.dev/stream-api/pan): Pan gesture with velocity/direction
 - [pinch](https://cereb.dev/stream-api/pinch): Two-finger pinch/zoom
+- [tap](https://cereb.dev/stream-api/tap): Tap gesture with multi-tap support
 - [keyboard](https://cereb.dev/stream-api/keyboard): Keyboard events
 - [keydown](https://cereb.dev/stream-api/keydown): Keydown only
 - [keyheld](https://cereb.dev/stream-api/keyheld): Key hold state tracking
@@ -59,5 +61,5 @@
 
 ## Links
 
-- GitHub: https://github.com/niceplugin/cereb
+- GitHub: https://github.com/devphilip21/cereb
 - npm: https://www.npmjs.com/package/cereb
