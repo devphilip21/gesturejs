@@ -55,7 +55,7 @@ import { singlePointer, type ExtendSignalValue, type SinglePointerSignal } from 
 import { offset, singlePointerSession } from "cereb/operators";
 
 type Point = { x: number; y: number };
-type CanvasSignal = ExtendSignalValue<SinglePointerSignal, { offsetX: number, offsetY: number }>;
+type CanvasSignal = ExtendSignalValue<SinglePointerSignal, { offset: [number, number] }>;
 
 class CanvasManager {
   private ctx: CanvasRenderingContext2D;
@@ -233,7 +233,9 @@ class PointerEventHandler {
   }
 
   private updatePointerInfo(signal: CanvasSignal) {
-    const { x, y, offsetX, offsetY, phase, pointerType } = signal.value;
+    const { cursor, offset, phase, pointerType } = signal.value;
+    const [x, y] = cursor;
+    const [offsetX, offsetY] = offset;
     this.infoElements.x.textContent = String(Math.round(x));
     this.infoElements.y.textContent = String(Math.round(y));
     this.infoElements.offsetX.textContent = String(Math.round(offsetX));
@@ -244,13 +246,15 @@ class PointerEventHandler {
 
   private handleStart(signal: CanvasSignal) {
     this.box.classList.add("active");
-    this.drawingState.startDrawing({ x: signal.value.offsetX, y: signal.value.offsetY });
+    const [offsetX, offsetY] = signal.value.offset;
+    this.drawingState.startDrawing({ x: offsetX, y: offsetY });
   }
 
   private handleMove(signal: CanvasSignal) {
     if (!this.drawingState.isActive()) return;
 
-    this.drawingState.addPoint({ x: signal.value.offsetX, y: signal.value.offsetY });
+    const [offsetX, offsetY] = signal.value.offset;
+    this.drawingState.addPoint({ x: offsetX, y: offsetY });
     this.canvasManager.drawSmoothCurve(
       this.drawingState.getPoints(),
       this.drawingState.getHue()

@@ -87,15 +87,18 @@ singlePointer(element)
   });
 ```
 
-## Advanced: singlePointerRecognizer
+## Multi-pointer Handling
 
-Use as an operator with custom event sources:
+For tracking multiple touch points simultaneously, use `multiPointer` instead:
 
 ```typescript
-import { pointerEvents } from "cereb";
-import { singlePointerRecognizer } from "cereb/pointer";
+import { multiPointer } from "cereb";
 
-pointerEvents(element)
-  .pipe(singlePointerRecognizer())
-  .on((signal) => { /* ... */ });
+multiPointer(element).on((signal) => {
+  // Tracks all active pointers
+  const pointers = signal.value.pointers;
+  console.log(`${pointers.length} active touch points`);
+});
 ```
+
+See the [multiPointer](/stream-api/multi-pointer) documentation for details.

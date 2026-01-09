@@ -8,10 +8,11 @@ A **Signal** is an immutable data object representing a discrete event. Every po
 
 ```typescript
 interface Signal<K extends string, V> {
-  readonly kind: K;           // Type discriminator (e.g., "single-pointer", "pan")
-  readonly value: V;          // Event payload
-  readonly deviceId: string;  // Unique device identifier
-  readonly createdAt: number; // Timestamp (performance.now())
+  readonly kind: K;            // Type discriminator (e.g., "single-pointer", "pan")
+  readonly value: V;           // Event payload
+  readonly deviceId: string;   // Unique device identifier
+  readonly createdAt: number;  // Timestamp (performance.now())
+  readonly updatedAt?: number; // Updated timestamp (for modified signals)
 }
 ```
 
