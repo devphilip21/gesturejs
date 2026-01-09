@@ -1,0 +1,155 @@
+# behavior
+
+Functions for creating Behaviors - continuous time-varying values that can be sampled at any time.
+
+## `constant`
+
+Creates a Behavior that always returns the same value.
+
+### Signature
+
+```typescript
+function constant<A>(value: A): Behavior<A>
+```
+
+### Example
+
+```typescript
+import { constant } from "cereb/frp";
+
+const always42 = constant(42);
+always42.sample(); // 42
+always42.sample(); // 42 (always the same)
+
+// Useful as a default or placeholder
+const defaultScale = constant(1.0);
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `value` | `A` | The constant value |
+
+---
+
+## `stepper`
+
+Creates a Behavior that tracks the latest value from a Stream. The Behavior holds the initial value until the first event arrives.
+
+### Signature
+
+```typescript
+function stepper<A, S extends Signal>(
+  initial: A,
+  event: Stream<S>,
+  selector: (signal: S) => A
+): Behavior<A>
+```
+
+### Example
+
+```typescript
+import { singlePointer } from "cereb";
+import { stepper } from "cereb/frp";
+
+const pointerStream = singlePointer(element);
+
+// Track current pointer position
+const position = stepper(
+  { x: 0, y: 0 },              // Initial value
+  pointerStream,               // Source stream
+  (signal) => ({               // Selector
+    x: signal.value.x,
+    y: signal.value.y
+  })
+);
+
+// Sample current position anytime
+const currentPos = position.sample();
+
+// Subscribe to position changes
+position.onChange((pos) => {
+  console.log("Position updated:", pos);
+});
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `initial` | `A` | The initial value before any events |
+| `event` | `Stream<S>` | The source event stream |
+| `selector` | `(signal: S) => A` | Function to extract value from each signal |
+
+### Notes
+
+- The selector is called for each signal, and the Behavior updates only if the new value differs (using `Object.is`)
+- `onChange` is not called if the selected value is the same as the current value
+
+---
+
+## `time`
+
+Creates a Behavior that represents the current time. Each `sample()` call returns the current timestamp from `performance.now()`.
+
+### Signature
+
+```typescript
+function time(): Behavior<number>
+```
+
+### Example
+
+```typescript
+import { time } from "cereb/frp";
+
+const t = time();
+
+const now = t.sample();        // Current timestamp
+// ... some work ...
+const later = t.sample();      // Later timestamp
+
+console.log(later - now);      // Elapsed time
+
+// Map to seconds
+const seconds = t.map((ms) => ms / 1000);
+```
+
+### Notes
+
+- `onChange()` returns a no-op function because time changes continuously
+- For time-based events, use `animationFrame()` or `sample()` from conversions
+
+---
+
+## Behavior Interface
+
+All Behaviors implement this interface:
+
+```typescript
+interface Behavior<A> {
+  sample(): A;                              // Get current value
+  map<B>(f: (a: A) => B): Behavior<B>;     // Transform value (Functor)
+  ap<B>(this: Behavior<(b: B) => A>, bb: Behavior<B>): Behavior<A>;  // Apply (Applicative)
+  onChange(callback: (a: A) => void): () => void;  // Subscribe to changes
+  dispose(): void;                          // Clean up resources
+  readonly isDisposed: boolean;             // Check if disposed
+}
+```
+
+### Functor Laws
+
+Behaviors satisfy the Functor laws:
+
+```typescript
+// Identity
+b.map(x => x) ≡ b
+
+// Composition
+b.map(f).map(g) ≡ b.map(x => g(f(x)))
+```
+
+### Applicative Laws
+
+Behaviors also satisfy Applicative laws (Identity, Homomorphism, Interchange, Composition).

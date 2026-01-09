@@ -1,0 +1,225 @@
+# conversions
+
+Functions for converting between Behaviors and Streams.
+
+## `changes`
+
+Converts a Behavior to a Stream that emits whenever the value changes.
+
+### Signature
+
+```typescript
+function changes<A>(behavior: Behavior<A>): Stream<Signal<"behavior-change", A>>
+```
+
+### Example
+
+```typescript
+import { stepper, changes } from "cereb/frp";
+
+const position = stepper({ x: 0, y: 0 }, pointerStream, (s) => s.value);
+
+// Convert to a stream of changes
+const positionChanges = changes(position);
+
+positionChanges.on((signal) => {
+  console.log("Position changed to:", signal.value);
+});
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `behavior` | `Behavior<A>` | The behavior to observe |
+
+### Returns
+
+A `Stream<Signal<"behavior-change", A>>` that emits when the behavior's value changes.
+
+### Notes
+
+- Does not emit for constant behaviors (they never change)
+- Emits immediately when the underlying source changes
+
+---
+
+## `sample`
+
+Samples a Behavior at regular intervals.
+
+### Signature
+
+```typescript
+function sample<A>(behavior: Behavior<A>, intervalMs: number): Stream<Signal<"sampled", A>>
+```
+
+### Example
+
+```typescript
+import { time, sample } from "cereb/frp";
+
+const t = time();
+
+// Sample time every 100ms
+const timeSamples = sample(t, 100);
+
+timeSamples.on((signal) => {
+  console.log("Time:", signal.value);
+});
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `behavior` | `Behavior<A>` | The behavior to sample |
+| `intervalMs` | `number` | Sampling interval in milliseconds |
+
+### Returns
+
+A `Stream<Signal<"sampled", A>>` that emits at each interval.
+
+### Notes
+
+- Uses `setInterval` internally
+- Unsubscribing clears the interval
+
+---
+
+## `sampleOn`
+
+Samples a Behavior whenever a trigger Stream fires.
+
+### Signature
+
+```typescript
+function sampleOn<A, S extends Signal>(
+  behavior: Behavior<A>,
+  trigger: Stream<S>
+): Stream<Signal<"sampled-on", { value: A; trigger: S }>>
+```
+
+### Example
+
+```typescript
+import { constant, sampleOn } from "cereb/frp";
+import { domEvent } from "cereb";
+
+const counter = stepper(0, incrementStream, (s) => s.value);
+const clicks = domEvent(button, "click");
+
+// Sample counter value on each click
+const counterOnClick = sampleOn(counter, clicks);
+
+counterOnClick.on((signal) => {
+  console.log("Counter at click:", signal.value.value);
+  console.log("Click event:", signal.value.trigger);
+});
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `behavior` | `Behavior<A>` | The behavior to sample |
+| `trigger` | `Stream<S>` | The trigger stream |
+
+### Returns
+
+A `Stream<Signal<"sampled-on", { value: A; trigger: S }>>` containing both the sampled value and the trigger signal.
+
+---
+
+## `animationFrame`
+
+Samples a Behavior on every animation frame using `requestAnimationFrame`.
+
+### Signature
+
+```typescript
+function animationFrame<A>(behavior: Behavior<A>): Stream<Signal<"frame", { value: A; timestamp: number }>>
+```
+
+### Example
+
+```typescript
+import { combine, animationFrame } from "cereb/frp";
+
+const transform = combine(
+  positionBehavior,
+  scaleBehavior,
+  (pos, scale) => `translate(${pos.x}px, ${pos.y}px) scale(${scale})`
+);
+
+// Render on every frame
+const unsubscribe = animationFrame(transform).on(({ value }) => {
+  element.style.transform = value.value;
+});
+
+// Later: stop the animation loop
+unsubscribe();
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `behavior` | `Behavior<A>` | The behavior to sample |
+
+### Returns
+
+A `Stream<Signal<"frame", { value: A; timestamp: number }>>` that emits on each animation frame with the sampled value and the frame timestamp.
+
+### Notes
+
+- Ideal for smooth animations at 60fps
+- Unsubscribing cancels the animation frame loop
+
+---
+
+## `elapsedTime`
+
+Creates a Behavior that tracks elapsed time since creation, updating every animation frame.
+
+### Signature
+
+```typescript
+function elapsedTime(): { elapsed: Behavior<number>; dispose: () => void }
+```
+
+### Example
+
+```typescript
+import { elapsedTime } from "cereb/frp";
+
+const { elapsed, dispose } = elapsedTime();
+
+// Sample elapsed time
+console.log("Elapsed:", elapsed.sample()); // 0
+// ... later ...
+console.log("Elapsed:", elapsed.sample()); // e.g., 1234.56
+
+// Use with animations
+elapsed.onChange((t) => {
+  const progress = Math.min(t / 1000, 1); // 0 to 1 over 1 second
+  element.style.opacity = String(progress);
+});
+
+// Clean up when done
+dispose();
+```
+
+### Returns
+
+An object with:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `elapsed` | `Behavior<number>` | Elapsed time in milliseconds |
+| `dispose` | `() => void` | Function to stop tracking and clean up |
+
+### Notes
+
+- Updates via `requestAnimationFrame` internally
+- Call `dispose()` to stop the animation loop and clean up resources

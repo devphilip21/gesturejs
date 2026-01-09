@@ -1,0 +1,149 @@
+# combinators
+
+Functions for combining and transforming multiple Behaviors.
+
+## `combine`
+
+Combines multiple Behaviors into one using a combining function. The result updates whenever any source Behavior changes.
+
+### Signature
+
+```typescript
+function combine<A, B, R>(a: Behavior<A>, b: Behavior<B>, f: (a: A, b: B) => R): Behavior<R>
+function combine<A, B, C, R>(a: Behavior<A>, b: Behavior<B>, c: Behavior<C>, f: (a: A, b: B, c: C) => R): Behavior<R>
+// ... up to 5 behaviors
+```
+
+### Example
+
+```typescript
+import { stepper, combine } from "cereb/frp";
+
+const position = stepper({ x: 0, y: 0 }, posStream, (s) => s.value.position);
+const scale = stepper(1, scaleStream, (s) => s.value.scale);
+const rotation = stepper(0, rotStream, (s) => s.value.rotation);
+
+// Combine into a transform
+const transform = combine(
+  position,
+  scale,
+  rotation,
+  (pos, s, rot) => `translate(${pos.x}px, ${pos.y}px) scale(${s}) rotate(${rot}deg)`
+);
+
+// Sample the combined value
+element.style.transform = transform.sample();
+
+// Or subscribe to changes
+transform.onChange((t) => {
+  element.style.transform = t;
+});
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `a, b, ...` | `Behavior<*>` | Source behaviors (2-5) |
+| `f` | `(...values) => R` | Combining function |
+
+### Notes
+
+- When multiple sources change, `onChange` fires for each change (glitch behavior)
+- Use `sample()` for consistent snapshots
+
+---
+
+## `switcher`
+
+Selects between two Behaviors based on a boolean condition Behavior.
+
+### Signature
+
+```typescript
+function switcher<A>(
+  condition: Behavior<boolean>,
+  ifTrue: Behavior<A>,
+  ifFalse: Behavior<A>
+): Behavior<A>
+```
+
+### Example
+
+```typescript
+import { constant, stepper, switcher } from "cereb/frp";
+
+const isEditing = stepper(false, modeStream, (s) => s.value.editing);
+const editValue = stepper("", inputStream, (s) => s.value.text);
+const savedValue = constant("Saved content");
+
+// Switch between edit and display mode
+const displayValue = switcher(isEditing, editValue, savedValue);
+
+displayValue.sample(); // Returns editValue.sample() or savedValue.sample()
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `condition` | `Behavior<boolean>` | The condition behavior |
+| `ifTrue` | `Behavior<A>` | Value when condition is true |
+| `ifFalse` | `Behavior<A>` | Value when condition is false |
+
+### Notes
+
+- Only the active branch triggers `onChange` notifications
+- When condition changes, the new branch's current value is emitted
+
+---
+
+## `lift`
+
+Lifts a pure function to work with Behaviors. This is a convenience for applying functions to Behavior values.
+
+### Signature
+
+```typescript
+function lift<A, R>(f: (a: A) => R): (ba: Behavior<A>) => Behavior<R>
+function lift<A, B, R>(f: (a: A, b: B) => R): (ba: Behavior<A>, bb: Behavior<B>) => Behavior<R>
+function lift<A, B, C, R>(f: (a: A, b: B, c: C) => R): (ba: Behavior<A>, bb: Behavior<B>, bc: Behavior<C>) => Behavior<R>
+```
+
+### Example
+
+```typescript
+import { constant, lift } from "cereb/frp";
+
+// Lift a binary function
+const add = (a: number, b: number) => a + b;
+const liftedAdd = lift(add);
+
+const a = constant(3);
+const b = constant(4);
+const sum = liftedAdd(a, b);
+
+sum.sample(); // 7
+
+// Lift a unary function
+const double = (x: number) => x * 2;
+const liftedDouble = lift(double);
+
+const doubled = liftedDouble(a);
+doubled.sample(); // 6
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `f` | `(...args) => R` | The pure function to lift |
+
+### Returns
+
+A function that takes Behaviors and returns a Behavior.
+
+### Notes
+
+- `lift` supports up to 3 behaviors. For more, use `combine()` directly
+- Equivalent to `combine(a, b, c, f)` but with curried syntax

@@ -1,0 +1,14 @@
+---
+import DocsLayout from "@/layouts/docs-layout.astro";
+import Content from "@/content/frp-api/combinators.mdx";
+
+const headings = [
+  { depth: 2, slug: "combine", text: "combine" },
+  { depth: 2, slug: "switcher", text: "switcher" },
+  { depth: 2, slug: "lift", text: "lift" },
+];
+---
+
+<DocsLayout title="combinators" description="Functions for combining and transforming multiple Behaviors" headings={headings}>
+  <Content />
+</DocsLayout>

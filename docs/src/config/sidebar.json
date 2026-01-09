@@ -38,6 +38,10 @@
           "slug": "core-concepts/key-models"
         },
         {
+          "label": "Behavior & Event",
+          "slug": "core-concepts/behavior-and-event"
+        },
+        {
           "label": "Creating Operators",
           "slug": "core-concepts/creating-operators"
         },
@@ -166,6 +170,23 @@
         {
           "label": "zoom",
           "slug": "operator-api/zoom"
+        }
+      ]
+    },
+    {
+      "label": "FRP API",
+      "items": [
+        {
+          "label": "behavior",
+          "slug": "frp-api/behavior"
+        },
+        {
+          "label": "combinators",
+          "slug": "frp-api/combinators"
+        },
+        {
+          "label": "conversions",
+          "slug": "frp-api/conversions"
         }
       ]
     }

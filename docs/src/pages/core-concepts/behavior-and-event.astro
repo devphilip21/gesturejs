@@ -1,0 +1,17 @@
+---
+import DocsLayout from "@/layouts/docs-layout.astro";
+import Content from "@/content/core-concepts/behavior-and-event.mdx";
+
+const headings = [
+  { depth: 2, slug: "the-core-distinction", text: "The Core Distinction" },
+  { depth: 2, slug: "behavior", text: "Behavior" },
+  { depth: 2, slug: "when-to-use-each", text: "When to Use Each" },
+  { depth: 2, slug: "push-pull-hybrid-model", text: "Push-Pull Hybrid Model" },
+  { depth: 2, slug: "glitch-behavior", text: "Glitch Behavior" },
+  { depth: 2, slug: "converting-between-behavior-and-stream", text: "Converting Between Behavior and Stream" },
+];
+---
+
+<DocsLayout title="Behavior & Event" description="Understanding continuous values vs discrete events in Cereb" headings={headings}>
+  <Content />
+</DocsLayout>

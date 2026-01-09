@@ -1,0 +1,15 @@
+---
+import DocsLayout from "@/layouts/docs-layout.astro";
+import Content from "@/content/frp-api/behavior.mdx";
+
+const headings = [
+  { depth: 2, slug: "constant", text: "constant" },
+  { depth: 2, slug: "stepper", text: "stepper" },
+  { depth: 2, slug: "time", text: "time" },
+  { depth: 2, slug: "behavior-interface", text: "Behavior Interface" },
+];
+---
+
+<DocsLayout title="behavior" description="Functions for creating Behaviors - continuous time-varying values" headings={headings}>
+  <Content />
+</DocsLayout>

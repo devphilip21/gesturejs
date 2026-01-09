@@ -1,0 +1,146 @@
+# Behavior & Event
+
+Cereb provides two complementary abstractions for modeling time-varying values: **Behavior** and **Event** (Stream). Understanding when to use each is key to building effective reactive systems.
+
+## The Core Distinction
+
+```
+Stream (Event)  →  "What happened?" (clicks, touches, gestures)
+Behavior        →  "What is the current value?" (position, scale, time)
+```
+
+| Aspect | Stream (Event) | Behavior |
+|--------|----------------|----------|
+| **Semantics** | Discrete occurrences | Continuous values |
+| **Access** | Subscribe and wait | Sample anytime |
+| **Example** | Click events, gesture phases | Current position, elapsed time |
+
+## Behavior
+
+A **Behavior** represents a value that varies continuously over time. Unlike a Stream, a Behavior always has a current value that can be sampled at any moment.
+
+```typescript
+interface Behavior<A> {
+  sample(): A;                              // Get current value
+  map<B>(f: (a: A) => B): Behavior<B>;     // Transform value
+  onChange(callback: (a: A) => void): () => void;  // Subscribe to changes
+  dispose(): void;                          // Clean up resources
+}
+```
+
+### Creating Behaviors
+
+```typescript
+import { constant, stepper, time } from "cereb/frp";
+
+// Fixed value that never changes
+const always42 = constant(42);
+always42.sample(); // 42
+
+// Track the latest value from a stream
+const position = stepper(
+  { x: 0, y: 0 },           // Initial value
+  pointerStream,             // Source stream
+  (signal) => signal.value.position  // Selector
+);
+position.sample(); // Current position
+
+// Current time (always changing)
+const t = time();
+t.sample(); // Current timestamp
+```
+
+## When to Use Each
+
+### Use Behavior When:
+
+- **Animation frames need current state**: You're rendering at 60fps and need to sample multiple values each frame
+- **Combining multiple values**: You need to compute a transform from position, scale, and rotation
+- **VR/AR tracking**: Continuous sampling of headset or controller position
+- **Physics simulations**: Values that change continuously between discrete events
+
+```typescript
+import { combine, animationFrame } from "cereb/frp";
+
+// Combine multiple behaviors into a transform
+const transform = combine(
+  positionBehavior,
+  scaleBehavior,
+  rotationBehavior,
+  (pos, scale, rot) => ({
+    transform: `translate(${pos.x}px, ${pos.y}px) scale(${scale}) rotate(${rot}deg)`
+  })
+);
+
+// Sample on every animation frame
+animationFrame(transform).on(({ value }) => {
+  element.style.transform = value.transform;
+});
+```
+
+### Use Stream When:
+
+- **Reacting to events**: Something happened that you need to respond to
+- **Filtering/transforming events**: Building gesture recognition pipelines
+- **Event-driven logic**: Conditional flows based on event types
+
+```typescript
+import { singlePointer } from "cereb";
+import { filter, session } from "cereb/operators";
+
+// React to pointer events
+singlePointer(element)
+  .pipe(
+    filter((s) => s.value.phase === "start"),
+    session()
+  )
+  .on((signal) => {
+    // Handle gesture start
+  });
+```
+
+## Push-Pull Hybrid Model
+
+Cereb's FRP implementation uses a **push-pull hybrid** approach:
+
+- **Push**: When a source value changes, listeners are notified via `onChange()`
+- **Pull**: At any time, you can `sample()` the current value
+
+This gives you the best of both worlds:
+
+```typescript
+// Push: React when value changes
+position.onChange((pos) => {
+  console.log("Position changed to:", pos);
+});
+
+// Pull: Get current value on demand
+const currentPos = position.sample();
+```
+
+## Glitch Behavior
+
+When multiple source Behaviors change "simultaneously", `onChange` callbacks may see intermediate states. This is a known characteristic of push-based FRP:
+
+```typescript
+const sum = combine(a, b, (x, y) => x + y);
+
+// If a changes to 10 and b changes to 20:
+// onChange may fire twice: once with (10 + oldB), once with (10 + 20)
+```
+
+**Mitigation**: Use `sample()` when you need a consistent snapshot of the current state, rather than relying solely on `onChange` notifications.
+
+## Converting Between Behavior and Stream
+
+The `cereb/frp` module provides conversion functions:
+
+| Function | From | To | Use Case |
+|----------|------|------|----------|
+| `stepper(initial, stream, selector)` | Stream | Behavior | Track latest value from events |
+| `changes(behavior)` | Behavior | Stream | Emit when value changes |
+| `sample(behavior, intervalMs)` | Behavior | Stream | Periodic sampling |
+| `sampleOn(behavior, trigger)` | Behavior | Stream | Sample at specific moments |
+| `animationFrame(behavior)` | Behavior | Stream | Sample every frame |
+
+See the [FRP API](/frp-api/behavior) documentation for detailed usage.
