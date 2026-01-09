@@ -1,6 +1,6 @@
 # [Cereb](https://cereb.dev)
 
-**User input handling and orchestration** libray,  
+**User input handling and orchestration** library,  
 From low-level events (keyboard, wheel, pointer, ...) to high-level gestures (pan, pinch, ...)
 
 ```bash
@@ -41,6 +41,7 @@ For advanced gestures like pan or pinch, install dedicated packages that build o
 |---------|-------------|
 | [@cereb/pan](https://www.npmjs.com/package/@cereb/pan) | Pan/drag gestures with velocity and direction tracking |
 | [@cereb/pinch](https://www.npmjs.com/package/@cereb/pinch) | Pinch-to-zoom with distance and scale calculations |
+| [@cereb/tap](https://www.npmjs.com/package/@cereb/tap) | Tap gesture recognition |
 
 ### Pinch example
 
@@ -92,7 +93,7 @@ Transform and compose streams with operators like `filter`, `map`, `merge`, `thr
 
 ## The Problems Cereb Solves
 
-- **Spaghetti Event Code** — Scattered handlers, shared mutable state, duplicated logic
+- **No Abstraction for Event Flow** — DOM events lack structure for state, dependencies, and composition
 - **Lightweight Bundle** — ~77% smaller than Hammer.js (1.73 KB gzipped for pan gesture)
 - **Resource Efficiency** — Event listener reuse, single-responsibility operators
 
