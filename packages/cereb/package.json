@@ -44,25 +44,15 @@
       "import": "./dist/operators.js",
       "require": "./dist/operators.cjs"
     },
-    "./single-pointer/touch": {
-      "types": "./dist/single-pointer/touch.d.ts",
-      "import": "./dist/single-pointer/touch.js",
-      "require": "./dist/single-pointer/touch.cjs"
-    },
-    "./single-pointer/mouse": {
-      "types": "./dist/single-pointer/mouse.d.ts",
-      "import": "./dist/single-pointer/mouse.js",
-      "require": "./dist/single-pointer/mouse.cjs"
-    },
-    "./single-pointer/pointer": {
-      "types": "./dist/single-pointer/pointer.d.ts",
-      "import": "./dist/single-pointer/pointer.js",
-      "require": "./dist/single-pointer/pointer.cjs"
-    },
     "./geometry": {
       "types": "./dist/geometry/index.d.ts",
       "import": "./dist/geometry/index.js",
       "require": "./dist/geometry/index.cjs"
+    },
+    "./frp": {
+      "types": "./dist/frp.d.ts",
+      "import": "./dist/frp.js",
+      "require": "./dist/frp.cjs"
     }
   },
   "files": [
