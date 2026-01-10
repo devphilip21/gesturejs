@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
-import type {
-  MultiPointer,
-  MultiPointerSignal,
-  PointerInfo,
-} from "../browser/multi-pointer/multi-pointer-signal.js";
-import type { SinglePointerPhase } from "../browser/single-pointer/types.js";
 import type { Signal } from "../core/signal.js";
 import { createStream } from "../core/stream.js";
-import { multiPointerSession, session } from "./session.js";
+import type {
+  MultiPointers,
+  MultiPointersSignal,
+  PointerInfo,
+} from "../features/multi-pointers/multi-pointers-signal.js";
+import type { SinglePointerPhase } from "../features/single-pointer/types.js";
+import { multiPointersSession, session } from "./session.js";
 
 type Phase = "start" | "move" | "end" | "cancel";
 
@@ -111,61 +111,59 @@ function createPointerInfo(id: string, phase: SinglePointerPhase, x = 0, y = 0):
   return {
     id,
     phase,
-    x,
-    y,
-    pageX: x,
-    pageY: y,
+    cursor: [x, y],
+    pageCursor: [x, y],
     pointerType: "touch",
     button: "none",
     pressure: 0.5,
   };
 }
 
-function createMultiPointerSignal(pointers: PointerInfo[]): MultiPointerSignal {
-  const multiPointer: MultiPointer = {
+function createMultiPointersSignal(pointers: PointerInfo[]): MultiPointersSignal {
+  const multiPointers: MultiPointers = {
     phase: pointers.length > 0 ? "active" : "idle",
     pointers,
     count: pointers.length,
   };
   return {
-    kind: "multi-pointer",
-    value: multiPointer,
+    kind: "multi-pointers",
+    value: multiPointers,
     deviceId: "test",
     createdAt: performance.now(),
   };
 }
 
-describe("multiPointerSession", () => {
+describe("multiPointersSession", () => {
   it("should start session when required count of pointers are working", () => {
-    const signals: MultiPointerSignal[] = [];
-    const operator = multiPointerSession(2);
+    const signals: MultiPointersSignal[] = [];
+    const operator = multiPointersSession(2);
 
-    const source = createStream<MultiPointerSignal>((observer) => {
+    const source = createStream<MultiPointersSignal>((observer) => {
       // 1 pointer - not enough
-      observer.next(createMultiPointerSignal([createPointerInfo("p1", "start", 10, 10)]));
+      observer.next(createMultiPointersSignal([createPointerInfo("p1", "start", 10, 10)]));
       // 2 pointers - session starts
       observer.next(
-        createMultiPointerSignal([
+        createMultiPointersSignal([
           createPointerInfo("p1", "move", 10, 10),
           createPointerInfo("p2", "start", 20, 20),
         ]),
       );
       // move during session
       observer.next(
-        createMultiPointerSignal([
+        createMultiPointersSignal([
           createPointerInfo("p1", "move", 15, 15),
           createPointerInfo("p2", "move", 25, 25),
         ]),
       );
       // end session
       observer.next(
-        createMultiPointerSignal([
+        createMultiPointersSignal([
           createPointerInfo("p1", "end", 15, 15),
           createPointerInfo("p2", "move", 25, 25),
         ]),
       );
       // after session - ignored
-      observer.next(createMultiPointerSignal([createPointerInfo("p2", "move", 30, 30)]));
+      observer.next(createMultiPointersSignal([createPointerInfo("p2", "move", 30, 30)]));
       return () => {};
     });
 
@@ -178,20 +176,20 @@ describe("multiPointerSession", () => {
   });
 
   it("should ignore additional pointers beyond required count", () => {
-    const signals: MultiPointerSignal[] = [];
-    const operator = multiPointerSession(2);
+    const signals: MultiPointersSignal[] = [];
+    const operator = multiPointersSession(2);
 
-    const source = createStream<MultiPointerSignal>((observer) => {
+    const source = createStream<MultiPointersSignal>((observer) => {
       // 2 pointers - session starts with p1, p2
       observer.next(
-        createMultiPointerSignal([
+        createMultiPointersSignal([
           createPointerInfo("p1", "start", 10, 10),
           createPointerInfo("p2", "start", 20, 20),
         ]),
       );
       // 3rd pointer joins - session continues
       observer.next(
-        createMultiPointerSignal([
+        createMultiPointersSignal([
           createPointerInfo("p1", "move", 10, 10),
           createPointerInfo("p2", "move", 20, 20),
           createPointerInfo("p3", "start", 30, 30),
@@ -199,7 +197,7 @@ describe("multiPointerSession", () => {
       );
       // 3rd pointer ends - session still active (not tracked)
       observer.next(
-        createMultiPointerSignal([
+        createMultiPointersSignal([
           createPointerInfo("p1", "move", 10, 10),
           createPointerInfo("p2", "move", 20, 20),
           createPointerInfo("p3", "end", 30, 30),
@@ -207,7 +205,7 @@ describe("multiPointerSession", () => {
       );
       // tracked pointer ends - session ends
       observer.next(
-        createMultiPointerSignal([
+        createMultiPointersSignal([
           createPointerInfo("p1", "end", 10, 10),
           createPointerInfo("p2", "move", 20, 20),
         ]),

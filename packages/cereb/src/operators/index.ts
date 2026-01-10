@@ -8,7 +8,7 @@ export { map } from "./map.js";
 export { merge, mergeWith } from "./merge.js";
 export { offset } from "./offset.js";
 export { reduce } from "./reduce.js";
-export { multiPointerSession, session, singlePointerSession } from "./session.js";
+export { multiPointersSession, session, singlePointerSession } from "./session.js";
 export { share, shareReplay } from "./share.js";
 export { spy, tap } from "./spy.js";
 export { switchMap } from "./switch-map.js";
