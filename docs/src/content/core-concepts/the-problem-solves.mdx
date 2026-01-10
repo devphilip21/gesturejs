@@ -40,9 +40,8 @@ Cereb models events as streams, creating readable and composable pipelines:
 
 ```typescript
 // After: Stream abstraction—composable, stateless, explicit
-import { keydown, keyheld, wheel } from "cereb";
+import { keydown, keyheld, wheel, pinch } from "cereb";
 import { zoom, when, extend, spy } from "cereb/operators";
-import { pinch } from "@cereb/pinch";
 
 const zoomMode$ = keyheld(window, { code: "KeyZ" })
   .pipe(extend((signal) => ({ opened: signal.value.held })));
@@ -80,7 +79,7 @@ Benchmark: Equivalent pan gesture implementation
 
 | | Minified | Gzipped |
 |--|----------|---------|
-| cereb + @cereb/pan | 4.58 KB | **1.73 KB** |
+| cereb (pan) | 4.58 KB | **1.73 KB** |
 | Hammer.js | 20.98 KB | 7.52 KB |
 
 ~77% smaller than Hammer.js for equivalent pan gesture functionality.

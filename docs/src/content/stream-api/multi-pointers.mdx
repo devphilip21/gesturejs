@@ -1,4 +1,4 @@
-# `multiPointer`
+# `multiPointers`
 
 Multi-touch pointer stream that tracks multiple simultaneous pointers. Emits a snapshot of all active pointers whenever any pointer changes state.
 
@@ -9,9 +9,9 @@ npm install --save cereb
 ## Basic Usage
 
 ```typescript
-import { multiPointer } from "cereb";
+import { multiPointers } from "cereb";
 
-multiPointer(element, { maxPointers: 2 }).on((signal) => {
+multiPointers(element, { maxPointers: 2 }).on((signal) => {
   const { phase, pointers, count } = signal.value;
 
   if (count === 2) {
@@ -26,7 +26,7 @@ multiPointer(element, { maxPointers: 2 }).on((signal) => {
 ## Signature
 
 ```typescript
-function multiPointer(target: EventTarget, options?: MultiPointerOptions): Stream<MultiPointerSignal>
+function multiPointers(target: EventTarget, options?: MultiPointersOptions): Stream<MultiPointersSignal>
 ```
 
 ## Options
@@ -71,16 +71,16 @@ first pointer down → "active" → (pointers change) → last pointer up → "e
 
 ## With Pinch Gesture
 
-`multiPointer` is the foundation for pinch gestures:
+`multiPointers` is the foundation for pinch gestures:
 
 ```typescript
-import { multiPointer } from "cereb";
-import { multiPointerSession } from "cereb/operators";
-import { pinchRecognizer } from "@cereb/pinch";
+import { multiPointers } from "cereb";
+import { multiPointersSession } from "cereb/operators";
+import { pinchRecognizer } from "cereb";
 
-multiPointer(element, { maxPointers: 2 })
+multiPointers(element, { maxPointers: 2 })
   .pipe(
-    multiPointerSession(2),  // Wait for 2 pointers
+    multiPointersSession(2),  // Wait for 2 pointers
     pinchRecognizer()
   )
   .on((signal) => {
@@ -90,15 +90,15 @@ multiPointer(element, { maxPointers: 2 })
   });
 ```
 
-## Advanced: multiPointerFromPointer
+## Advanced: multiPointersFromPointer
 
 Use as an operator with custom event sources:
 
 ```typescript
 import { pointerEvents } from "cereb";
-import { multiPointerFromPointer } from "cereb";
+import { multiPointersFromPointer } from "cereb";
 
 pointerEvents(element)
-  .pipe(multiPointerFromPointer({ maxPointers: 3 }))
+  .pipe(multiPointersFromPointer({ maxPointers: 3 }))
   .on((signal) => { /* ... */ });
 ```

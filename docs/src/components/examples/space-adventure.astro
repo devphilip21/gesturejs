@@ -41,10 +41,8 @@ import "./space-adventure.css";
 </div>
 
 <script>
-import { wheel, keydown, keyheld, type KeyboardSignal, type WheelSignal, domEvent, type KeyboardValue, type Signal } from "cereb";
+import { wheel, keydown, keyheld, type KeyboardSignal, type WheelSignal, dom, type KeyboardValue, type Signal, pinch, tap, type TapSignal } from "cereb";
 import { zoom as createZoom, extend, when, spy, filter, type ZoomInput, type ZoomOptions } from "cereb/operators";
-import { pinch } from "@cereb/pinch";
-import { tap, type TapSignal } from "@cereb/tap";
 
 interface Star {
   x: number;
@@ -861,9 +859,9 @@ function initSpacePinchZoom() {
     .on(render);
 
   // 'Progress' - slider sets absolute scale (baseScale=1 so ratio becomes the scale directly)
-  domEvent(slider, "input")
+  dom(slider, "input")
     .pipe(
-      extend<Signal<"dom-event", Event>, ZoomInput>((signal) => {
+      extend<Signal<"dom", Event>, ZoomInput>((signal) => {
         const inputElement = signal.value.target as HTMLInputElement;
         const value = Number(inputElement.value);
         const logScale = logMin + (value / 100) * (logMax - logMin);

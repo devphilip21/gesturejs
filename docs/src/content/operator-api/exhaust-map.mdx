@@ -13,10 +13,10 @@ function exhaustMap<T extends Signal, R extends Signal>(
 ## Example
 
 ```typescript
-import { domEvent } from "cereb";
+import { dom } from "cereb";
 import { exhaustMap } from "cereb/operators";
 
-domEvent(submitButton, "click")
+dom(submitButton, "click")
   .pipe(
     exhaustMap(() => submitForm())
   )
@@ -44,7 +44,7 @@ Output:   ────A1─A2─────────D1─▶
 Ignore additional clicks while form is being submitted:
 
 ```typescript
-domEvent(submitButton, "click")
+dom(submitButton, "click")
   .pipe(
     exhaustMap(() => submitFormToServer())
   )

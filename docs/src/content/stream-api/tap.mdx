@@ -2,14 +2,10 @@
 
 Tap gesture recognition with multi-tap support. Detects single, double, triple taps and beyond with configurable timing and distance thresholds.
 
-```bash
-npm install --save @cereb/tap
-```
-
 ## Basic Usage
 
 ```typescript
-import { tap } from "@cereb/tap";
+import { tap } from "cereb";
 
 tap(element).on((signal) => {
   const { tapCount, cursor } = signal.value;
@@ -91,11 +87,10 @@ tap → 500ms → tap                = tapCount: 1 (chain reset)
 
 ## With Visual Feedback
 
-Use `tapRecognizer` for full lifecycle handling:
+Use `tapRecognizer` operator for full lifecycle handling:
 
 ```typescript
-import { singlePointer } from "cereb";
-import { tapRecognizer } from "@cereb/tap";
+import { singlePointer, tapRecognizer } from "cereb";
 
 singlePointer(element)
   .pipe(tapRecognizer())
@@ -110,64 +105,16 @@ singlePointer(element)
   });
 ```
 
-## Advanced: tapRecognizer
+## Filter to End Phase Only
 
-Use as an operator with custom pointer sources:
-
-```typescript
-import { singlePointer } from "cereb";
-import { tapRecognizer } from "@cereb/tap";
-
-singlePointer(element)
-  .pipe(tapRecognizer({ durationThreshold: 300 }))
-  .on((signal) => { /* ... */ });
-```
-
-## Advanced: tapEndOnly
-
-Only emits successful taps (filters out start/cancel):
+Use `tapEndOnly` to only receive successful taps:
 
 ```typescript
-import { singlePointer } from "cereb";
-import { tapEndOnly } from "@cereb/tap";
+import { singlePointer, tapEndOnly } from "cereb";
 
 singlePointer(element)
   .pipe(tapEndOnly())
   .on((signal) => {
     console.log(`Tap ${signal.value.tapCount}!`);
   });
-```
-
-## Advanced: createTapRecognizer
-
-Low-level API for imperative usage or custom integrations.
-The recognizer accepts any signal that satisfies `TapSourceSignal` interface.
-
-```typescript
-import { createTapRecognizer, type TapSourceSignal } from "@cereb/tap";
-
-const recognizer = createTapRecognizer({ durationThreshold: 300 });
-
-// Works with any source that provides the required properties
-function handlePointerEvent(signal: TapSourceSignal) {
-  const tapEvent = recognizer.process(signal);
-  if (tapEvent?.value.phase === "end") {
-    console.log(`Tap ${tapEvent.value.tapCount}!`);
-  }
-}
-```
-
-### TapSourceSignal Interface
-
-```typescript
-interface TapSourceSignal {
-  value: {
-    phase: "start" | "move" | "end" | "cancel";
-    cursor: readonly [number, number];
-    pageCursor: readonly [number, number];
-    pointerType: "touch" | "mouse" | "pen" | "unknown";
-  };
-  createdAt: number;
-  deviceId: string;
-}
 ```

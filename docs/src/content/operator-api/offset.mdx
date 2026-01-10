@@ -40,9 +40,9 @@ By default, `getBoundingClientRect()` is called on every signal for accuracy.
 For performance optimization, provide `recalculate$` to cache the rect:
 
 ```typescript
-import { domEvent } from "cereb";
+import { dom } from "cereb";
 
-const resize$ = domEvent(window, "resize");
+const resize$ = dom(window, "resize");
 
 singlePointer(canvas)
   .pipe(offset({ target: canvas, recalculate$: resize$ }))

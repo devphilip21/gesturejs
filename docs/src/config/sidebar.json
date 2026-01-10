@@ -75,8 +75,8 @@
           "slug": "stream-api/single-pointer"
         },
         {
-          "label": "multiPointer",
-          "slug": "stream-api/multi-pointer"
+          "label": "multiPointers",
+          "slug": "stream-api/multi-pointers"
         },
         {
           "label": "keyboard",
@@ -95,8 +95,8 @@
           "slug": "stream-api/wheel"
         },
         {
-          "label": "domEvent",
-          "slug": "stream-api/dom-event"
+          "label": "dom",
+          "slug": "stream-api/dom"
         }
       ]
     },

@@ -104,10 +104,10 @@ function sampleOn<A, S extends Signal>(
 
 ```typescript
 import { constant, sampleOn } from "cereb/frp";
-import { domEvent } from "cereb";
+import { dom } from "cereb";
 
 const counter = stepper(0, incrementStream, (s) => s.value);
-const clicks = domEvent(button, "click");
+const clicks = dom(button, "click");
 
 // Sample counter value on each click
 const counterOnClick = sampleOn(counter, clicks);

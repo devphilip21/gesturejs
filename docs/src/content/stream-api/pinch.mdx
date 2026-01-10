@@ -2,14 +2,10 @@
 
 Pinch gesture recognition for two-finger zoom interactions. Tracks distance, ratio, velocity, and center point between two pointers.
 
-```bash
-npm install --save @cereb/pinch
-```
-
 ## Basic Usage
 
 ```typescript
-import { pinch } from "@cereb/pinch";
+import { pinch } from "cereb";
 
 pinch(element).on((signal) => {
   const { phase, ratio, center } = signal.value;
@@ -64,7 +60,7 @@ two pointers down → (threshold met) → "start" → "change"* → "end" or "ca
 Combine with the `zoom` operator for bounded scale calculations:
 
 ```typescript
-import { pinch } from "@cereb/pinch";
+import { pinch } from "cereb";
 import { zoom } from "cereb/operators";
 
 pinch(element)
@@ -74,61 +70,4 @@ pinch(element)
     const [cx, cy] = center;
     element.style.transform = `scale(${scale})`;
   });
-```
-
-## Advanced: pinchRecognizer
-
-Use as an operator with custom pointer sources:
-
-```typescript
-import { multiPointer } from "cereb";
-import { multiPointerSession } from "cereb/operators";
-import { pinchRecognizer } from "@cereb/pinch";
-
-multiPointer(element, { maxPointers: 2 })
-  .pipe(
-    multiPointerSession(2),
-    pinchRecognizer({ threshold: 10 })
-  )
-  .on((signal) => { /* ... */ });
-```
-
-## Advanced: createPinchRecognizer
-
-Low-level API for imperative usage or custom integrations.
-The recognizer accepts any signal that satisfies `PinchSourceSignal` interface.
-
-```typescript
-import { createPinchRecognizer, type PinchSourceSignal } from "@cereb/pinch";
-
-const recognizer = createPinchRecognizer({ threshold: 10 });
-
-// Works with any source that provides the required properties
-function handleMultiPointerEvent(signal: PinchSourceSignal) {
-  const pinchEvent = recognizer.process(signal);
-  if (pinchEvent) {
-    console.log(pinchEvent.value.distance, pinchEvent.value.velocity);
-  }
-}
-```
-
-### PinchSourceSignal Interface
-
-```typescript
-interface PinchSourcePointer {
-  id: string;
-  phase: "start" | "move" | "end" | "cancel";
-  x: number;
-  y: number;
-  pageX: number;
-  pageY: number;
-}
-
-interface PinchSourceSignal {
-  value: {
-    pointers: readonly PinchSourcePointer[];
-  };
-  createdAt: number;
-  deviceId: string;
-}
 ```

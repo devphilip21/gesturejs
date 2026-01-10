@@ -3,12 +3,9 @@
 > Lightweight reactive stream library for user input modeling and orchestration.
 > Mouse, touch, pen—unified into composable stream pipelines.
 
-## Packages
+## Package
 
-- cereb: Core library with stream primitives and operators
-- @cereb/pan: Pan/drag/swipe gesture recognition
-- @cereb/pinch: Pinch/zoom gesture recognition
-- @cereb/tap: Tap gesture recognition
+- cereb: Core library with stream primitives, operators, and gesture recognition (pan, pinch, tap)
 
 ## Getting Started
 
@@ -23,7 +20,7 @@
 ## Stream API
 
 - [singlePointer](https://cereb.dev/stream-api/single-pointer): Unified pointer input (mouse/touch/pen)
-- [multiPointer](https://cereb.dev/stream-api/multi-pointer): Multi-touch tracking
+- [multiPointers](https://cereb.dev/stream-api/multi-pointers): Multi-touch tracking
 - [pan](https://cereb.dev/stream-api/pan): Pan gesture with velocity/direction
 - [pinch](https://cereb.dev/stream-api/pinch): Two-finger pinch/zoom
 - [tap](https://cereb.dev/stream-api/tap): Tap gesture with multi-tap support
@@ -31,7 +28,7 @@
 - [keydown](https://cereb.dev/stream-api/keydown): Keydown only
 - [keyheld](https://cereb.dev/stream-api/keyheld): Key hold state tracking
 - [wheel](https://cereb.dev/stream-api/wheel): Scroll wheel events
-- [domEvent](https://cereb.dev/stream-api/dom-event): Low-level DOM event wrapper
+- [dom](https://cereb.dev/stream-api/dom): Low-level DOM event wrapper
 
 ## Operator API
 

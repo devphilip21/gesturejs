@@ -1,4 +1,4 @@
-# `domEvent`
+# `dom`
 
 Low-level DOM event stream factory. Wraps any DOM event into a Stream with full TypeScript type inference.
 
@@ -9,14 +9,14 @@ npm install --save cereb
 ## Basic Usage
 
 ```typescript
-import { domEvent } from "cereb";
+import { dom } from "cereb";
 
 // Strongly typed based on target and event name
-domEvent(window, "resize").on((signal) => {
+dom(window, "resize").on((signal) => {
   console.log(signal.value.innerWidth); // UIEvent, typed correctly
 });
 
-domEvent(element, "click").on((signal) => {
+dom(element, "click").on((signal) => {
   console.log(signal.value.clientX); // MouseEvent
 });
 ```
@@ -24,11 +24,11 @@ domEvent(element, "click").on((signal) => {
 ## Signature
 
 ```typescript
-function domEvent<E extends Event>(
+function dom<E extends Event>(
   target: EventTarget,
   eventName: string,
   options?: AddEventListenerOptions
-): Stream<DomEventSignal<E>>
+): Stream<DomSignal<E>>
 ```
 
 ## Signal Value
@@ -47,7 +47,7 @@ The `signal.value` is the original DOM Event object. The type is inferred based 
 ### Resize Observer
 
 ```typescript
-domEvent(window, "resize").on((signal) => {
+dom(window, "resize").on((signal) => {
   updateLayout(signal.value.target.innerWidth);
 });
 ```
@@ -55,7 +55,7 @@ domEvent(window, "resize").on((signal) => {
 ### Custom Event
 
 ```typescript
-domEvent<CustomEvent<{ id: string }>>(element, "my-event").on((signal) => {
+dom<CustomEvent<{ id: string }>>(element, "my-event").on((signal) => {
   console.log(signal.value.detail.id);
 });
 ```
@@ -85,7 +85,7 @@ pointerEvents(element).on((signal) => {
 function pointerEvents(
   target: EventTarget,
   options?: AddEventListenerOptions
-): Stream<DomEventSignal<PointerEvent>>
+): Stream<DomSignal<PointerEvent>>
 ```
 
 ### Events Included
@@ -116,7 +116,7 @@ mouseEvents(element).on((signal) => {
 function mouseEvents(
   target: EventTarget,
   options?: AddEventListenerOptions
-): Stream<DomEventSignal<MouseEvent>>
+): Stream<DomSignal<MouseEvent>>
 ```
 
 ### Events Included
@@ -146,7 +146,7 @@ touchEvents(element).on((signal) => {
 function touchEvents(
   target: EventTarget,
   options?: AddEventListenerOptions
-): Stream<DomEventSignal<TouchEvent>>
+): Stream<DomSignal<TouchEvent>>
 ```
 
 ### Events Included
@@ -162,9 +162,9 @@ function touchEvents(
 
 | Use Case | Recommended |
 |----------|-------------|
-| Normalized pointer input | `singlePointer`, `multiPointer` |
+| Normalized pointer input | `singlePointer`, `multiPointers` |
 | Gesture recognition | `pan`, `pinch` |
-| Raw DOM events | `domEvent`, `pointerEvents`, etc. |
-| Custom event handling | `domEvent` |
+| Raw DOM events | `dom`, `pointerEvents`, etc. |
+| Custom event handling | `dom` |
 
 These low-level APIs are useful when building custom recognizers or when you need direct access to the original DOM events.

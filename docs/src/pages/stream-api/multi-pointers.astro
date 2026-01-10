@@ -1,6 +1,6 @@
 ---
 import DocsLayout from "@/layouts/docs-layout.astro";
-import Content from "@/content/stream-api/multi-pointer.mdx";
+import Content from "@/content/stream-api/multi-pointers.mdx";
 
 const headings = [
   { depth: 2, slug: "basic-usage", text: "Basic Usage" },
@@ -9,10 +9,10 @@ const headings = [
   { depth: 2, slug: "signal-value", text: "Signal Value" },
   { depth: 2, slug: "phase-lifecycle", text: "Phase Lifecycle" },
   { depth: 2, slug: "with-pinch-gesture", text: "With Pinch Gesture" },
-  { depth: 2, slug: "advanced-multipointerfrompointer", text: "Advanced: multiPointerFromPointer" },
+  { depth: 2, slug: "advanced-multipointersfrompointer", text: "Advanced: multiPointersFromPointer" },
 ];
 ---
 
-<DocsLayout title="multiPointer" description="Multi-touch pointer stream for tracking multiple simultaneous pointers" headings={headings}>
+<DocsLayout title="multiPointers" description="Multi-touch pointer stream for tracking multiple simultaneous pointers" headings={headings}>
   <Content />
 </DocsLayout>

@@ -19,18 +19,12 @@ Cereb provides a unified abstraction for handling pointer/touch/mouse events thr
 
 | Package | NPM | Description |
 |---------|-----|-------------|
-| `cereb` | cereb | Core: Stream primitives, operators |
-| `@cereb/pan` | @cereb/pan | Pan/drag/swipe gesture |
-| `@cereb/pinch` | @cereb/pinch | Pinch/zoom gesture |
-| `@cereb/tap` | @cereb/tap | Tap gesture |
+| `cereb` | cereb | Core: Stream primitives, operators, and gestures (pan, pinch, tap) |
 
 ### Installation
 
 ```bash
 npm install cereb
-npm install @cereb/pan    # optional
-npm install @cereb/pinch  # optional
-npm install @cereb/tap    # optional
 ```
 
 ---
@@ -195,12 +189,12 @@ singlePointer(element).on((signal) => {
 });
 ```
 
-### multiPointer
+### multiPointers
 
 Multi-touch stream. Tracks multiple simultaneous pointers.
 
 ```typescript
-function multiPointer(target: EventTarget, options?: { maxPointers?: number }): Stream<MultiPointerSignal>
+function multiPointers(target: EventTarget, options?: { maxPointers?: number }): Stream<MultiPointersSignal>
 ```
 
 **Signal Value:**
@@ -209,16 +203,16 @@ function multiPointer(target: EventTarget, options?: { maxPointers?: number }): 
 - `count`: number of active pointers
 
 ```typescript
-import { multiPointer } from "cereb";
+import { multiPointers } from "cereb";
 
-multiPointer(element, { maxPointers: 2 }).on((signal) => {
+multiPointers(element, { maxPointers: 2 }).on((signal) => {
   if (signal.value.count === 2) {
     const [p1, p2] = signal.value.pointers;
   }
 });
 ```
 
-### pan (from @cereb/pan)
+### pan
 
 Pan gesture recognition with velocity, direction, distance tracking.
 
@@ -236,7 +230,7 @@ function pan(target: EventTarget, options?: { threshold?: number; direction?: "h
 - `direction`: "up" | "down" | "left" | "right" | "none"
 
 ```typescript
-import { pan } from "@cereb/pan";
+import { pan } from "cereb";
 
 pan(element).on((signal) => {
   const { phase, delta } = signal.value;
@@ -249,13 +243,13 @@ pan(element).on((signal) => {
 
 **axisLock operator:**
 ```typescript
-import { pan } from "@cereb/pan";
-import { axisLock } from "@cereb/pan/operators";
+import { pan } from "cereb";
+import { axisLock } from "cereb/operators";
 
 pan(element).pipe(axisLock()).on(handlePan);
 ```
 
-### pinch (from @cereb/pinch)
+### pinch
 
 Two-finger pinch gesture with distance, ratio, velocity, center tracking.
 
@@ -274,7 +268,7 @@ function pinch(target: EventTarget, options?: { threshold?: number }): Stream<Pi
 - `pageCenter`: [number, number] - center between pointers (page coordinates)
 
 ```typescript
-import { pinch } from "@cereb/pinch";
+import { pinch } from "cereb";
 
 pinch(element).on((signal) => {
   const { phase, ratio, center } = signal.value;
@@ -285,7 +279,7 @@ pinch(element).on((signal) => {
 });
 ```
 
-### tap (from @cereb/tap)
+### tap
 
 Tap gesture recognition with multi-tap support.
 
@@ -307,7 +301,7 @@ function tap(target: EventTarget, options?: {
 - `pointerType`: "mouse" | "touch" | "pen" | "unknown"
 
 ```typescript
-import { tap } from "@cereb/tap";
+import { tap } from "cereb";
 
 tap(element).on((signal) => {
   const { tapCount, cursor } = signal.value;
@@ -405,22 +399,22 @@ wheel(element, { passive: false }).on((signal) => {
 });
 ```
 
-### domEvent
+### dom
 
 Low-level DOM event wrapper with full TypeScript inference.
 
 ```typescript
-function domEvent<E extends Event>(target: EventTarget, eventName: string, options?: AddEventListenerOptions): Stream<DomEventSignal<E>>
+function dom<E extends Event>(target: EventTarget, eventName: string, options?: AddEventListenerOptions): Stream<DomSignal<E>>
 ```
 
 ```typescript
-import { domEvent } from "cereb";
+import { dom } from "cereb";
 
-domEvent(window, "resize").on((signal) => {
+dom(window, "resize").on((signal) => {
   // signal.value is UIEvent
 });
 
-domEvent(element, "click").on((signal) => {
+dom(element, "click").on((signal) => {
   // signal.value is MouseEvent
 });
 ```
@@ -472,14 +466,14 @@ wheel(element)
   .on((s) => setScale(scale * s.value.ratio));
 ```
 
-### session / singlePointerSession / multiPointerSession
+### session / singlePointerSession / multiPointersSession
 
 Filter signals to active sessions only.
 
 ```typescript
 function session<T extends Signal>(options: { start: (s: T) => boolean; end: (s: T) => boolean }): Operator<T, T>
 function singlePointerSession(): Operator<SinglePointerSignal, SinglePointerSignal>
-function multiPointerSession(requiredCount: number): Operator<MultiPointerSignal, MultiPointerSignal>
+function multiPointersSession(requiredCount: number): Operator<MultiPointersSignal, MultiPointersSignal>
 ```
 
 ```typescript
@@ -653,9 +647,8 @@ singlePointer(element)
 ### Multi-input Zoom
 
 ```typescript
-import { wheel, keyheld, keydown } from "cereb";
+import { wheel, keyheld, keydown, pinch } from "cereb";
 import { when, extend, spy, zoom } from "cereb/operators";
-import { pinch } from "@cereb/pinch";
 
 let currentScale = 1;
 const zoomOp = () => zoom({ minScale: 0.5, maxScale: 3.0, baseScale: () => currentScale });
@@ -717,7 +710,7 @@ singlePointer(canvas)
 ### Drag with Constraints
 
 ```typescript
-import { pan } from "@cereb/pan";
+import { pan } from "cereb";
 import { offset, filter } from "cereb/operators";
 
 pan(container)

@@ -89,16 +89,16 @@ singlePointer(element)
 
 ## Multi-pointer Handling
 
-For tracking multiple touch points simultaneously, use `multiPointer` instead:
+For tracking multiple touch points simultaneously, use `multiPointers` instead:
 
 ```typescript
-import { multiPointer } from "cereb";
+import { multiPointers } from "cereb";
 
-multiPointer(element).on((signal) => {
+multiPointers(element).on((signal) => {
   // Tracks all active pointers
   const pointers = signal.value.pointers;
   console.log(`${pointers.length} active touch points`);
 });
 ```
 
-See the [multiPointer](/stream-api/multi-pointer) documentation for details.
+See the [multiPointers](/stream-api/multi-pointers) documentation for details.

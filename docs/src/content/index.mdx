@@ -6,9 +6,9 @@ import { Code } from "astro:components";
 From low-level events (touch, pointer, keyboard, wheel, ...) to high-level gestures (pan, pinch, ...)—all through composable stream pipelines.
 
 ```typescript
-import { domEvent } from "cereb";
+import { dom } from "cereb";
 
-domEvent(element, "pointermove").on((signal) => {
+dom(element, "pointermove").on((signal) => {
   const { clientX, clientY } = signal.value;
   target.style.transform = `translate(${clientX}px, ${clientY}px)`;
 });
@@ -23,9 +23,8 @@ Mouse, touch, pen—unified into a single API.
 Raw events become refined signals. Compose them into readable, extensible pipelines.
 
 ```typescript
-import { keydown, keyheld, wheel } from "cereb";
+import { keydown, keyheld, wheel, pinch } from "cereb";
 import { zoom as createZoom, when, extend, spy } from "cereb/operators";
-import { pinch } from "@cereb/pinch";
 
 const zoomMode$ = keyheld(window, { code: "KeyZ" });
 const zoom = () => createZoom({ minScale: 0.5, maxScale: 3.0, baseScale: getScale });

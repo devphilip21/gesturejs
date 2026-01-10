@@ -2,14 +2,10 @@
 
 Pan gesture recognition for pointer interactions. Tracks drag movements with velocity, direction, and distance.
 
-```bash
-npm install --save @cereb/pan
-```
-
 ## Basic Usage
 
 ```typescript
-import { pan } from "@cereb/pan";
+import { pan } from "cereb";
 
 pan(element).on((signal) => {
   const { phase, delta } = signal.value;
@@ -72,15 +68,13 @@ pointer down → (threshold met) → "start" → "move"* → "end" or "cancel"
 - **end**: Pointer released normally
 - **cancel**: Gesture interrupted (e.g., system event)
 
-## Operators
-
-### axisLock
+## With axisLock Operator
 
 Locks the pan to the initially detected axis.
 
 ```typescript
-import { pan } from "@cereb/pan";
-import { axisLock } from "@cereb/pan/operators";
+import { pan } from "cereb";
+import { axisLock } from "cereb/operators";
 
 pan(element)
   .pipe(axisLock())
@@ -94,51 +88,3 @@ pan(element)
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `lockThreshold` | `number` | `0` | Movement needed to determine axis |
-
-## Advanced: panRecognizer
-
-Use as an operator with custom pointer sources:
-
-```typescript
-import { singlePointer } from "cereb";
-import { panRecognizer } from "@cereb/pan";
-
-singlePointer(element)
-  .pipe(panRecognizer({ threshold: 10 }))
-  .on((signal) => { /* ... */ });
-```
-
-## Advanced: createPanRecognizer
-
-Low-level API for imperative usage or custom integrations.
-The recognizer accepts any signal that satisfies `PanSourceSignal` interface.
-
-```typescript
-import { createPanRecognizer, type PanSourceSignal } from "@cereb/pan";
-
-const recognizer = createPanRecognizer({ threshold: 10 });
-
-// Works with any source that provides the required properties
-function handlePointerEvent(signal: PanSourceSignal) {
-  const panEvent = recognizer.process(signal);
-  if (panEvent) {
-    console.log(panEvent.value.deltaX, panEvent.value.velocityX);
-  }
-}
-```
-
-### PanSourceSignal Interface
-
-```typescript
-interface PanSourceSignal {
-  value: {
-    phase: "start" | "move" | "end" | "cancel";
-    x: number;
-    y: number;
-    pageX: number;
-    pageY: number;
-  };
-  createdAt: number;
-  deviceId: string;
-}
-```

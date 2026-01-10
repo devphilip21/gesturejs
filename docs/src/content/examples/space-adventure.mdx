@@ -12,9 +12,8 @@ An interactive space canvas where you can zoom in and out using pinch gestures, 
 ## Code
 
 ```typescript
-import { wheel, keydown, keyheld, domEvent } from "cereb";
+import { wheel, keydown, keyheld, dom, pinch } from "cereb";
 import { zoom as createZoom, extend, when, spy } from "cereb/operators";
-import { pinch } from "@cereb/pinch";
 
 const zoomMode$ = keyheld(window, { code: "KeyZ" })
   .pipe(extend((signal) => ({ opened: signal.value.held })));

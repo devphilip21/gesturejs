@@ -45,7 +45,7 @@ keyboard(searchInput)
 
 ```typescript
 // Handle resize only after user stops resizing
-domEvent(window, "resize")
+dom(window, "resize")
   .pipe(debounce(200))
   .on(recalculateLayout);
 ```

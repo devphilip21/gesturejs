@@ -23,12 +23,12 @@ Pre-configured for SinglePointer signals (start → end/cancel).
 function singlePointerSession(): Operator<SinglePointerSignal, SinglePointerSignal>
 ```
 
-### multiPointerSession
+### multiPointersSession
 
-Pre-configured for MultiPointer signals with required pointer count.
+Pre-configured for MultiPointers signals with required pointer count.
 
 ```typescript
-function multiPointerSession(requiredCount: number): Operator<MultiPointerSignal, MultiPointerSignal>
+function multiPointersSession(requiredCount: number): Operator<MultiPointersSignal, MultiPointersSignal>
 ```
 
 ## Examples
@@ -46,14 +46,14 @@ singlePointer(element)
   });
 ```
 
-### Multi Pointer Session
+### Multi Pointers Session
 
 ```typescript
-import { multiPointer } from "cereb";
-import { multiPointerSession } from "cereb/operators";
+import { multiPointers } from "cereb";
+import { multiPointersSession } from "cereb/operators";
 
-multiPointer(element, { maxPointers: 2 })
-  .pipe(multiPointerSession(2)) // Wait for 2 pointers
+multiPointers(element, { maxPointers: 2 })
+  .pipe(multiPointersSession(2)) // Wait for 2 pointers
   .on((signal) => {
     // Only when 2 pointers are active
   });

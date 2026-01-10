@@ -3,31 +3,20 @@
 Suppose you want to handle a pinch gesture to implement zoom.
 Let's build it step by step.
 
-## 1. Install Packages
-
-Cereb is modular—install only what you need.
-
-| Package | Description |
-|---------|-------------|
-| `cereb` | Native events & operators |
-| `@cereb/pan` | Pan/drag/swipe gesture |
-| `@cereb/pinch` | Pinch/zoom gesture |
-| `@cereb/tap` | Tap gesture |
-
-For our pinch example:
+## 1. Install Cereb
 
 ```bash
-npm install @cereb/pinch
+npm install cereb
 ```
 
-> Gesture packages include `cereb` core as a dependency.
+All features—gestures, events, and operators—are included in a single package.
 
 ## 2. Create a Source Stream
 
 Import `pinch` and create a stream from your target element:
 
 ```typescript
-import { pinch } from "@cereb/pinch";
+import { pinch } from "cereb";
 
 const stream = pinch(element);
 ```
