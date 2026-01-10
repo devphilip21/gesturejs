@@ -67,17 +67,13 @@ Follow this format for all commits:
 
 ```
 {task_type}({package}): {title_message}
-
-- Key point 1
-- Key point 2
-- Key point 3
 ```
 
-### Guidelines for Description
-- Description is optional—include only if it adds essential context
-- Keep it concise: 1–2 bullet points is ideal, maximum 4
-- Prioritize accuracy and clarity over quantity
-- Focus on "why" and purpose, not implementation details
+### Guidelines
+- **Title only by default**: Keep the title short and concise (under 50 characters ideal)
+- **Description is rarely needed**: Only add description when essential context or rationale must be documented
+- When description is necessary, keep it to 1–2 bullet points maximum
+- Focus on "why" not "what"—the diff shows what changed
 
 ### Task Types
 - `feat`: New feature
@@ -105,28 +101,26 @@ Follow this format for all commits:
 
 ### Examples
 
+**Typical commits (title only):**
 ```
 feat(pinch): add pinch gesture recognition
-
-- Implement distance-based pinch detection
-- Add velocity calculation for zoom gestures
-- Integrate with existing pointer tracking system
+```
+```
+fix(core): resolve zoom operator scale calculation
+```
+```
+docs(pan): update velocity API reference
+```
+```
+refactor(core): simplify stream subscription logic
 ```
 
+**When description is needed (rare):**
 ```
-fix(core): resolve zoom operator issue
+fix(core): change default throttle behavior
 
-- Fix incorrect scale calculation in zoom operator
-- Update pointer position normalization
-- Add tests for edge cases
-```
-
-```
-docs(pan): update velocity documentation
-
-- Add API reference for velocity properties
-- Include code examples for pan gesture handling
-- Update README with performance notes
+- Breaking: throttle now uses trailing edge by default
+- Migration: add { leading: true } for previous behavior
 ```
 
 ### Commit Behavior
