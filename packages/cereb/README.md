@@ -1,61 +1,35 @@
-# [Cereb](https://cereb.dev)
-
-**User input handling and orchestration** library,  
-From low-level events (keyboard, wheel, pointer, ...) to high-level gestures (pan, pinch, ...)
+<h1 align="center"><img width="50" height="50" alt="Cereb logo" src="https://cereb.dev/logo-square-light.svg" /><br/>Cereb</h1>
+<h3 align="center">An open source interaction library<br />for composable gesture and event streams</h3>
+<p align="center">
+  <a href="https://www.npmjs.com/package/cereb" rel="noopener noreferrer nofollow" ><img src="https://img.shields.io/npm/v/cereb?color=0368FF&label=version" alt="npm version"></a>
+  <img alt="NPM License" src="https://img.shields.io/npm/l/cereb?color=FF2B6E">
+</p>
 
 ```bash
 npm install --save cereb
 ```
 
-<br>
+[Learn how to use Cereb in your project](https://cereb.dev).
 
-## Getting started
+## Table of Contents
 
-The example below moves an element by tracking pointer position:
+1. [Why Cereb?](#why-cereb)
+2. [Examples](#examples)
+3. [Documentation](#documentation)
+4. [License](#license)
+5. [Contributing](#contributing)
 
-```typescript
-import { singlePointer } from "cereb";
-
-// Create a stream from pointer events
-singlePointer(canvas)
-  // Listen to stream events
-  .on((signal) => {
-    // Receive signals from the stream
-    const { phase, cursor } = signal.value;
-    const [x, y] = cursor;
-    switch (phase){
-      case "move":
-        element.style.transform = `translate(${x}px, ${y}px)`;
-        break;
-    }
-  });
-```
-
-<br>
-
-## High-level gestures packages
-
-For advanced gestures like pan or pinch, install dedicated packages that build on top of Cereb's core:
-
-| Package | Description |
-|---------|-------------|
-| [@cereb/pan](https://www.npmjs.com/package/@cereb/pan) | Pan/drag gestures with velocity and direction tracking |
-| [@cereb/pinch](https://www.npmjs.com/package/@cereb/pinch) | Pinch-to-zoom with distance and scale calculations |
-| [@cereb/tap](https://www.npmjs.com/package/@cereb/tap) | Tap gesture recognition |
-
-### Pinch example
-
-```bash
-npm install --save cereb @cereb/pinch
-```
+## Examples
 
 ```typescript
+import { pinch } from "cereb/pinch";
 import { zoom } from "cereb/operators";
-import { pinch } from "@cereb/pinch";
 
+// pipe creates a pipeline where signals flow through operators
+// Each operator extends the signal (signals are immutable)
 pinch(element)
-  .pipe(zoom({ minScale: 0.5, maxScale: 3.0 }))
-  .on((signal) => {
+  // Operator: Determine scale value.
+  .pipe(zoom({ minScale: 0.5, maxScale: 3.0 })).on((signal) => {
     // The scale property is extended from the value.
     // - pinch emits distance → zoom calculates scale
     // - zoom also works with other inputs (keyboard, wheel, etc.)
@@ -63,35 +37,9 @@ pinch(element)
   });
 ```
 
-<br>
+[See all Examples and Demo →](https://cereb.dev/examples/space-adventure)
 
-## Documentation
-
-### Stream API
-
-Create streams from various input sources:
-
-| API | Description |
-|-----|-------------|
-| [pan](https://cereb.dev/stream-api/pan) | Pan gesture with velocity and direction |
-| [pinch](https://cereb.dev/stream-api/pinch) | Pinch gesture with distance and center |
-| [singlePointer](https://cereb.dev/stream-api/single-pointer) | Unified pointer (mouse/touch/pen) |
-| [multiPointer](https://cereb.dev/stream-api/multi-pointer) | Multi-touch tracking |
-| [keyboard](https://cereb.dev/stream-api/keyboard) | Keyboard events (keydown + keyup) |
-| [keydown](https://cereb.dev/stream-api/keydown) | Keydown events only |
-| [keyheld](https://cereb.dev/stream-api/keyheld) | Track if a key is held |
-| [wheel](https://cereb.dev/stream-api/wheel) | Wheel/scroll events |
-| [domEvent](https://cereb.dev/stream-api/dom-event) | Any DOM event |
-
-### Operator API
-
-Transform and compose streams with operators like `filter`, `map`, `merge`, `throttle`, `debounce`, and more.
-
-[See all operators →](https://cereb.dev/operator-api/compose)
-
-<br>
-
-## The Problems Cereb Solves
+## Why Cereb?
 
 - **No Abstraction for Event Flow** — DOM events lack structure for state, dependencies, and composition
 - **Lightweight Bundle** — ~77% smaller than Hammer.js (1.73 KB gzipped for pan gesture)
@@ -99,14 +47,26 @@ Transform and compose streams with operators like `filter`, `map`, `merge`, `thr
 
 [See detailed examples →](https://cereb.dev/core-concepts/the-problem-solves)
 
-<br>
+## Documentation
+
+You can find the Cereb documentation [on the website](https://cereb.dev).
+
+- **Core Concepts**
+    - [Key Models](https://cereb.dev/core-concepts/key-models/)
+    - [Behavior & Event](https://cereb.dev/core-concepts/behavior-and-event/)
+    - [Creating Operators](https://cereb.dev/core-concepts/creating-operators/)
+    - [High-Order Operators](https://cereb.dev/core-concepts/higher-order-operators/)
+    - [The Problem Solves](https://cereb.dev/core-concepts/the-problem-solves/)
+- **API Reference**
+    - [Stream](https://cereb.dev/stream-api/pan/)
+    - [Operators](https://cereb.dev/operator-api/compose/)
 
 ## Contributing
 
-Contributions are welcome! Please read our [Contributing Guide](https://github.com/devphilip21/cereb/blob/main/CONTRIBUTING.md).
+If you find Cereb useful, consider giving it a star — it helps others discover the project!
 
-<br>
+Contributions are welcome! Please read our [Contributing Guide](https://github.com/devphilip21/cereb/blob/main/CONTRIBUTING.md) before submitting a Pull Request.
 
 ## License
 
-MIT
+Cereb is [MIT licensed](https://github.com/devphilip21/cereb/blob/main/LICENSE).

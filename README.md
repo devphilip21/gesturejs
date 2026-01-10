@@ -20,14 +20,9 @@ npm install --save cereb
 
 ### Examples
 
-```bash
-npm install --save cereb @cereb/pinch
-```
-
 ```typescript
-import { pipe } from "cereb";
+import { pinch } from "cereb/pinch";
 import { zoom } from "cereb/operators";
-import { pinch } from "@cereb/pinch";
 
 // pipe creates a pipeline where signals flow through operators
 // Each operator extends the signal (signals are immutable)
