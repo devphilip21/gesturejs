@@ -1,6 +1,6 @@
 import type { Operator, Signal, Stream } from "cereb";
-import { createStream, multiPointer } from "cereb";
-import { multiPointerSession } from "cereb/operators";
+import { createStream, multiPointers } from "cereb";
+import { multiPointersSession } from "cereb/operators";
 import type { PinchSignal } from "./pinch-signal.js";
 import type { PinchOptions, PinchSourceValue } from "./pinch-types.js";
 import { createPinchRecognizer } from "./recognizer.js";
@@ -14,9 +14,9 @@ import { createPinchRecognizer } from "./recognizer.js";
  *
  * @example
  * ```typescript
- * multiPointer(element, { maxPointers: 2 })
+ * multiPointers(element, { maxPointers: 2 })
  *   .pipe(
- *     multiPointerSession(2),
+ *     multiPointersSession(2),
  *     pinchRecognizer({ threshold: 10 }),
  *     zoom({ minScale: 0.5, maxScale: 3.0 }),
  *   )
@@ -53,7 +53,7 @@ export function pinchRecognizer<T extends Signal<string, PinchSourceValue>>(
 /**
  * Creates a pinch gesture stream from an element.
  *
- * This is a convenience function that combines multiPointer, multiPointerSession,
+ * This is a convenience function that combines multiPointer, multiPointersSession,
  * and pinch recognition.
  *
  * @example
@@ -64,8 +64,8 @@ export function pinchRecognizer<T extends Signal<string, PinchSourceValue>>(
  * ```
  */
 export function pinch(target: EventTarget, options: PinchOptions = {}): Stream<PinchSignal> {
-  return multiPointer(target, { maxPointers: 2 }).pipe(
-    multiPointerSession(2),
+  return multiPointers(target, { maxPointers: 2 }).pipe(
+    multiPointersSession(2),
     pinchRecognizer(options),
   );
 }

@@ -67,13 +67,13 @@ const stream = pinch(element, { threshold: 10 });
 Operator that transforms multi-pointer signals into pinch events. Use this when composing with other operators.
 
 ```typescript
-import { multiPointer } from "cereb";
-import { multiPointerSession } from "cereb/operators";
+import { multiPointers } from "cereb";
+import { multiPointersSession } from "cereb/operators";
 import { pinchRecognizer } from "@cereb/pinch";
 
-multiPointer(element, { maxPointers: 2 })
+multiPointers(element, { maxPointers: 2 })
   .pipe(
-    multiPointerSession(2),
+    multiPointersSession(2),
     pinchRecognizer({ threshold: 10 })
   ).on((signal) => {
     // ...

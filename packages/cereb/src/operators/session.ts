@@ -1,8 +1,8 @@
-import type { MultiPointerSignal } from "../browser/multi-pointer/multi-pointer-signal.js";
-import type { SinglePointerSignal } from "../browser/single-pointer/single-pointer-signal.js";
 import type { Signal } from "../core/signal.js";
 import type { Operator } from "../core/stream.js";
 import { createStream } from "../core/stream.js";
+import type { MultiPointersSignal } from "../features/multi-pointers/multi-pointers-signal.js";
+import type { SinglePointerSignal } from "../features/single-pointer/single-pointer-signal.js";
 
 export interface SessionOptions<T extends Signal> {
   start: (signal: T) => boolean;
@@ -57,9 +57,9 @@ export function singlePointerSession(): Operator<SinglePointerSignal, SinglePoin
  * A session ends when any of the tracked pointers ends or cancels.
  * Additional pointers beyond requiredCount are ignored; only the initial tracked pointers matter.
  */
-export function multiPointerSession(
+export function multiPointersSession(
   requiredCount: number,
-): Operator<MultiPointerSignal, MultiPointerSignal> {
+): Operator<MultiPointersSignal, MultiPointersSignal> {
   return (source) =>
     createStream((observer) => {
       let active = false;

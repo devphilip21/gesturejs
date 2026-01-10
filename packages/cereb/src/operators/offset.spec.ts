@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
-import type { SinglePointerSignal } from "../browser/single-pointer/single-pointer-signal.js";
-import { createSinglePointerSignal } from "../browser/single-pointer/single-pointer-signal.js";
 import { createSignal, type Signal } from "../core/signal.js";
 import { createStream } from "../core/stream.js";
+import type { SinglePointerSignal } from "../features/single-pointer/single-pointer-signal.js";
+import { createSinglePointerSignal } from "../features/single-pointer/single-pointer-signal.js";
 import { type OffsetOperatorResult, offset } from "./offset.js";
 
 type OffsetPointerSignal = OffsetOperatorResult<SinglePointerSignal>;

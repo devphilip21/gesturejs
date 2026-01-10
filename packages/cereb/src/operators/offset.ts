@@ -12,7 +12,7 @@ export interface OffsetOptions {
    *
    * @example
    * // Cache rect, recalculate on window resize
-   * const resize$ = domEvent(window, 'resize');
+   * const resize$ = dom(window, 'resize');
    * offset({ target: el, recalculate$: resize$ })
    *
    * @example
