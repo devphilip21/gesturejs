@@ -1,6 +1,6 @@
 # @cereb/pinch
 
-> **DEPRECATED**: This package is deprecated. Please use [`cereb/pinch`](https://www.npmjs.com/package/cereb) instead.
+> **DEPRECATED**: This package is deprecated. Please use [`cereb`](https://www.npmjs.com/package/cereb) instead.
 
 ## Migration
 
@@ -16,12 +16,12 @@ Update your imports:
 
 ```diff
 - import { pinch, pinchRecognizer, createPinchRecognizer } from "@cereb/pinch";
-+ import { pinch, pinchRecognizer, createPinchRecognizer } from "cereb/pinch";
++ import { pinch, pinchRecognizer, createPinchRecognizer } from "cereb";
 ```
 
 ## Why?
 
-All gesture recognizers are now included in the main `cereb` package as subpath exports. This simplifies dependency management and ensures better compatibility.
+All gesture recognizers are now included in the main `cereb` package. This simplifies dependency management and ensures better compatibility.
 
 ## Documentation
 

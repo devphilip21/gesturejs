@@ -1,12 +1,24 @@
-export { pan, panRecognizer } from "./pan.js";
-export type { PanSignal, PanValue } from "./pan-signal.js";
-export type {
-  PanDirection,
-  PanDirectionMode,
-  PanOptions,
-  PanPhase,
-  PanSourcePhase,
-  PanSourceSignal,
-  PanSourceValue,
-} from "./pan-types.js";
-export { createPanRecognizer, type PanRecognizer } from "./recognizer.js";
+/**
+ * @deprecated This package is deprecated. Use `cereb` instead.
+ * @example
+ * // Before
+ * import { pan } from "@cereb/pan";
+ *
+ * // After
+ * import { pan } from "cereb";
+ */
+export {
+  createPanRecognizer,
+  type PanDirection,
+  type PanDirectionMode,
+  type PanOptions,
+  type PanPhase,
+  type PanRecognizer,
+  type PanSignal,
+  type PanSourcePhase,
+  type PanSourceSignal,
+  type PanSourceValue,
+  type PanValue,
+  pan,
+  panRecognizer,
+} from "cereb";

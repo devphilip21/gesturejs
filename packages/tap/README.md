@@ -1,6 +1,6 @@
 # @cereb/tap
 
-> **DEPRECATED**: This package is deprecated. Please use [`cereb/tap`](https://www.npmjs.com/package/cereb) instead.
+> **DEPRECATED**: This package is deprecated. Please use [`cereb`](https://www.npmjs.com/package/cereb) instead.
 
 ## Migration
 
@@ -16,12 +16,12 @@ Update your imports:
 
 ```diff
 - import { tap, tapRecognizer, tapEndOnly, createTapRecognizer } from "@cereb/tap";
-+ import { tap, tapRecognizer, tapEndOnly, createTapRecognizer } from "cereb/tap";
++ import { tap, tapRecognizer, tapEndOnly, createTapRecognizer } from "cereb";
 ```
 
 ## Why?
 
-All gesture recognizers are now included in the main `cereb` package as subpath exports. This simplifies dependency management and ensures better compatibility.
+All gesture recognizers are now included in the main `cereb` package. This simplifies dependency management and ensures better compatibility.
 
 ## Documentation
 

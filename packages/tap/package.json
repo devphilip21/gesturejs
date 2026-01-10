@@ -1,8 +1,8 @@
 {
   "name": "@cereb/tap",
   "version": "1.0.1",
-  "deprecated": "This package is deprecated. Please use 'cereb/tap' instead. Install cereb and import from 'cereb/tap'.",
-  "description": "[DEPRECATED] Use cereb/tap instead. Tap gesture recognition with multi-tap support.",
+  "deprecated": "This package is deprecated. Please use 'cereb' instead. Import { tap } from 'cereb'.",
+  "description": "[DEPRECATED] Use cereb instead. Tap gesture recognition with multi-tap support.",
   "license": "MIT",
   "author": "devphilip21 <philip21.dev@gmail.com>",
   "repository": {
@@ -18,9 +18,6 @@
     "tap",
     "click",
     "gesture",
-    "touch",
-    "pointer",
-    "double-tap",
     "cereb",
     "deprecated"
   ],
@@ -42,19 +39,12 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "builder build",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "build": "builder build"
   },
-  "peerDependencies": {
+  "dependencies": {
     "cereb": "workspace:^"
   },
   "devDependencies": {
-    "@cereb/builder": "workspace:^",
-    "@vitest/coverage-v8": "*",
-    "jsdom": "*",
-    "vite": "*",
-    "vitest": "*"
+    "@cereb/builder": "workspace:^"
   }
 }

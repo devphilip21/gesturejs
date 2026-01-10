@@ -1,8 +1,8 @@
 {
   "name": "@cereb/pinch",
   "version": "1.0.1",
-  "deprecated": "This package is deprecated. Please use 'cereb/pinch' instead. Install cereb and import from 'cereb/pinch'.",
-  "description": "[DEPRECATED] Use cereb/pinch instead. Pinch gesture recognition for multi-touch interactions.",
+  "deprecated": "This package is deprecated. Please use 'cereb' instead. Import { pinch } from 'cereb'.",
+  "description": "[DEPRECATED] Use cereb instead. Pinch gesture recognition for multi-touch interactions.",
   "license": "MIT",
   "author": "devphilip21 <philip21.dev@gmail.com>",
   "repository": {
@@ -18,9 +18,6 @@
     "pinch",
     "zoom",
     "gesture",
-    "touch",
-    "pointer",
-    "multi-touch",
     "cereb",
     "deprecated"
   ],
@@ -42,19 +39,12 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "builder build",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "build": "builder build"
   },
-  "peerDependencies": {
+  "dependencies": {
     "cereb": "workspace:^"
   },
   "devDependencies": {
-    "@cereb/builder": "workspace:^",
-    "@vitest/coverage-v8": "*",
-    "jsdom": "*",
-    "vite": "*",
-    "vitest": "*"
+    "@cereb/builder": "workspace:^"
   }
 }
