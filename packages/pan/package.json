@@ -1,8 +1,8 @@
 {
   "name": "@cereb/pan",
   "version": "1.0.1",
-  "deprecated": "This package is deprecated. Please use 'cereb/pan' instead. Install cereb and import from 'cereb/pan'.",
-  "description": "[DEPRECATED] Use cereb/pan instead. Pan gesture recognition for pointer interactions.",
+  "deprecated": "This package is deprecated. Please use 'cereb' instead. Import { pan } from 'cereb'.",
+  "description": "[DEPRECATED] Use cereb instead. Pan gesture recognition for pointer interactions.",
   "license": "MIT",
   "author": "devphilip21 <philip21.dev@gmail.com>",
   "repository": {
@@ -17,10 +17,6 @@
   "keywords": [
     "pan",
     "gesture",
-    "touch",
-    "pointer",
-    "drag",
-    "swipe",
     "cereb",
     "deprecated"
   ],
@@ -34,11 +30,6 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
-    },
-    "./operators": {
-      "types": "./dist/operators/index.d.ts",
-      "import": "./dist/operators/index.js",
-      "require": "./dist/operators/index.cjs"
     }
   },
   "files": [
@@ -47,19 +38,12 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "builder build",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "build": "builder build"
   },
-  "peerDependencies": {
+  "dependencies": {
     "cereb": "workspace:^"
   },
   "devDependencies": {
-    "@cereb/builder": "workspace:^",
-    "@vitest/coverage-v8": "*",
-    "jsdom": "*",
-    "vite": "*",
-    "vitest": "*"
+    "@cereb/builder": "workspace:^"
   }
 }

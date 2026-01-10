@@ -1,11 +1,23 @@
-export { pinch, pinchRecognizer } from "./pinch.js";
-export type { PinchSignal, PinchValue } from "./pinch-signal.js";
-export type {
-  PinchOptions,
-  PinchPhase,
-  PinchSourcePhase,
-  PinchSourcePointer,
-  PinchSourceSignal,
-  PinchSourceValue,
-} from "./pinch-types.js";
-export { createPinchRecognizer, type PinchRecognizer } from "./recognizer.js";
+/**
+ * @deprecated This package is deprecated. Use `cereb` instead.
+ * @example
+ * // Before
+ * import { pinch } from "@cereb/pinch";
+ *
+ * // After
+ * import { pinch } from "cereb";
+ */
+export {
+  createPinchRecognizer,
+  type PinchOptions,
+  type PinchPhase,
+  type PinchRecognizer,
+  type PinchSignal,
+  type PinchSourcePhase,
+  type PinchSourcePointer,
+  type PinchSourceSignal,
+  type PinchSourceValue,
+  type PinchValue,
+  pinch,
+  pinchRecognizer,
+} from "cereb";

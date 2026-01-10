@@ -1,11 +1,24 @@
-export { createTapRecognizer, type TapRecognizer } from "./recognizer.js";
-export { tap, tapEndOnly, tapRecognizer } from "./tap.js";
-export type { TapSignal, TapValue } from "./tap-signal.js";
-export type {
-  TapOptions,
-  TapPhase,
-  TapSourcePhase,
-  TapSourcePointerType,
-  TapSourceSignal,
-  TapSourceValue,
-} from "./tap-types.js";
+/**
+ * @deprecated This package is deprecated. Use `cereb` instead.
+ * @example
+ * // Before
+ * import { tap } from "@cereb/tap";
+ *
+ * // After
+ * import { tap } from "cereb";
+ */
+export {
+  createTapRecognizer,
+  type TapOptions,
+  type TapPhase,
+  type TapRecognizer,
+  type TapSignal,
+  type TapSourcePhase,
+  type TapSourcePointerType,
+  type TapSourceSignal,
+  type TapSourceValue,
+  type TapValue,
+  tap,
+  tapEndOnly,
+  tapRecognizer,
+} from "cereb";
