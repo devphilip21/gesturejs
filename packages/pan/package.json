@@ -1,8 +1,8 @@
 {
   "name": "@cereb/pan",
-  "private": true,
-  "description": "Pan gesture recognition, designed to work seamlessly with reactive streams and other gesture interactions.",
-  "version": "1.0.0",
+  "version": "1.0.1",
+  "deprecated": "This package is deprecated. Please use 'cereb/pan' instead. Install cereb and import from 'cereb/pan'.",
+  "description": "[DEPRECATED] Use cereb/pan instead. Pan gesture recognition for pointer interactions.",
   "license": "MIT",
   "author": "devphilip21 <philip21.dev@gmail.com>",
   "repository": {
@@ -21,7 +21,8 @@
     "pointer",
     "drag",
     "swipe",
-    "cereb"
+    "cereb",
+    "deprecated"
   ],
   "type": "module",
   "sideEffects": false,

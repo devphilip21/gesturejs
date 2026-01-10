@@ -1,8 +1,8 @@
 {
   "name": "@cereb/tap",
-  "private": true,
-  "description": "Tap gesture recognition with multi-tap support, designed for reactive streams.",
-  "version": "1.0.0",
+  "version": "1.0.1",
+  "deprecated": "This package is deprecated. Please use 'cereb/tap' instead. Install cereb and import from 'cereb/tap'.",
+  "description": "[DEPRECATED] Use cereb/tap instead. Tap gesture recognition with multi-tap support.",
   "license": "MIT",
   "author": "devphilip21 <philip21.dev@gmail.com>",
   "repository": {
@@ -21,7 +21,8 @@
     "touch",
     "pointer",
     "double-tap",
-    "cereb"
+    "cereb",
+    "deprecated"
   ],
   "type": "module",
   "sideEffects": false,

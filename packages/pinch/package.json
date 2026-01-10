@@ -1,8 +1,8 @@
 {
   "name": "@cereb/pinch",
-  "private": true,
-  "description": "Pinch gesture recognition, designed to work seamlessly with reactive streams and other gesture interactions.",
-  "version": "1.0.0",
+  "version": "1.0.1",
+  "deprecated": "This package is deprecated. Please use 'cereb/pinch' instead. Install cereb and import from 'cereb/pinch'.",
+  "description": "[DEPRECATED] Use cereb/pinch instead. Pinch gesture recognition for multi-touch interactions.",
   "license": "MIT",
   "author": "devphilip21 <philip21.dev@gmail.com>",
   "repository": {
@@ -21,7 +21,8 @@
     "touch",
     "pointer",
     "multi-touch",
-    "cereb"
+    "cereb",
+    "deprecated"
   ],
   "type": "module",
   "sideEffects": false,
