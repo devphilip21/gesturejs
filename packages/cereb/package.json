@@ -53,46 +53,6 @@
       "types": "./dist/frp.d.ts",
       "import": "./dist/frp.js",
       "require": "./dist/frp.cjs"
-    },
-    "./dom": {
-      "types": "./dist/dom.d.ts",
-      "import": "./dist/dom.js",
-      "require": "./dist/dom.cjs"
-    },
-    "./keyboard": {
-      "types": "./dist/keyboard.d.ts",
-      "import": "./dist/keyboard.js",
-      "require": "./dist/keyboard.cjs"
-    },
-    "./single-pointer": {
-      "types": "./dist/single-pointer.d.ts",
-      "import": "./dist/single-pointer.js",
-      "require": "./dist/single-pointer.cjs"
-    },
-    "./multi-pointers": {
-      "types": "./dist/multi-pointers.d.ts",
-      "import": "./dist/multi-pointers.js",
-      "require": "./dist/multi-pointers.cjs"
-    },
-    "./wheel": {
-      "types": "./dist/wheel.d.ts",
-      "import": "./dist/wheel.js",
-      "require": "./dist/wheel.cjs"
-    },
-    "./pan": {
-      "types": "./dist/pan.d.ts",
-      "import": "./dist/pan.js",
-      "require": "./dist/pan.cjs"
-    },
-    "./pinch": {
-      "types": "./dist/pinch.d.ts",
-      "import": "./dist/pinch.js",
-      "require": "./dist/pinch.cjs"
-    },
-    "./tap": {
-      "types": "./dist/tap.d.ts",
-      "import": "./dist/tap.js",
-      "require": "./dist/tap.cjs"
     }
   },
   "files": [

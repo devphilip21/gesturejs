@@ -1,3 +1,5 @@
+export type { AxisLockOptions, LockedAxis } from "./axis-lock.js";
+export { axisLock } from "./axis-lock.js";
 export { compose } from "./compose.js";
 export { debounce } from "./debounce.js";
 export { exhaustMap } from "./exhaust-map.js";

@@ -21,7 +21,7 @@ npm install --save cereb
 ### Examples
 
 ```typescript
-import { pinch } from "cereb/pinch";
+import { pinch } from "cereb";
 import { zoom } from "cereb/operators";
 
 // pipe creates a pipeline where signals flow through operators
