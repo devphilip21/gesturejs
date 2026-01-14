@@ -1,13 +1,14 @@
 name: Release
-run-name: "Release packages @${{ github.sha }}"
+run-name: "Release packages @${{ github.event.workflow_run.head_sha || github.sha }}"
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
     branches:
       - main
-    paths:
-      - 'packages/**'
-      - '.github/workflows/release.yml'
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -17,40 +18,69 @@ jobs:
   release:
     runs-on: ubuntu-latest
     environment: release
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Check for package changes
+        id: changes
+        run: |
+          # Manual trigger always proceeds
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Manual trigger - proceeding with release"
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          CHANGED=$(git diff --name-only HEAD^..HEAD | grep -E '^packages/' || true)
+          if [ -z "$CHANGED" ]; then
+            echo "No package changes detected"
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "Package changes detected:"
+            echo "$CHANGED"
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
       - name: Setup Git
+        if: steps.changes.outputs.has_changes == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Setup pnpm
+        if: steps.changes.outputs.has_changes == 'true'
         uses: pnpm/action-setup@v4
         with:
           version: 10
 
       - name: Setup Node.js
+        if: steps.changes.outputs.has_changes == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: 'pnpm'
 
       - name: Install dependencies
+        if: steps.changes.outputs.has_changes == 'true'
         run: pnpm install
 
       - name: Build packages
+        if: steps.changes.outputs.has_changes == 'true'
         run: npx nx run-many -t build --projects=cereb,@cereb/*
 
       - name: Run tests
+        if: steps.changes.outputs.has_changes == 'true'
         run: npx nx run-many -t test --projects=cereb,@cereb/*
 
       - name: Publish packages (Trusted Publishing / provenance, custom order)
+        if: steps.changes.outputs.has_changes == 'true'
         # Prerequisite: npm Trusted Publishing(OIDC) must be configured for each package
         # and bound to this repository + workflow path (`.github/workflows/release.yml`).
         #
