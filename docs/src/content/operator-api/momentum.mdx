@@ -1,0 +1,109 @@
+# `momentum`
+
+Adds physics-based momentum (inertia) after gesture ends. Generates synthetic signals with decelerating velocity.
+
+## Signature
+
+```typescript
+function momentum<T extends SignalWith<{ velocity: Vector; phase?: string }>>(
+  options?: MomentumOptions
+): Operator<T, T & { momentumDelta: Vector; isMomentum: boolean }>
+```
+
+## Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `friction` | `number` | `0.95` | Velocity retention per frame (0-1). Higher = slower deceleration |
+| `minVelocity` | `number` | `0.1` | Minimum velocity to continue momentum |
+| `maxDuration` | `number` | `2000` | Maximum momentum duration in milliseconds |
+
+## Output Value
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `momentumDelta` | `Vector` | Synthetic delta from momentum physics (or `[0, 0]` during gesture) |
+| `isMomentum` | `boolean` | `true` for synthetic momentum signals, `false` for direct input |
+
+## How It Works
+
+1. **During gesture**: Passes signals through with `isMomentum: false`
+2. **After gesture ends**: If velocity exceeds `minVelocity`, generates synthetic signals at ~60fps
+3. **Deceleration**: Each frame, velocity is multiplied by `friction` (e.g., 0.95 = 5% reduction per frame)
+4. **Stop condition**: Stops when velocity drops below `minVelocity` or `maxDuration` is reached
+
+## Examples
+
+### Basic Momentum
+
+```typescript
+import { pan } from "cereb";
+import { momentum } from "cereb/operators";
+
+pan(element)
+  .pipe(momentum())
+  .on((signal) => {
+    if (signal.value.isMomentum) {
+      // Apply momentum delta
+      const [dx, dy] = signal.value.momentumDelta;
+      position.x += dx;
+      position.y += dy;
+    } else {
+      // Apply pan delta directly
+      position.x += signal.value.delta[0];
+      position.y += signal.value.delta[1];
+    }
+    element.style.transform = `translate(${position.x}px, ${position.y}px)`;
+  });
+```
+
+### With 3D Rotation
+
+```typescript
+import { pan } from "cereb";
+import { rotate3d, momentum } from "cereb/operators";
+
+pan(element)
+  .pipe(
+    rotate3d({ sensitivityX: 0.5, sensitivityY: 0.5 }),
+    momentum({ friction: 0.95, minVelocity: 0.01 })
+  )
+  .on((signal) => {
+    if (signal.value.isMomentum) {
+      rotationManager.addDelta(...signal.value.momentumDelta);
+    } else {
+      rotationManager.addDelta(...signal.value.rotation);
+    }
+  });
+```
+
+### Tuning Friction
+
+```typescript
+// Quick stop (high friction = fast deceleration)
+momentum({ friction: 0.85 })  // Stops quickly
+
+// Smooth glide (low friction = slow deceleration)
+momentum({ friction: 0.98 })  // Long, smooth deceleration
+
+// Default balance
+momentum({ friction: 0.95 })  // Moderate deceleration
+```
+
+### Limiting Duration
+
+```typescript
+// Maximum 1 second of momentum
+momentum({
+  friction: 0.98,
+  maxDuration: 1000,
+})
+```
+
+## Input Requirements
+
+The input signal must have:
+- `velocity`: A `Vector` (array of numbers) representing current velocity
+- `phase`: Optional string (`"start"`, `"move"`, `"end"`, `"cancel"`)
+
+The `pan` gesture stream provides these values automatically.

@@ -1,7 +1,13 @@
 import { createStream, type Stream } from "../../core/stream.js";
 import { createDomSignal, type DomSignal } from "./dom-signal.js";
 
-const POINTER_EVENTS = ["pointerdown", "pointermove", "pointerup", "pointercancel"] as const;
+const POINTER_EVENTS = [
+  "pointerdown",
+  "pointermove",
+  "pointerup",
+  "pointercancel",
+  "pointerleave",
+] as const;
 
 export function pointer(
   target: EventTarget,

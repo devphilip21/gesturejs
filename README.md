@@ -24,15 +24,19 @@ npm install --save cereb
 import { pinch } from "cereb";
 import { zoom } from "cereb/operators";
 
+let scale = 1.0;
+const MIN_SCALE = 0.5, MAX_SCALE = 3.0;
+
 // pipe creates a pipeline where signals flow through operators
 // Each operator extends the signal (signals are immutable)
 pinch(element)
-  // Operator: Determine scale value.
-  .pipe(zoom({ minScale: 0.5, maxScale: 3.0 })).on((signal) => {
-    // The scale property is extended from the value.
-    // - pinch emits distance → zoom calculates scale
-    // - zoom also works with other inputs (keyboard, wheel, etc.)
-    element.style.transform = `scale(${signal.value.scale})`;
+  // Operator: Convert ratio to scale delta
+  .pipe(zoom())
+  .on((signal) => {
+    // zoom outputs frame-by-frame delta, accumulate and clamp
+    scale += signal.value.scale;
+    scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale));
+    element.style.transform = `scale(${scale})`;
   });
 ```
 

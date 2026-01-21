@@ -136,12 +136,20 @@
           "slug": "operator-api/merge"
         },
         {
+          "label": "momentum",
+          "slug": "operator-api/momentum"
+        },
+        {
           "label": "offset",
           "slug": "operator-api/offset"
         },
         {
           "label": "reduce",
           "slug": "operator-api/reduce"
+        },
+        {
+          "label": "rotate3d",
+          "slug": "operator-api/rotate3d"
         },
         {
           "label": "session",
@@ -162,6 +170,10 @@
         {
           "label": "throttle",
           "slug": "operator-api/throttle"
+        },
+        {
+          "label": "translate",
+          "slug": "operator-api/translate"
         },
         {
           "label": "when",

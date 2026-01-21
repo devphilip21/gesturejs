@@ -1,0 +1,94 @@
+# `translate`
+
+Converts pan delta to 2D translation coordinates. Useful for drag-to-move interactions.
+
+## Signature
+
+```typescript
+function translate<T extends SignalWith<{ delta: Vector }>>(
+  options?: TranslateOptions
+): Operator<T, T & { translate: [number, number] }>
+```
+
+## Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `baseTranslate` | `[number, number] \| () => [number, number]` | `[0, 0]` | Base position or getter function |
+| `sensitivity` | `number` | `1.0` | Multiplier applied to delta values |
+
+## Output Value
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `translate` | `[number, number]` | Current translation position `[x, y]` |
+
+## Examples
+
+### Basic Drag
+
+```typescript
+import { pan } from "cereb";
+import { translate } from "cereb/operators";
+
+pan(element)
+  .pipe(translate())
+  .on((signal) => {
+    const [x, y] = signal.value.translate;
+    element.style.transform = `translate(${x}px, ${y}px)`;
+  });
+```
+
+### With Base Position
+
+Sync with external position state:
+
+```typescript
+let position = [100, 50];
+
+pan(element)
+  .pipe(
+    translate({
+      baseTranslate: () => position,  // Start from current position
+    })
+  )
+  .on((signal) => {
+    const [x, y] = signal.value.translate;
+    element.style.transform = `translate(${x}px, ${y}px)`;
+
+    // Update position on gesture end
+    if (signal.value.phase === "end") {
+      position = [x, y];
+    }
+  });
+```
+
+### Adjusted Sensitivity
+
+```typescript
+pan(element)
+  .pipe(
+    translate({
+      sensitivity: 1.5,  // Move 50% faster than finger
+    })
+  )
+  .on((signal) => {
+    const [x, y] = signal.value.translate;
+    element.style.transform = `translate(${x}px, ${y}px)`;
+  });
+```
+
+### Bounded Movement
+
+```typescript
+const BOUNDS = { minX: 0, maxX: 500, minY: 0, maxY: 300 };
+
+pan(element)
+  .pipe(translate())
+  .on((signal) => {
+    let [x, y] = signal.value.translate;
+    x = Math.max(BOUNDS.minX, Math.min(BOUNDS.maxX, x));
+    y = Math.max(BOUNDS.minY, Math.min(BOUNDS.maxY, y));
+    element.style.transform = `translate(${x}px, ${y}px)`;
+  });
+```

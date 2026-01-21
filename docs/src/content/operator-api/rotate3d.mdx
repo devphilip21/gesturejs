@@ -1,0 +1,95 @@
+# `rotate3d`
+
+Converts 2D pan movement to 3D rotation delta. Maps horizontal pan to Y-axis rotation (yaw) and vertical pan to X-axis rotation (pitch).
+
+## Signature
+
+```typescript
+function rotate3d<T extends SignalWith<{ delta: Vector; phase?: string }>>(
+  options?: Rotate3DOptions
+): Operator<T, T & { rotation: Vector; deltaRotation: Vector }>
+```
+
+## Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `sensitivityX` | `number` | `1.0` | Multiplier for X-axis rotation (from vertical pan) |
+| `sensitivityY` | `number` | `1.0` | Multiplier for Y-axis rotation (from horizontal pan) |
+| `invertX` | `boolean` | `false` | Invert X-axis rotation direction |
+| `invertY` | `boolean` | `false` | Invert Y-axis rotation direction |
+
+## Output Value
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `rotation` | `[number, number, number]` | Frame-by-frame rotation delta in radians `[rx, ry, rz]` |
+| `deltaRotation` | `[number, number, number]` | Same as `rotation` (deprecated) |
+
+## Design Philosophy
+
+The `rotate3d` operator outputs **delta values** rather than absolute rotation. The consumer accumulates these deltas to track absolute rotation state.
+
+Base sensitivity is ~0.5 degrees per pixel (`Math.PI / 360` rad/px).
+
+## Examples
+
+### Basic 3D Rotation
+
+```typescript
+import { pan } from "cereb";
+import { rotate3d } from "cereb/operators";
+
+let rotation = [0, 0, 0];
+
+pan(element)
+  .pipe(rotate3d())
+  .on((signal) => {
+    const [drx, dry, drz] = signal.value.rotation;
+    rotation[0] += drx;
+    rotation[1] += dry;
+    rotation[2] += drz;
+    element.style.transform = `rotateX(${rotation[0]}rad) rotateY(${rotation[1]}rad)`;
+  });
+```
+
+### Adjusted Sensitivity
+
+```typescript
+pan(canvas)
+  .pipe(
+    rotate3d({
+      sensitivityX: 0.5,  // Less sensitive for pitch
+      sensitivityY: 0.8,  // Slightly less sensitive for yaw
+    })
+  )
+  .on((signal) => {
+    rotationManager.addDelta(...signal.value.rotation);
+  });
+```
+
+### With Momentum
+
+Combine with `momentum` for inertial rotation after gesture ends:
+
+```typescript
+import { pan } from "cereb";
+import { rotate3d, momentum } from "cereb/operators";
+
+pan(element)
+  .pipe(
+    rotate3d({ sensitivityX: 0.5, sensitivityY: 0.5 }),
+    momentum({ friction: 0.95, minVelocity: 0.01 })
+  )
+  .on((signal) => {
+    if (signal.value.isMomentum) {
+      rotationManager.addDelta(...signal.value.momentumDelta);
+    } else {
+      rotationManager.addDelta(...signal.value.rotation);
+    }
+  });
+```
+
+## Session Handling
+
+The operator resets its internal state when `phase` is `"end"` or `"cancel"`, making it ready for the next gesture session.

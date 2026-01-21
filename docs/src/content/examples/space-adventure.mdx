@@ -3,58 +3,93 @@ import SpaceAdventure from "@/components/examples/space-adventure.astro";
 
 # Space Adventure
 
-An interactive space canvas where you can zoom in and out using pinch gestures, keyboard, or mouse wheel.
+An interactive 3D space canvas with drag-to-rotate and multi-input zoom controls.
 
-> **Note:** Multiple input sources are orchestrated into a consistent zoom behavior.
+> **Features:** Drag to rotate the solar system in 3D. Pinch, double tap, or use keyboard/wheel to zoom.
 
 <SpaceAdventure />
 
 ## Code
 
+### 3D Rotation with Pan
+
 ```typescript
-import { wheel, keydown, keyheld, dom, pinch } from "cereb";
-import { zoom as createZoom, extend, when, spy } from "cereb/operators";
+import { pan } from "cereb";
+import { rotate3d } from "cereb/operators";
 
-const zoomMode$ = keyheld(window, { code: "KeyZ" })
-  .pipe(extend((signal) => ({ opened: signal.value.held })));
+// Pan gesture -> 3D rotation
+pan(box, { threshold: 5 })
+  .pipe(
+    rotate3d({
+      sensitivityX: 0.5,
+      sensitivityY: 0.5,
+    }),
+  )
+  .on((signal) => {
+    const [drx, dry, drz] = signal.value.rotation;
+    rotationManager.addDelta(drx, dry, drz);
+  });
+```
 
-const zoom = (options = {}) => createZoom({
-  minScale: MIN_SCALE,
-  maxScale: MAX_SCALE,
-  baseScale: () => zoomManager.getScale(),
-  ...options
-});
+### Pinch Zoom with Delta
 
-// Pinch Zoom - phase-based session management (baseScale captured at start)
+```typescript
+import { pinch } from "cereb";
+import { zoom as createZoom, extend } from "cereb/operators";
+
+const PINCH_SENSITIVITY = 0.4;
+
+// Pinch zoom - uses delta-based zoom operator
 pinch(box, { threshold: 10 })
   .pipe(
     extend((signal) => ({
       ratio: 1 + (signal.value.ratio - 1) * PINCH_SENSITIVITY,
     })),
-    zoom(),
+    createZoom(),
   )
-  .on(render);
+  .on((signal) => {
+    // Accumulate delta and clamp
+    const newScale = clamp(
+      zoomManager.getScale() + signal.value.scale,
+      MIN_SCALE,
+      MAX_SCALE
+    );
+    zoomManager.setScale(newScale);
+  });
+```
 
-// 'z' + '+/-' - ratio as absolute scale (current × factor)
+### Keyboard & Wheel Zoom
+
+```typescript
+import { wheel, keydown, keyheld } from "cereb";
+import { when, spy } from "cereb/operators";
+
+const zoomMode$ = keyheld(window, { code: "KeyZ" })
+  .pipe(extend((signal) => ({ opened: signal.value.held })));
+
+// 'z' + '+/-' keyboard zoom
 keydown(window, { code: ["Equal", "Minus"] })
   .pipe(
     when(zoomMode$),
-    extend((signal) => ({
-      ratio: zoomManager.getScale() * (signal.value.code === "Equal" ? 1.2 : 1 / 1.2),
-    })),
-    zoom({ baseScale: 1.0 }),
+    spy((signal) => signal.value.originalEvent.preventDefault()),
   )
-  .on(render);
+  .on((signal) => {
+    const currentScale = zoomManager.getScale();
+    const multiplier = signal.value.code === "Equal" ? 1.2 : 1 / 1.2;
+    const targetScale = clamp(currentScale * multiplier, MIN_SCALE, MAX_SCALE);
+    zoomManager.setScale(targetScale);
+  });
 
-// 'z' + 'wheel' - ratio as absolute scale (current × factor)
+// 'z' + wheel zoom
 wheel(box, { passive: false })
   .pipe(
     when(zoomMode$),
     spy((signal) => signal.value.originalEvent.preventDefault()),
-    extend((signal) => ({
-      ratio: zoomManager.getScale() * Math.exp(-signal.value.deltaY * 0.005),
-    })),
-    zoom({ baseScale: 1.0 }),
   )
-  .on(render);
+  .on((signal) => {
+    const currentScale = zoomManager.getScale();
+    const multiplier = Math.exp(-signal.value.deltaY * 0.005);
+    const targetScale = clamp(currentScale * multiplier, MIN_SCALE, MAX_SCALE);
+    zoomManager.setScale(targetScale);
+  });
 ```

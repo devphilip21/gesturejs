@@ -501,21 +501,109 @@ singlePointer(canvas)
 
 ### zoom
 
-Calculate bounded scale from ratio input.
+Convert ratio input to frame-by-frame scale delta. Consumer accumulates and clamps.
 
 ```typescript
-function zoom<T extends SignalWith<{ ratio: number }>>(options?: {
-  minScale?: number;
-  maxScale?: number;
-  baseScale?: number | (() => number);
-  mode?: "multiply" | "add";
-}): Operator<T, T & { scale: number; deltaScale: number }>
+function zoom<T extends SignalWith<{ ratio: number; phase?: string }>>(
+  options?: ZoomOptions
+): Operator<T, T & { scale: number; deltaScale: number }>
+```
+
+**Output:**
+- `scale`: Frame-by-frame scale delta (not absolute scale)
+- `deltaScale`: Same as scale (deprecated)
+
+```typescript
+let scale = 1.0;
+const MIN_SCALE = 0.5, MAX_SCALE = 3.0;
+
+pinch(element)
+  .pipe(zoom())
+  .on((s) => {
+    scale += s.value.scale;
+    scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale));
+    element.style.transform = `scale(${scale})`;
+  });
+```
+
+### rotate3d
+
+Convert 2D pan to 3D rotation delta. Horizontal pan → Y-axis rotation, vertical pan → X-axis rotation.
+
+```typescript
+function rotate3d<T extends SignalWith<{ delta: Vector; phase?: string }>>(options?: {
+  sensitivityX?: number;  // default 1.0
+  sensitivityY?: number;  // default 1.0
+  invertX?: boolean;      // default false
+  invertY?: boolean;      // default false
+}): Operator<T, T & { rotation: Vector; deltaRotation: Vector }>
+```
+
+**Output:**
+- `rotation`: Frame-by-frame rotation delta in radians `[rx, ry, rz]`
+
+```typescript
+let rotation = [0, 0, 0];
+
+pan(element)
+  .pipe(rotate3d({ sensitivityX: 0.5, sensitivityY: 0.5 }))
+  .on((s) => {
+    const [drx, dry, drz] = s.value.rotation;
+    rotation[0] += drx;
+    rotation[1] += dry;
+    element.style.transform = `rotateX(${rotation[0]}rad) rotateY(${rotation[1]}rad)`;
+  });
+```
+
+### translate
+
+Convert pan delta to 2D translation coordinates.
+
+```typescript
+function translate<T extends SignalWith<{ delta: Vector }>>(options?: {
+  baseTranslate?: [number, number] | (() => [number, number]);  // default [0, 0]
+  sensitivity?: number;  // default 1.0
+}): Operator<T, T & { translate: [number, number] }>
 ```
 
 ```typescript
-pinch(element)
-  .pipe(zoom({ minScale: 0.5, maxScale: 3.0 }))
-  .on((s) => element.style.transform = `scale(${s.value.scale})`);
+pan(element)
+  .pipe(translate())
+  .on((s) => {
+    const [x, y] = s.value.translate;
+    element.style.transform = `translate(${x}px, ${y}px)`;
+  });
+```
+
+### momentum
+
+Add physics-based inertia after gesture ends. Generates synthetic signals with decelerating velocity.
+
+```typescript
+function momentum<T extends SignalWith<{ velocity: Vector; phase?: string }>>(options?: {
+  friction?: number;     // default 0.95, velocity retention per frame
+  minVelocity?: number;  // default 0.1
+  maxDuration?: number;  // default 2000ms
+}): Operator<T, T & { momentumDelta: Vector; isMomentum: boolean }>
+```
+
+**Output:**
+- `momentumDelta`: Synthetic delta from momentum physics
+- `isMomentum`: `true` for synthetic momentum signals, `false` for direct input
+
+```typescript
+pan(element)
+  .pipe(
+    rotate3d({ sensitivityX: 0.5 }),
+    momentum({ friction: 0.95 })
+  )
+  .on((s) => {
+    if (s.value.isMomentum) {
+      rotationManager.addDelta(...s.value.momentumDelta);
+    } else {
+      rotationManager.addDelta(...s.value.rotation);
+    }
+  });
 ```
 
 ### when
@@ -650,38 +738,62 @@ singlePointer(element)
 import { wheel, keyheld, keydown, pinch } from "cereb";
 import { when, extend, spy, zoom } from "cereb/operators";
 
-let currentScale = 1;
-const zoomOp = () => zoom({ minScale: 0.5, maxScale: 3.0, baseScale: () => currentScale });
+let scale = 1;
+const MIN_SCALE = 0.5, MAX_SCALE = 3.0;
+const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
 const zoomMode$ = keyheld(window, { code: "KeyZ" })
   .pipe(extend((s) => ({ opened: s.value.held })));
 
-// Pinch zoom
-pinch(element).pipe(zoomOp()).on(apply);
+// Pinch zoom - uses delta-based zoom operator
+pinch(element)
+  .pipe(zoom())
+  .on((s) => {
+    scale = clamp(scale + s.value.scale, MIN_SCALE, MAX_SCALE);
+    element.style.transform = `scale(${scale})`;
+  });
 
-// Z + wheel zoom
+// Z + wheel zoom - compute scale directly
 wheel(element, { passive: false })
   .pipe(
     when(zoomMode$),
-    spy((s) => s.value.originalEvent.preventDefault()),
-    extend((s) => ({ ratio: Math.exp(-s.value.deltaY * 0.005) })),
-    zoomOp()
+    spy((s) => s.value.originalEvent.preventDefault())
   )
-  .on(apply);
+  .on((s) => {
+    const multiplier = Math.exp(-s.value.deltaY * 0.005);
+    scale = clamp(scale * multiplier, MIN_SCALE, MAX_SCALE);
+    element.style.transform = `scale(${scale})`;
+  });
 
-// Z + +/- keyboard zoom
+// Z + +/- keyboard zoom - compute scale directly
 keydown(window, { code: ["Equal", "Minus"] })
-  .pipe(
-    when(zoomMode$),
-    extend((s) => ({ ratio: s.value.code === "Equal" ? 1.2 : 1 / 1.2 })),
-    zoomOp()
-  )
-  .on(apply);
+  .pipe(when(zoomMode$))
+  .on((s) => {
+    const multiplier = s.value.code === "Equal" ? 1.2 : 1 / 1.2;
+    scale = clamp(scale * multiplier, MIN_SCALE, MAX_SCALE);
+    element.style.transform = `scale(${scale})`;
+  });
+```
 
-function apply(signal) {
-  currentScale = signal.value.scale;
-  element.style.transform = `scale(${currentScale})`;
-}
+### 3D Rotation with Momentum
+
+```typescript
+import { pan } from "cereb";
+import { rotate3d, momentum } from "cereb/operators";
+
+let rotation = [0, 0, 0];
+
+pan(element)
+  .pipe(
+    rotate3d({ sensitivityX: 0.5, sensitivityY: 0.5 }),
+    momentum({ friction: 0.95, minVelocity: 0.01 })
+  )
+  .on((s) => {
+    const delta = s.value.isMomentum ? s.value.momentumDelta : s.value.rotation;
+    rotation[0] += delta[0];
+    rotation[1] += delta[1];
+    element.style.transform = `rotateX(${rotation[0]}rad) rotateY(${rotation[1]}rad)`;
+  });
 ```
 
 ### Drawing Application

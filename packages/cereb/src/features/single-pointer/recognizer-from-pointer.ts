@@ -15,6 +15,8 @@ import {
 export function createPointerRecognizer(
   options: SinglePointerOptions = {},
 ): SinglePointerRecognizer<DomSignal<PointerEvent>> {
+  let isPointerDown = false;
+
   function processer(domSignal: DomSignal<PointerEvent>, signal: SinglePointerSignal): boolean {
     const e = domSignal.value;
 
@@ -26,18 +28,26 @@ export function createPointerRecognizer(
     let button: SinglePointerButton;
     switch (e.type) {
       case "pointerdown":
+        isPointerDown = true;
         phase = "start";
         button = toSinglePointerButton(e.button);
         break;
       case "pointerup":
+        isPointerDown = false;
         phase = "end";
         button = toSinglePointerButton(e.button);
         break;
       case "pointercancel":
+      case "pointerleave":
+        isPointerDown = false;
         phase = "cancel";
         button = "none";
         break;
       default:
+        // pointermove: ignore if pointer is not pressed
+        if (!isPointerDown) {
+          return false;
+        }
         phase = "move";
         button = "none";
     }

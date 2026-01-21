@@ -1,9 +1,10 @@
 ---
 import DocsLayout from "@/layouts/docs-layout.astro";
-import Content from "@/content/operator-api/zoom.mdx";
+import Content from "@/content/operator-api/rotate3d.mdx";
 
 const headings = [
   { depth: 2, slug: "signature", text: "Signature" },
+  { depth: 2, slug: "options", text: "Options" },
   { depth: 2, slug: "output-value", text: "Output Value" },
   { depth: 2, slug: "design-philosophy", text: "Design Philosophy" },
   { depth: 2, slug: "examples", text: "Examples" },
@@ -11,6 +12,6 @@ const headings = [
 ];
 ---
 
-<DocsLayout title="zoom" description="Calculate bounded scale values" headings={headings}>
+<DocsLayout title="rotate3d" description="Convert pan to 3D rotation" headings={headings}>
   <Content />
 </DocsLayout>

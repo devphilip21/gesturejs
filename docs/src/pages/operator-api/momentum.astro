@@ -1,0 +1,17 @@
+---
+import DocsLayout from "@/layouts/docs-layout.astro";
+import Content from "@/content/operator-api/momentum.mdx";
+
+const headings = [
+  { depth: 2, slug: "signature", text: "Signature" },
+  { depth: 2, slug: "options", text: "Options" },
+  { depth: 2, slug: "output-value", text: "Output Value" },
+  { depth: 2, slug: "how-it-works", text: "How It Works" },
+  { depth: 2, slug: "examples", text: "Examples" },
+  { depth: 2, slug: "input-requirements", text: "Input Requirements" },
+];
+---
+
+<DocsLayout title="momentum" description="Add physics-based inertia" headings={headings}>
+  <Content />
+</DocsLayout>

@@ -1,7 +1,7 @@
 import { createStream, type Stream } from "../../core/stream.js";
 import { createDomSignal, type DomSignal } from "./dom-signal.js";
 
-const MOUSE_EVENTS = ["mousedown", "mousemove", "mouseup"] as const;
+const MOUSE_EVENTS = ["mousedown", "mousemove", "mouseup", "mouseleave"] as const;
 
 export function mouse(
   target: EventTarget,

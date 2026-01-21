@@ -1,6 +1,6 @@
 # `zoom`
 
-Calculates bounded scale values from ratio-based inputs. Works with pinch, wheel, and keyboard zoom sources.
+Converts ratio input to frame-by-frame scale delta. Works with pinch gestures and other ratio-based inputs.
 
 ## Signature
 
@@ -10,76 +10,85 @@ function zoom<T extends SignalWith<{ ratio: number; phase?: string }>>(
 ): Operator<T, T & { scale: number; deltaScale: number }>
 ```
 
-## Options
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `minScale` | `number` | `0.1` | Minimum allowed scale |
-| `maxScale` | `number` | `10.0` | Maximum allowed scale |
-| `baseScale` | `number \| () => number` | `1.0` | Base scale or getter function |
-| `mode` | `"multiply" \| "add"` | `"multiply"` | How ratio is applied |
-
 ## Output Value
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `scale` | `number` | Current scale (clamped to min/max) |
-| `deltaScale` | `number` | Scale change since last signal |
+| `scale` | `number` | Frame-by-frame scale delta (not absolute scale) |
+| `deltaScale` | `number` | Same as `scale` (deprecated, use `scale`) |
+
+## Design Philosophy
+
+The `zoom` operator outputs **delta values** rather than absolute scale. This design:
+
+- Keeps the operator stateless and simple
+- Lets consumers control clamping and accumulation
+- Makes it easier to combine with other transforms
 
 ## Examples
 
-### Pinch Zoom
+### Basic Pinch Zoom
 
 ```typescript
 import { pinch } from "cereb";
 import { zoom } from "cereb/operators";
 
+let scale = 1.0;
+const MIN_SCALE = 0.5;
+const MAX_SCALE = 3.0;
+
 pinch(element)
-  .pipe(zoom({ minScale: 0.5, maxScale: 3.0 }))
+  .pipe(zoom())
   .on((signal) => {
-    element.style.transform = `scale(${signal.value.scale})`;
+    // Accumulate delta and clamp
+    scale += signal.value.scale;
+    scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale));
+    element.style.transform = `scale(${scale})`;
   });
 ```
 
-### Wheel Zoom
+### With Sensitivity Control
 
 ```typescript
-import { wheel } from "cereb";
-import { extend, zoom } from "cereb/operators";
+const PINCH_SENSITIVITY = 0.4;
 
-wheel(element, { passive: false })
+pinch(element)
   .pipe(
-    extend((s) => ({ ratio: Math.exp(-s.value.deltaY * 0.005) })),
-    zoom({ minScale: 0.5, maxScale: 3.0 })
+    extend((signal) => ({
+      ratio: 1 + (signal.value.ratio - 1) * PINCH_SENSITIVITY,
+    })),
+    zoom()
   )
   .on((signal) => {
-    element.style.transform = `scale(${signal.value.scale})`;
+    scale += signal.value.scale;
+    scale = clamp(scale, MIN_SCALE, MAX_SCALE);
+    element.style.transform = `scale(${scale})`;
   });
 ```
 
-### Dynamic Base Scale
+### Multiple Input Sources
 
-When multiple inputs control zoom, use a function to sync with external state:
+For keyboard or wheel zoom, compute the target scale directly instead of using `zoom`:
 
 ```typescript
-let currentScale = 1;
+// Keyboard zoom - discrete steps
+keydown(window, { code: ["Equal", "Minus"] })
+  .on((signal) => {
+    const multiplier = signal.value.code === "Equal" ? 1.2 : 1 / 1.2;
+    scale = clamp(scale * multiplier, MIN_SCALE, MAX_SCALE);
+    element.style.transform = `scale(${scale})`;
+  });
 
-const zoomOp = () => zoom({
-  minScale: 0.5,
-  maxScale: 3.0,
-  baseScale: () => currentScale  // Always use current scale
-});
-
-pinch(element).pipe(zoomOp()).on(apply);
-wheel(element).pipe(extend(...), zoomOp()).on(apply);
-
-function apply(signal) {
-  currentScale = signal.value.scale;
-  element.style.transform = `scale(${currentScale})`;
-}
+// Wheel zoom - continuous
+wheel(element, { passive: false })
+  .on((signal) => {
+    signal.value.originalEvent.preventDefault();
+    const multiplier = Math.exp(-signal.value.deltaY * 0.005);
+    scale = clamp(scale * multiplier, MIN_SCALE, MAX_SCALE);
+    element.style.transform = `scale(${scale})`;
+  });
 ```
 
-## Mode
+## Session Handling
 
-- `multiply` (default): `scale = baseScale × ratio` - For pinch gestures
-- `add`: `scale = baseScale + ratio` - For delta-based inputs
+The operator resets its internal state when `phase` is `"end"` or `"cancel"`, making it ready for the next gesture session.

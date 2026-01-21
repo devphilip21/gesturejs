@@ -14,20 +14,33 @@ import {
 export function createMouseRecognizer(
   options: SinglePointerOptions = {},
 ): SinglePointerRecognizer<DomSignal<MouseEvent>> {
+  let isMouseDown = false;
+
   function processer(domSignal: DomSignal<MouseEvent>, signal: SinglePointerSignal): boolean {
     const e = domSignal.value;
     let phase: SinglePointerPhase;
     let button: SinglePointerButton;
     switch (e.type) {
       case "mousedown":
+        isMouseDown = true;
         phase = "start";
         button = toSinglePointerButton(e.button);
         break;
       case "mouseup":
+        isMouseDown = false;
         phase = "end";
         button = toSinglePointerButton(e.button);
         break;
+      case "mouseleave":
+        isMouseDown = false;
+        phase = "cancel";
+        button = "none";
+        break;
       default:
+        // mousemove: ignore if mouse is not pressed
+        if (!isMouseDown) {
+          return false;
+        }
         phase = "move";
         button = "none";
     }
